@@ -30,10 +30,14 @@ public class PlayState extends State {
 
     protected PlayState(GameStateManager gsm) {
         super(gsm);
-        cam.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        // init textures
         setBlockTextures();
-        board = new Board(6, blockTextures);
-        board.setBoardHandler(300, 800, 3700, 2000);
+
+        // init camera
+        cam.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        // init font
         fontFileInternal = "fonts/ShareTechMono-Regular.ttf";
         FreeTypeFontGenerator generator =
                 new FreeTypeFontGenerator(Gdx.files.internal(fontFileInternal));
@@ -42,7 +46,20 @@ public class PlayState extends State {
         parameter.size = 30;
         infoFont = generator.generateFont(parameter);
         generator.dispose();
+
+        // init stage
         stage = new Stage();
+
+
+        // init board actor
+
+
+
+
+
+        board = new Board(6, blockTextures);
+        board.setBoardHandler(300, 800, 3700, 2000);
+
     }
 
     private void setBlockTextures() {

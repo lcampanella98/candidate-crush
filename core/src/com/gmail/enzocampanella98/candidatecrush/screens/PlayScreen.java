@@ -17,6 +17,9 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.scenes.HUD;
 
+import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
+import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
+
 /**
  * Created by Lorenzo Campanella on 8/7/2016.
  */
@@ -30,6 +33,8 @@ public class PlayScreen implements Screen {
     private Pixmap bgMap;
     private Stage myStage;
     Texture worldTexture;
+    Image tImage;
+    Label tLabelHello;
     Sprite s;
 
     private OrthographicCamera cam;
@@ -38,39 +43,63 @@ public class PlayScreen implements Screen {
 
     public PlayScreen(CandidateCrush game) {
         this.game = game;
-        this.hud = new HUD(game.batch);
-        this.cam = new OrthographicCamera();//CandidateCrush.V_WIDTH, CandidateCrush.V_HEIGHT);
 
-        this.gameViewport = new FitViewport(CandidateCrush.V_WIDTH, CandidateCrush.V_HEIGHT, cam);
-        gameViewport.apply();
-        this.texture = new Texture(Gdx.files.internal("img/block_sprites/trump_sprite.png"));
-        //r = new ShapeRenderer();
-        texture = new Texture("badlogic.jpg");
-        myStage = new Stage(gameViewport, game.batch);
+        // init hud
+        hud = new HUD(game.batch);
 
+        // init camera
+        cam = new OrthographicCamera();
+
+        // init viewport
+        gameViewport = new FitViewport(V_WIDTH, CandidateCrush.V_HEIGHT, cam);
+        gameViewport.apply(true);
+
+        // init textures and sprites
+        texture = new Texture(Gdx.files.internal("img/block_sprites/trump_sprite.png"));
+        // r = new ShapeRenderer();
+        // texture = new Texture("badlogic.jpg");
+        Pixmap myWorldPixmap = new Pixmap(V_WIDTH, CandidateCrush.V_HEIGHT, Pixmap.Format.RGBA8888);
+        myWorldPixmap.setColor(Color.BLUE);
+        myWorldPixmap.fillRectangle(0, 0, myWorldPixmap.getWidth(), myWorldPixmap.getHeight());
+        worldTexture = new Texture(myWorldPixmap);
+        s = new Sprite(worldTexture);
+
+        // init font
         FreeTypeFontGenerator fg = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ShareTechMono-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter p = new FreeTypeFontGenerator.FreeTypeFontParameter();
         p.size = 50;
         p.color = Color.WHITE;
         BitmapFont font = fg.generateFont(p);
 
+        // init stage
+        myStage = new Stage(gameViewport, game.batch);
+        // init table
         Table t = new Table();
-        Pixmap myWorldPixmap = new Pixmap(CandidateCrush.V_WIDTH, CandidateCrush.V_HEIGHT, Pixmap.Format.RGBA8888);
-        myWorldPixmap.setColor(Color.BLUE);
-        myWorldPixmap.fillRectangle(0, 0, myWorldPixmap.getWidth(), myWorldPixmap.getHeight());
-        worldTexture = new Texture(myWorldPixmap);
-        s = new Sprite(worldTexture);
         t.setFillParent(true);
+        t.setDebug(true);
+        tImage = new Image(texture);
+        tImage.scaleBy(5f);
+        tLabelHello = new Label("Hello World!", new Label.LabelStyle(font, Color.WHITE));
 
-        t.top();
-        t.add(new Image(texture)).padTop(10);
+        t.bottom();
+        t.add(tImage).center().padBottom(10);
         t.row();
-        t.add(new Label("Hello World!", new Label.LabelStyle(font, Color.WHITE))).expandX().padTop(10);
+        t.add(tLabelHello);
         for (Cell c : t.getCells()) {
             System.out.println(String.format("C: %s, x = %f, y = %f", c.getActor().toString(), c.getActorX(), c.getActorY()));
         }
+        // add actors to table
         myStage.addActor(new Image(s));
         myStage.addActor(t);
+    }
+
+
+    public void handleInput(float delta) {
+        if (Gdx.input.justTouched()) {
+            int mult = 10;
+            tImage.moveBy(mult, (int) (mult * ((double)V_HEIGHT / V_WIDTH)));
+            System.out.println(String.format("Texture: x=%f, y=%f", tImage.getX(), tImage.getY()));
+        }
     }
 
     @Override
@@ -80,14 +109,16 @@ public class PlayScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        handleInput(delta);
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        cam.update();
+
+
+        cam.update(); // update camera
+
         game.batch.setProjectionMatrix(cam.combined);
-        //hud.stage.draw();
-        myStage.draw();
-
-
+        hud.stage.draw();
+        // myStage.draw(); // draws my stage (background, table (labels))
     }
 
     @Override

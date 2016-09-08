@@ -4,8 +4,12 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.screens.PlayScreen;
 import com.gmail.enzocampanella98.candidatecrush.state.GameStateManager;
 import com.gmail.enzocampanella98.candidatecrush.state.MenuState;
@@ -23,11 +27,7 @@ public class CandidateCrush extends Game {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        //gsm = new GameStateManager();
-        //gsm.set(new MenuState(gsm));
-        setScreen(new PlayScreen(this));
-        System.out.println("We're on " + Gdx.app.getType().name());
-
+        setScreen(new MenuScreen(this));
     }
 
     @Override

@@ -36,6 +36,8 @@ public class HUD {
         stage = new Stage(viewport, sb);
 
         Table table = new Table();
+        // table.setDebug(true);
+        table.setFillParent(true);
         table.top();
         font = new BitmapFont();
         font.getData().setScale(4f);
@@ -55,7 +57,6 @@ public class HUD {
         table.add(levelLabel).expandX();
         table.add(countdownLabel).expandX();
 
-        System.out.println("I'm here!");
         stage.addActor(table);
     }
 }

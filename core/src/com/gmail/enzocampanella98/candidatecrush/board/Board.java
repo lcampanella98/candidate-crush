@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Queue;
@@ -23,14 +24,14 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 /**
  * Created by Lorenzo Campanella on 6/2/2016.
  */
-public class Board {
+public class Board extends Actor {
 
     private static final float SINGLE_BLOCK_DROP_TIME = 0.20f;
     private static final Vector2 DOWN_DIRECTION = new Vector2(0f, -1f);
 
     private static Array<BlockType> blockTypes;
 
-    private Block[][] board;
+    private Block[][] blocks;
 
     private Random random;
 
@@ -67,7 +68,7 @@ public class Board {
     }
 
     private void createBoard() {
-        board = new Block[numBlocks][numBlocks];
+        blocks = new Block[numBlocks][numBlocks];
         random = new Random();
         if (blockTypes == null) {
             blockTypes = new Array<BlockType>(BlockType.values());
@@ -91,9 +92,9 @@ public class Board {
                 boardWidth, boardHeight);
         boardPixmap.dispose();
         populateRandomly();
-        /*testBlock = board[board.length-1][0];
+        /*testBlock = blocks[blocks.length-1][0];
         animateFillDown(0, 1);
-        System.out.println("board created");*/
+        System.out.println("blocks created");*/
         /*testBoard = new Block[][]{
                 {
                         getNewBlock(0, 0, BlockType.TRUMP), getNewBlock(0, 1, BlockType.TRUMP), getNewBlock(0, 2, BlockType.OBAMA), getNewBlock(0, 3, BlockType.TRUMP)
@@ -108,7 +109,7 @@ public class Board {
                         getNewBlock(3, 0, BlockType.OBAMA), getNewBlock(3, 1, BlockType.OBAMA), getNewBlock(3, 2, BlockType.SANDERS), getNewBlock(3, 3, BlockType.TRUMP)
                 }
         };
-        board = testBoard;*/
+        blocks = testBoard;*/
         shouldAnalyze = true;
         shouldProcessInput = false;
     }
@@ -138,10 +139,10 @@ public class Board {
     }
 
     public void populateRandomly() {
-        for (int i = 0; i < board.length; i++) {
-            board[i] = new Block[board.length];
-            for (int j = 0; j < board[i].length; j++) {
-                board[i][j] = getNewRandomBlock(i, j);
+        for (int i = 0; i < blocks.length; i++) {
+            blocks[i] = new Block[blocks.length];
+            for (int j = 0; j < blocks[i].length; j++) {
+                blocks[i][j] = getNewRandomBlock(i, j);
             }
         }
     }
@@ -157,19 +158,19 @@ public class Board {
                 blockSpacing, blockSpacing, row, col);
     }
 
-    private Block[][] getBoard() {
-        return board;
+    private Block[][] getBlocks() {
+        return blocks;
     }
 
     private Array<Block> getRowArray(int row) {
-        return new Array<Block>(board[row]);
+        return new Array<Block>(blocks[row]);
     }
 
     private Array<Block> getColArray(int col) {
-        int numCols = board[0].length;
+        int numCols = blocks[0].length;
         Array<Block> colArray = new Array<Block>(numCols);
         for (int row = 0; row < numCols; row++) {
-            colArray.add(board[row][col]);
+            colArray.add(blocks[row][col]);
         }
         return colArray;
     }
@@ -181,42 +182,42 @@ public class Board {
     }
 
     private void flipBlocks(int i1, int j1, int i2, int j2) {
-        flipBlocks(board[i1][j1], board[i2][j2]);
+        flipBlocks(blocks[i1][j1], blocks[i2][j2]);
     }
 
     private void flipBlocks(Block b1, Block b2) {
-        flipElements(board, b1.getRow(), b1.getCol(), b2.getRow(), b2.getCol());
+        flipElements(blocks, b1.getRow(), b1.getCol(), b2.getRow(), b2.getCol());
         Block.flipRowAndCol(b1, b2);
     }
 
     private void overwriteBlock(int row, int col) {
-        board[row][col] = null;
+        blocks[row][col] = null;
     }
 
     private void moveBlock(int fromRow, int fromCol, int toRow, int toCol) {
         if (fromRow != fromCol || toRow != toCol) {
-            insertBlock(board[fromRow][fromCol], toRow, toCol);
+            insertBlock(blocks[fromRow][fromCol], toRow, toCol);
             overwriteBlock(fromRow, fromCol);
         }
     }
 
     private void insertBlock(Block b, int row, int col) {
         b.setRowAndCol(row, col);
-        board[row][col] = b;
+        blocks[row][col] = b;
     }
 
     private void insertBlock(Block b) {
-        board[b.getRow()][b.getCol()] = b;
+        blocks[b.getRow()][b.getCol()] = b;
     }
 
 
     private void animateFillDown(int col, int space) {
-        int numRows = board.length;
+        int numRows = blocks.length;
         Vector2 downDirection = new Vector2(0f, -1f);
         Vector2 initialBlockPosition = new Vector2(boardBounds.x + col * blockSpacing,
                 boardBounds.y + boardBounds.getHeight());
         for (int bottomRow = numRows - space, i = 0; i < space; i++) {
-            Block b = board[bottomRow + i][col];
+            Block b = blocks[bottomRow + i][col];
             b.setInitialPosition(initialBlockPosition);
             b.resetPosition();
             DisappearBlockAnimation dissapearAnimation = new DisappearBlockAnimation(
@@ -312,7 +313,7 @@ public class Board {
     }
 
     private void refillBoard(Array<BlockGroup> groups) {
-        int numCols = board[0].length, numRows = board.length;
+        int numCols = blocks[0].length, numRows = blocks.length;
         int[] totalSpacesInCols = new int[numCols];
         for (BlockGroup group : groups) {
             for (Block b : group.getGroup()) {
@@ -371,7 +372,7 @@ public class Board {
         int minLen = 3;
         Array<BlockGroup> rowMatches = new Array<BlockGroup>(),
                 colMatches = new Array<BlockGroup>();
-        Block[][] blocks = board.getBoard();
+        Block[][] blocks = board.getBlocks();
         int numCols = blocks[0].length;
 
         for (Block[] block : blocks) {
@@ -423,7 +424,7 @@ public class Board {
         sb.draw(boardTexture, boardBounds.x, boardBounds.y,
                 boardBounds.getWidth(), boardBounds.getHeight());
 
-        for (Block[] boardRow : board) {
+        for (Block[] boardRow : blocks) {
             for (Block block : boardRow) {
                 block.render(sb);
             }
@@ -444,7 +445,7 @@ public class Board {
                 }
             } else tasks.first().run();
         }
-        for (Block[] boardRow : board) {
+        for (Block[] boardRow : blocks) {
             for (Block block : boardRow) {
                 block.update(dt);
             }
@@ -455,7 +456,7 @@ public class Board {
     }
 
     public boolean isAnimating() {
-        for (Block[] row : board) {
+        for (Block[] row : blocks) {
             for (Block b : row) {
                 if (b.isAnimating()) return true;
             }
@@ -526,7 +527,7 @@ public class Board {
                                 dir.set(0, dir.y);
                             }
                             dir.setLength(1f);
-                            blockSelectedNow = board
+                            blockSelectedNow = blocks
                                     [blockSelectedPreviously.getRow() + Math.round(dir.y)]
                                     [blockSelectedPreviously.getCol() + Math.round(dir.x)];
                             // blockSelectedNow now correct
@@ -565,7 +566,7 @@ public class Board {
 
     private float getAnimationTimeLeft() {
         float maxTimeLeft = 0f;
-        for (Block[] a : board) {
+        for (Block[] a : blocks) {
             for (Block b : a) {
                 float timeLeft = b.getAnimationTimeLeft();
                 if (timeLeft > maxTimeLeft) maxTimeLeft = timeLeft;
@@ -579,16 +580,16 @@ public class Board {
     }
 
     private int getSelectedRow(Vector2 mouse) {
-        return board.length - 1 - (int) Math.floor((mouse.y - boardBounds.y) / blockSpacing);
+        return blocks.length - 1 - (int) Math.floor((mouse.y - boardBounds.y) / blockSpacing);
     }
 
     private Block getSelectedBlock(Vector2 mouse) {
         if (boardBounds.contains(mouse)) {
             int selectedRow = getSelectedRow(mouse);
-            if (selectedRow >= board.length || selectedRow < 0) return null;
+            if (selectedRow >= blocks.length || selectedRow < 0) return null;
             int selectedCol = getSelectedCol(mouse);
-            if (selectedCol >= board[selectedRow].length || selectedCol < 0) return null;
-            return board[selectedRow][selectedCol];
+            if (selectedCol >= blocks[selectedRow].length || selectedCol < 0) return null;
+            return blocks[selectedRow][selectedCol];
         } else return null;
     }
 
