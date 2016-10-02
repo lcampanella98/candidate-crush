@@ -8,14 +8,16 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.scenes.HUD;
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
+import com.gmail.enzocampanella98.candidatecrush.board.Board;
+import com.gmail.enzocampanella98.candidatecrush.scenes.InGameHUD;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
@@ -25,39 +27,50 @@ import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
  */
 public class PlayScreen implements Screen {
 
-
-    private HUD hud;
+    private InGameHUD hud;
     private CandidateCrush game;
-    private Viewport gameViewport;
-    private Texture texture;
-    private Pixmap bgMap;
-    private Stage myStage;
-    Texture worldTexture;
-    Image tImage;
-    Label tLabelHello;
-    Sprite s;
 
+    private Viewport gameViewport;
     private OrthographicCamera cam;
 
-    ShapeRenderer r;
+    private Texture worldTexture;
+    private Pixmap bgMap;
+    private Sprite s;
+
+    private BitmapFont font;
+
+    private Stage playStage;
+    private Board gameBoard;
+    private Image tImage;
+    private Label tLabelHello;
+    private Table table;
+
+    private ObjectMap<BlockType, Texture> blockTextures;
+
+    private static ObjectMap<BlockType, Texture> getBlockTextures() {
+        ObjectMap<BlockType, Texture> blockTextures = new ObjectMap<BlockType, Texture>();
+        for (BlockType b : BlockType.values()) {
+            Texture t;
+            if (b.equals(BlockType.BLANK)) continue;
+            t = new Texture(b.getInternalPath());
+            blockTextures.put(b, t);
+        }
+        return blockTextures;
+    }
 
     public PlayScreen(CandidateCrush game) {
         this.game = game;
 
-        // init hud
-        hud = new HUD(game.batch);
+        blockTextures = getBlockTextures();
 
         // init camera
         cam = new OrthographicCamera();
 
         // init viewport
-        gameViewport = new FitViewport(V_WIDTH, CandidateCrush.V_HEIGHT, cam);
+        gameViewport = new FitViewport(V_WIDTH, V_HEIGHT, cam);
         gameViewport.apply(true);
 
         // init textures and sprites
-        texture = new Texture(Gdx.files.internal("img/block_sprites/trump_sprite.png"));
-        // r = new ShapeRenderer();
-        // texture = new Texture("badlogic.jpg");
         Pixmap myWorldPixmap = new Pixmap(V_WIDTH, CandidateCrush.V_HEIGHT, Pixmap.Format.RGBA8888);
         myWorldPixmap.setColor(Color.BLUE);
         myWorldPixmap.fillRectangle(0, 0, myWorldPixmap.getWidth(), myWorldPixmap.getHeight());
@@ -69,37 +82,22 @@ public class PlayScreen implements Screen {
         FreeTypeFontGenerator.FreeTypeFontParameter p = new FreeTypeFontGenerator.FreeTypeFontParameter();
         p.size = 50;
         p.color = Color.WHITE;
-        BitmapFont font = fg.generateFont(p);
+        font = fg.generateFont(p);
 
         // init stage
-        myStage = new Stage(gameViewport, game.batch);
-        // init table
-        Table t = new Table();
-        t.setFillParent(true);
-        t.setDebug(true);
-        tImage = new Image(texture);
-        tImage.scaleBy(5f);
-        tLabelHello = new Label("Hello World!", new Label.LabelStyle(font, Color.WHITE));
+        playStage = new Stage(gameViewport, game.batch);
 
-        t.bottom();
-        t.add(tImage).center().padBottom(10);
-        t.row();
-        t.add(tLabelHello);
-        for (Cell c : t.getCells()) {
-            System.out.println(String.format("C: %s, x = %f, y = %f", c.getActor().toString(), c.getActorX(), c.getActorY()));
-        }
-        // add actors to table
-        myStage.addActor(new Image(s));
-        myStage.addActor(t);
-    }
+        // init gameBoard
+        gameBoard = new Board(8, blockTextures);
 
+        // init mainTable
+        table = new Table();
 
-    public void handleInput(float delta) {
-        if (Gdx.input.justTouched()) {
-            int mult = 10;
-            tImage.moveBy(mult, (int) (mult * ((double)V_HEIGHT / V_WIDTH)));
-            System.out.println(String.format("Texture: x=%f, y=%f", tImage.getX(), tImage.getY()));
-        }
+        // init hud
+        hud = new InGameHUD(gameBoard.getBoardHandler(), table);
+
+        table.addActor(gameBoard);
+        playStage.addActor(table);
     }
 
     @Override
@@ -109,16 +107,14 @@ public class PlayScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        handleInput(delta);
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
 
         cam.update(); // update camera
 
         game.batch.setProjectionMatrix(cam.combined);
-        hud.stage.draw();
-        // myStage.draw(); // draws my stage (background, table (labels))
+        playStage.act(delta);
+        playStage.draw(); // draws my stage (background, table (labels))
     }
 
     @Override
@@ -143,8 +139,14 @@ public class PlayScreen implements Screen {
 
     @Override
     public void dispose() {
+        playStage.dispose();
+        font.dispose();
+        for(ObjectMap.Entry<BlockType, Texture> e : blockTextures) {
+            e.value.dispose();
+        }
+        blockTextures.clear();
+        gameBoard.dispose();
         s.getTexture().dispose();
-        texture.dispose();
         worldTexture.dispose();
     }
 }

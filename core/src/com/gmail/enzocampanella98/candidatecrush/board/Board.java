@@ -4,17 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Queue;
-import com.gmail.enzocampanella98.candidatecrush.animation.BlockAnimation;
-import com.gmail.enzocampanella98.candidatecrush.animation.DisappearBlockAnimation;
-import com.gmail.enzocampanella98.candidatecrush.animation.FadeOutBlockAnimation;
-import com.gmail.enzocampanella98.candidatecrush.animation.TranslationBlockAnimation;
+import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 import java.util.Random;
@@ -24,7 +23,7 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 /**
  * Created by Lorenzo Campanella on 6/2/2016.
  */
-public class Board extends Actor {
+public class Board extends Group {
 
     private static final float SINGLE_BLOCK_DROP_TIME = 0.20f;
     private static final Vector2 DOWN_DIRECTION = new Vector2(0f, -1f);
@@ -37,9 +36,6 @@ public class Board extends Actor {
 
     static ObjectMap<BlockType, Texture> blockTextures;
 
-    private static Block testBlock;
-    private static Block[][] testBoard;
-
     private Texture boardTexture;
     private Rectangle boardBounds;
     private int boardWidth, boardHeight;
@@ -50,19 +46,21 @@ public class Board extends Actor {
 
     private Queue<BoardTask> tasks;
 
-    float blockSpacing;
+    private float blockSpacing;
 
-    private BlockAnimation blockAnimation;
     private Array<BlockGroup> blockGroups;
     private BoardHandler boardHandler;
 
 
-    public Board(int numBlocks, ObjectMap<BlockType, Texture> blockTextures) {
+    public Board(int numBlocksAcross, ObjectMap<BlockType, Texture> blockTextures) {
+        super();
+        super.debug();
         Board.blockTextures = blockTextures;
-        this.numBlocks = numBlocks;
+        this.numBlocks = numBlocksAcross;
         width = Gdx.graphics.getWidth();
         height = Gdx.graphics.getHeight();
         createBoard();
+        setBoardHandler(100, 500, 2000, 1500);
         tasks = new Queue<BoardTask>();
         musicHandler = new MusicHandler();
     }
@@ -74,44 +72,43 @@ public class Board extends Actor {
             blockTypes = new Array<BlockType>(BlockType.values());
             blockTypes.removeValue(BlockType.BLANK, true);
         }
-        if (Gdx.graphics.getWidth() > Gdx.graphics.getHeight()) {
 
-        }
-        boardWidth = (int) Math.round(Gdx.graphics.getHeight() * 0.8);
+        boardWidth = (int) (Math.round(CandidateCrush.V_WIDTH * 0.94));
+        int boardx = (CandidateCrush.V_WIDTH - boardWidth) / 2;
+        //noinspection SuspiciousNameCombination
         boardHeight = boardWidth;
+        int boardy = (CandidateCrush.V_HEIGHT - boardHeight) / 2;
+        super.setPosition(boardx, boardy);
+        super.setWidth(boardWidth);
+        super.setHeight(boardHeight);
+        super.setOrigin(0, 0);
+
         Pixmap boardPixmap = new Pixmap(boardWidth, boardHeight, RGBA8888);
         boardPixmap.setColor(Color.BLUE);
         boardPixmap.fillRectangle(0, 0, boardWidth, boardHeight);
         boardTexture = new Texture(boardPixmap);
-
-        int boardx = width / 2 - boardTexture.getWidth() / 2;
-        int boardy = height / 2 - boardTexture.getHeight() / 2;
+        Image bgImage = new Image(boardTexture);
+        bgImage.setPosition(0, 0);
+        bgImage.setFillParent(true);
+        super.addActor(bgImage);
         blockSpacing = (float) boardWidth / numBlocks;
 
         boardBounds = new Rectangle(boardx, boardy,
                 boardWidth, boardHeight);
-        boardPixmap.dispose();
         populateRandomly();
-        /*testBlock = blocks[blocks.length-1][0];
-        animateFillDown(0, 1);
-        System.out.println("blocks created");*/
-        /*testBoard = new Block[][]{
-                {
-                        getNewBlock(0, 0, BlockType.TRUMP), getNewBlock(0, 1, BlockType.TRUMP), getNewBlock(0, 2, BlockType.OBAMA), getNewBlock(0, 3, BlockType.TRUMP)
-                },
-                {
-                        getNewBlock(1, 0, BlockType.CLINTON), getNewBlock(1, 1, BlockType.CLINTON), getNewBlock(1, 2, BlockType.TRUMP), getNewBlock(1, 3, BlockType.CLINTON)
-                },
-                {
-                        getNewBlock(2, 0, BlockType.SANDERS), getNewBlock(2, 1, BlockType.SANDERS), getNewBlock(2, 2, BlockType.TRUMP), getNewBlock(2, 3, BlockType.CLINTON)
-                },
-                {
-                        getNewBlock(3, 0, BlockType.OBAMA), getNewBlock(3, 1, BlockType.OBAMA), getNewBlock(3, 2, BlockType.SANDERS), getNewBlock(3, 3, BlockType.TRUMP)
-                }
-        };
-        blocks = testBoard;*/
+        for (Block[] row : blocks) {
+            for (Block b : row) {
+                super.addActor(b);
+            }
+        }
         shouldAnalyze = true;
         shouldProcessInput = false;
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        boardHandler.update(delta);
     }
 
     public void setBoardHandler(int score3, int score4, int score5, int scoreJoined) {
@@ -153,7 +150,8 @@ public class Board extends Actor {
 
     private Block getNewBlock(int row, int col, BlockType blockType) {
         return new Block(blockType,
-                new Vector2(boardBounds.x + col * blockSpacing,
+                new Vector2(
+                        boardBounds.x + col * blockSpacing,
                         boardBounds.y + row * blockSpacing),
                 blockSpacing, blockSpacing, row, col);
     }
@@ -191,6 +189,9 @@ public class Board extends Actor {
     }
 
     private void overwriteBlock(int row, int col) {
+        Block toOverwrite = blocks[row][col];
+        toOverwrite.clear();
+        toOverwrite.remove();
         blocks[row][col] = null;
     }
 
@@ -210,36 +211,22 @@ public class Board extends Actor {
         blocks[b.getRow()][b.getCol()] = b;
     }
 
-
-    private void animateFillDown(int col, int space) {
+    private void animateFillDown(int col, int crushedBlocksInCol) {
         int numRows = blocks.length;
-        Vector2 downDirection = new Vector2(0f, -1f);
         Vector2 initialBlockPosition = new Vector2(boardBounds.x + col * blockSpacing,
                 boardBounds.y + boardBounds.getHeight());
-        for (int bottomRow = numRows - space, i = 0; i < space; i++) {
+        for (int bottomRow = numRows - crushedBlocksInCol, i = 0; i < crushedBlocksInCol; i++) {
             Block b = blocks[bottomRow + i][col];
-            b.setInitialPosition(initialBlockPosition);
-            b.resetPosition();
-            DisappearBlockAnimation dissapearAnimation = new DisappearBlockAnimation(
-                    SINGLE_BLOCK_DROP_TIME * i
-            );
-            Array<BlockAnimation> moveAnimations = new Array<BlockAnimation>();
-            moveAnimations.add(b.getDropDownCropBlockAnimation(SINGLE_BLOCK_DROP_TIME));
-            moveAnimations.add(
-                    new TranslationBlockAnimation(
-                            SINGLE_BLOCK_DROP_TIME * (space - i)
-                            , downDirection, (space - i) * blockSpacing)
-            );
-            b.addAnimation(dissapearAnimation);
-            b.addAnimation(moveAnimations);
+            b.setPosition(initialBlockPosition.x, initialBlockPosition.y);
+            b.addAction(Actions.delay(SINGLE_BLOCK_DROP_TIME * i));
+            b.addAction(Actions.moveBy(
+                    0, -(crushedBlocksInCol - i) * blockSpacing, SINGLE_BLOCK_DROP_TIME * (crushedBlocksInCol - i)));
         }
     }
 
     private void shiftAndAnimateBlockDown(Block b, int spaces) {
         moveBlock(b.getRow(), b.getCol(), b.getRow() - spaces, b.getCol());
-        b.addAnimation(
-                new TranslationBlockAnimation(
-                        SINGLE_BLOCK_DROP_TIME * spaces, DOWN_DIRECTION, blockSpacing * spaces));
+        b.addAction(Actions.moveBy(0, -blockSpacing * spaces, SINGLE_BLOCK_DROP_TIME * spaces));
     }
 
     private boolean analyzeAndRefillBoard(final boolean userInvoked) {
@@ -249,76 +236,71 @@ public class Board extends Actor {
             blockGroups = analysis;
             // add tasks
             // task 1: make blocks fade out
-            addTask(new BoardTask() {
-                @Override
-                public void update(float dt) {
-                    if (wasStarted() && !isAnimating()) done();
+            int largestGroupNumBlocks = 0;
+            BlockGroup largestGroup = null;
+            for (BlockGroup group : blockGroups) {
+                for (Block b : group.getGroup()) {
+                    fadeBlockOut(b);
                 }
-
-                @Override
-                public void run() {
-                    start();
-                    int largestGroupNumBlocks = 0;
-                    BlockGroup largestGroup = null;
-                    for (BlockGroup group : blockGroups) {
-                        for (Block b : group.getGroup()) {
-                            fadeBlockOut(b);
-                        }
-                        if (group.getNumBlocks() > largestGroupNumBlocks) {
-                            largestGroupNumBlocks = group.getNumBlocks();
-                            largestGroup = group;
-                        }
-                    }
-                    if (userInvoked) {
-                        char maxLevel;
-                        assert largestGroup != null;
-                        if (largestGroup.isJoinedGroup()) maxLevel = 't';
-                        else maxLevel = String.valueOf(largestGroup.getNumBlocks()).charAt(0);
-                        musicHandler.playRandomMusic(largestGroup.getGroupBlockType(), maxLevel);
-                    } else if (!musicHandler.isMusicPlaying()) musicHandler.playPopSound();
+                if (group.getNumBlocks() > largestGroupNumBlocks) {
+                    largestGroupNumBlocks = group.getNumBlocks();
+                    largestGroup = group;
                 }
-            });
+            }
+            if (userInvoked) {
+                char maxLevel;
+                assert largestGroup != null;
+                maxLevel = largestGroup.isJoinedGroup() ? 't'
+                        : String.valueOf(largestGroup.getNumBlocks()).charAt(0);
+                musicHandler.playRandomMusic(largestGroup.getGroupBlockType(), maxLevel);
+            } else if (!musicHandler.isMusicPlaying()) musicHandler.playPopSound();
             // task 2: delete faded blocks and fill in new blocks
-            addTask(new BoardTask() {
-                @Override
-                public void update(float dt) {
-                    if (wasStarted() && !isAnimating()) done();
-                }
 
+            final BlockGroup finalLargestGroup = largestGroup;
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    start();
+                    //noinspection StatementWithEmptyBody
+                    while (blockGroups.first().getGroup().first().hasActions()) {
+                    }
                     refillBoard(blockGroups);
                 }
             });
-
             return true;
         } else { // there was no match
             blockGroups = null;
             return false;
         }
-
     }
+
 
     private void fadeBlockOut(Block b) {
-        float t = SINGLE_BLOCK_DROP_TIME;
-        Array<BlockAnimation> list = new Array<BlockAnimation>(2);
-        list.add(new TranslationBlockAnimation(t, new Vector2(1f, 1f), (float) (Math.hypot(b.getTextureWidth(), b.getTextureHeight()) / 2)));
-        list.add(new FadeOutBlockAnimation(t, b.getTextureWidth(), b.getTextureHeight()));
-        b.addAnimation(list);
+        b.addAction(Actions.scaleBy(0f, 0f, SINGLE_BLOCK_DROP_TIME));
     }
 
-    private void addTask(BoardTask task) {
-        tasks.addLast(task);
+    private void shiftBlockOneLeft(Block b) {
+        b.addAction(Actions.moveBy(-blockSpacing, 0, SINGLE_BLOCK_DROP_TIME));
+    }
+
+    private void shiftBlockOneRight(Block b) {
+        b.addAction(Actions.moveBy(blockSpacing, 0, SINGLE_BLOCK_DROP_TIME));
+    }
+
+    private void shiftBlockOneUp(Block b) {
+        b.addAction(Actions.moveBy(0, blockSpacing, SINGLE_BLOCK_DROP_TIME));
+    }
+
+    private void shiftBlockOneDown(Block b) {
+        b.addAction(Actions.moveBy(0, -blockSpacing, SINGLE_BLOCK_DROP_TIME));
     }
 
     private void refillBoard(Array<BlockGroup> groups) {
         int numCols = blocks[0].length, numRows = blocks.length;
-        int[] totalSpacesInCols = new int[numCols];
+        int[] totalCrushedBlocksInCols = new int[numCols];
         for (BlockGroup group : groups) {
             for (Block b : group.getGroup()) {
                 overwriteBlock(b.getRow(), b.getCol());
-                totalSpacesInCols[b.getCol()]++;
+                totalCrushedBlocksInCols[b.getCol()]++;
             }
         }
         for (int col = 0; col < numCols; col++) {
@@ -342,12 +324,12 @@ public class Board extends Actor {
 
         }
         for (int col = 0; col < numCols; col++) {
-            int spaces = totalSpacesInCols[col];
-            for (int row = numRows - spaces; row < numRows; row++) {
+            int crushedBlocksInCol = totalCrushedBlocksInCols[col];
+            for (int row = numRows - crushedBlocksInCol; row < numRows; row++) {
                 Block fillBlock = getNewRandomBlock(row, col);
                 insertBlock(fillBlock);
             }
-            animateFillDown(col, spaces);
+            animateFillDown(col, crushedBlocksInCol);
         }
     }
 
@@ -420,45 +402,16 @@ public class Board extends Actor {
         return groups;
     }
 
-    public void render(SpriteBatch sb) {
-        sb.draw(boardTexture, boardBounds.x, boardBounds.y,
-                boardBounds.getWidth(), boardBounds.getHeight());
-
-        for (Block[] boardRow : blocks) {
-            for (Block block : boardRow) {
-                block.render(sb);
-            }
-        }
-    }
-
-    private boolean hasTask() {
-        return tasks.size > 0;
-    }
-
     public void update(float dt) {
-        if (hasTask()) {
-            if (tasks.first().wasStarted()) {
-                tasks.first().update(dt);
-                if (tasks.first().isDone()) {
-                    tasks.removeFirst();
-                    if (hasTask()) tasks.first().run();
-                }
-            } else tasks.first().run();
-        }
-        for (Block[] boardRow : blocks) {
-            for (Block block : boardRow) {
-                block.update(dt);
-            }
-        }
         if (boardHandler != null) {
-            boardHandler.update(dt);
         }
+        act(dt);
     }
 
-    public boolean isAnimating() {
+    public boolean doChildrenHaveActions() {
         for (Block[] row : blocks) {
             for (Block b : row) {
-                if (b.isAnimating()) return true;
+                if (b.isPerformingAction()) return true;
             }
         }
         return false;
@@ -469,37 +422,27 @@ public class Board extends Actor {
 
     public void handleInput(Vector2 mouse) {
 
-        if (hasTask()) {
+        if (doChildrenHaveActions()) {
             shouldProcessInput = false;
         } else {
-            boolean isAnimating = isAnimating();
-
-            // don't process the user's selected blocks if blocks are animating
-            if (isAnimating) {
-                shouldProcessInput = false;
+            // no blocks are currently animating (screen is static)
+            // user might be touching the screen
+            if (shouldAnalyze) {
+                boolean gotMatches = analyzeAndRefillBoard(areBlocksFlipping);
+                if (areBlocksFlipping) {
+                    // player flipped the blocks
+                    if (!gotMatches) {
+                        // player got no matches
+                        flipBlocksAndAnimate(blockSelectedPreviously, blockSelectedNow);
+                    }
+                    blockSelectedPreviously = null;
+                    blockSelectedNow = null;
+                    areBlocksFlipping = false;
+                    shouldProcessInput = !gotMatches;
+                } else
+                    shouldAnalyze = gotMatches;
             } else {
-                // no blocks are currently animating (screen is static)
-                // user might be touching the screen
-                if (shouldAnalyze) {
-                    boolean gotMatches = analyzeAndRefillBoard(areBlocksFlipping);
-                    if (areBlocksFlipping) {
-                        // player flipped the blocks
-                        if (!gotMatches) {
-                            // player got no matches
-                            flipBlocksAndAnimate(blockSelectedPreviously, blockSelectedNow);
-                        }
-                        blockSelectedPreviously = null;
-                        blockSelectedNow = null;
-                        areBlocksFlipping = false;
-                        shouldProcessInput = false;
-                        {
-                            shouldProcessInput = !gotMatches;
-                        }
-                    } else
-                        shouldAnalyze = gotMatches;
-                } else {
-                    shouldProcessInput = true;
-                }
+                shouldProcessInput = true;
             }
         }
 
@@ -554,25 +497,24 @@ public class Board extends Actor {
     private boolean areBlocksFlipping;
 
     private void flipBlocksAndAnimate(Block from, Block to) {
-        Vector2 dir = new Vector2(to.getCol() - from.getCol(), to.getRow() - from.getRow());
-        from.addAnimation(
-                new TranslationBlockAnimation(
-                        SINGLE_BLOCK_DROP_TIME, new Vector2(dir), blockSpacing));
-        to.addAnimation(
-                new TranslationBlockAnimation(
-                        SINGLE_BLOCK_DROP_TIME, new Vector2(dir).scl(-1f), blockSpacing));
-        flipBlocks(from, to);
-    }
-
-    private float getAnimationTimeLeft() {
-        float maxTimeLeft = 0f;
-        for (Block[] a : blocks) {
-            for (Block b : a) {
-                float timeLeft = b.getAnimationTimeLeft();
-                if (timeLeft > maxTimeLeft) maxTimeLeft = timeLeft;
+        if (to.getCol() == from.getCol()) {
+            if (to.getRow() > from.getRow()) {
+                shiftBlockOneRight(from);
+                shiftBlockOneLeft(to);
+            } else {
+                shiftBlockOneLeft(from);
+                shiftBlockOneRight(to);
+            }
+        } else {
+            if (to.getCol() > from.getCol()) {
+                shiftBlockOneUp(from);
+                shiftBlockOneDown(to);
+            } else {
+                shiftBlockOneDown(from);
+                shiftBlockOneUp(to);
             }
         }
-        return maxTimeLeft;
+        flipBlocks(from, to);
     }
 
     private int getSelectedCol(Vector2 mouse) {

@@ -11,6 +11,8 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 
+import java.util.Locale;
+
 /**
  * Created by Lorenzo Campanella on 8/8/2016.
  */
@@ -42,8 +44,8 @@ public class HUD {
         font = new BitmapFont();
         font.getData().setScale(4f);
         Label.LabelStyle lStyle = new Label.LabelStyle(font, Color.WHITE);
-        countdownLabel = new Label(String.format("%03d", worldTimer), lStyle);
-        scoreLabel = new Label(String.format("%06d", score), lStyle);
+        countdownLabel = new Label(String.format(Locale.ENGLISH, "%03d", worldTimer), lStyle);
+        scoreLabel = new Label(String.format(Locale.ENGLISH, "%06d", score), lStyle);
         timeLabel = new Label("TIME", lStyle);
         levelLabel = new Label("1-1", lStyle);
         worldLabel = new Label("WORLD", lStyle);

@@ -8,8 +8,7 @@ import com.badlogic.gdx.utils.Array;
 public class BlockGroup {
 
     private Array<Block> group;
-    private int[] numBlocksInCols, rowRange, colRange;
-    private Block[] topBlocks;
+    private int[] rowRange, colRange;
     private int numCols;
 
     public BlockGroup(Array<Block> group, int numCols) {
@@ -19,8 +18,6 @@ public class BlockGroup {
     public BlockGroup(int numCols) {
         this.numCols = numCols;
         this.group = new Array<Block>();
-        topBlocks = new Block[numCols];
-        numBlocksInCols = new int[numCols];
         rowRange = new int[]{~0, 0};
         colRange = new int[]{~0, 0};
     }
@@ -29,21 +26,6 @@ public class BlockGroup {
         if (group.size > 0) {
             return group.get(0).getBlockType();
         } else return null;
-    }
-
-    private void setColData() {
-        int topIndex = 0, topRow = -1;
-        for (int i = 0; i < group.size; i++) {
-            Block b = group.get(i);
-            numBlocksInCols[b.getCol()]++;
-            if (topBlocks[b.getCol()] == null) {
-                topBlocks[b.getCol()] = b;
-            } else {
-                if (b.getRow() > topBlocks[b.getCol()].getRow()) {
-                    topBlocks[b.getCol()] = b;
-                }
-            }
-        }
     }
 
     private void setRanges() {
@@ -72,20 +54,9 @@ public class BlockGroup {
     public void setGroup(Array<Block> group, int numCols) {
         this.numCols = numCols;
         this.group = new Array<Block>(group);
-        topBlocks = new Block[numCols];
-        numBlocksInCols = new int[numCols];
         rowRange = new int[]{Integer.MAX_VALUE, 0};
         colRange = new int[]{Integer.MAX_VALUE, 0};
-        setColData();
         setRanges();
-    }
-
-    public int[] getNumBlocksInCols() {
-        return numBlocksInCols;
-    }
-
-    public Block[] getTopBlocks() {
-        return topBlocks;
     }
 
     public Array<Block> getGroup() {
@@ -107,13 +78,11 @@ public class BlockGroup {
         }
 
         Block b1, b2;
-        //Array<Block> commonBlocks = new Array<Block>();
         for (int i = 0; i < group1.group.size; i++) {
             b1 = group1.group.get(i);
             for (int j = 0; j < group2.group.size; j++) {
                 b2 = group2.group.get(j);
                 if (b1.getRow() == b2.getRow() && b1.getCol() == b2.getCol()) {
-                    //commonBlocks.add(b2);'
                     Array<Block> group = new Array<Block>(group2.group);
                     group.removeIndex(j);
                     group.addAll(group1.group);

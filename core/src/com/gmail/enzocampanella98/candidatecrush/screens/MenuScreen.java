@@ -2,17 +2,19 @@ package com.gmail.enzocampanella98.candidatecrush.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
@@ -30,7 +32,8 @@ public class MenuScreen implements Screen{
     private BitmapFont font;
     private Viewport viewport;
     private OrthographicCamera cam;
-    private Texture texturePlayBtn, texturebg;
+    private Texture texturebg;
+    private Sprite bgSprite;
 
     public MenuScreen(final CandidateCrush game) {
         this.game = game;
@@ -45,6 +48,7 @@ public class MenuScreen implements Screen{
         FreeTypeFontGenerator fontGen = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ShareTechMono-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
         param.size = 70;
+        param.borderWidth = 2;
         param.color = Color.WHITE;
         font = fontGen.generateFont(param);
         fontGen.dispose();
@@ -58,7 +62,7 @@ public class MenuScreen implements Screen{
         table.setFillParent(true);
 
         // init textures
-        texturePlayBtn = new Texture(Gdx.files.internal("img/general/menu_image_boxing.jpg"));
+        texturebg = new Texture(Gdx.files.internal("img/general/menu_image_boxing.jpg"));
 
         // init play button
         TextureAtlas btnAtlas = new TextureAtlas("playbutton.pack");
@@ -68,13 +72,11 @@ public class MenuScreen implements Screen{
         btnPlayStyle.down = skinPlay.getDrawable("skin-down");
         btnPlayStyle.font = font;
         btnPlayStyle.fontColor = com.badlogic.gdx.graphics.Color.BLACK;
-        btnPlay = new ImageTextButton("Play", btnPlayStyle);
-        btnPlay.padLeft(20);
-        btnPlay.padRight(20);
+        btnPlay = new ImageTextButton("Start the Crush", btnPlayStyle);
+        btnPlay.pad(50, 80, 50, 80);
         btnPlay.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("Play button Pressed!");
                 game.setScreen(new PlayScreen(game));
             }
         });
@@ -89,6 +91,12 @@ public class MenuScreen implements Screen{
         table.row();
         table.add(btnPlay);
 
+
+        bgSprite = new Sprite(texturebg);
+        Image bgImage = new Image(new SpriteDrawable(bgSprite));
+        bgImage.setWidth(CandidateCrush.V_WIDTH);
+        bgImage.setHeight(CandidateCrush.V_HEIGHT);
+        menuStage.addActor(bgImage);
         // add table to stage
         menuStage.addActor(table);
     }
@@ -139,7 +147,6 @@ public class MenuScreen implements Screen{
     @Override
     public void dispose() {
         font.dispose();
-        texturePlayBtn.dispose();
         texturebg.dispose();
         menuStage.dispose();
     }
