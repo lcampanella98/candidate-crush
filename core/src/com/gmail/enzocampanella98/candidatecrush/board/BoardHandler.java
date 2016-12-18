@@ -41,7 +41,7 @@ public class BoardHandler {
         }
         if (blockGroups == null) return;
         for (BlockGroup group : blockGroups) {
-            int curScore = 0;
+            int curScore;
             switch (group.getNumBlocks()) {
                 case 3:
                     curScore = score3;
