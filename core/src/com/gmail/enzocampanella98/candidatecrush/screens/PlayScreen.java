@@ -94,7 +94,7 @@ public class PlayScreen implements Screen {
         table = new Table();
 
         // init hud
-        //hud = new InGameHUD(gameBoard.getBoardHandler(), table);
+        hud = new InGameHUD(gameBoard.getBoardHandler(), table);
 
         table.addActor(gameBoard);
         playStage.addActor(table);

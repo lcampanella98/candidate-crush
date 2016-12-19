@@ -32,7 +32,7 @@ public class Board extends Group {
 
     private Random random;
 
-    static ObjectMap<BlockType, Texture> blockTextures;
+    ObjectMap<BlockType, Texture> blockTextures;
 
     private Texture boardTexture;
     private Rectangle boardBounds;
@@ -50,7 +50,7 @@ public class Board extends Group {
 
     public Board(int numBlocksAcross, ObjectMap<BlockType, Texture> blockTextures) {
         super();
-        Board.blockTextures = blockTextures;
+        this.blockTextures = blockTextures;
         numBlocks = numBlocksAcross;
         createBoard();
         setBoardHandler(100, 500, 2000, 1500);
@@ -147,7 +147,7 @@ public class Board extends Group {
     }
 
     private Block getNewBlock(int row, int col, BlockType blockType) {
-        return new Block(blockType,
+        return new Block(blockType, blockTextures.get(blockType),
                 new Vector2(col * blockSpacing, row * blockSpacing),
                 blockSpacing, blockSpacing, row, col);
     }
@@ -235,9 +235,9 @@ public class Board extends Group {
             VisibleAction showA = new VisibleAction();
             showA.setVisible(true);
 
-            ParallelAction pa = new ParallelAction(sizeUpAction, mba, showA);
+            ParallelAction pa = new ParallelAction(sizeUpAction, mba);
 
-            SequenceAction sa = new SequenceAction(da, sizeDownAction, pa);
+            SequenceAction sa = new SequenceAction(da, sizeDownAction, showA, pa);
             b.addAction(sa);
         }
     }

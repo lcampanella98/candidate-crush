@@ -19,7 +19,7 @@ public class Block extends Image {
     private Texture texture;
 
 
-    public Block(BlockType blockType, Vector2 initialPosition,
+    public Block(BlockType blockType, Texture texture, Vector2 initialPosition,
                  float width, float height,
                  int row, int col) {
         super();
@@ -29,7 +29,7 @@ public class Block extends Image {
         setBlockType(blockType);
         setPosition(initialPosition.x, initialPosition.y);
 
-        texture = Board.blockTextures.get(blockType);
+        this.texture = texture;
         TextureRegion myTextureRegion = new TextureRegion(texture);
         super.setDrawable(new TextureRegionDrawable(myTextureRegion));
 
@@ -119,5 +119,4 @@ public class Block extends Image {
             return false;
         }
     }
-
 }

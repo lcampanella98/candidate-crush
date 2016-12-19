@@ -10,10 +10,10 @@ import com.gmail.enzocampanella98.candidatecrush.sound.BlockSounds;
 public enum BlockType {
 
     TRUMP("trump", "Donald Trump"),
-    //CLINTON("clinton", "Hillary Clinton"),
+    CLINTON("clinton", "Hillary Clinton"),
     SANDERS("sanders", "Bernie Sanders"),
     CRUZ("cruz", "Ted Cruz"),
-    MEZA("meza", "Daniel Meza"),
+    //MEZA("meza", "Daniel Meza"),
     BLANK();
 
     private boolean isEmpty;
