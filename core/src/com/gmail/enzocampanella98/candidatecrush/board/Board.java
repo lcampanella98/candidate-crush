@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -12,8 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.actions.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.Queue;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
+import com.gmail.enzocampanella98.candidatecrush.action.MyInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 import java.util.Random;
@@ -26,7 +25,6 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 public class Board extends Group {
 
     private static final float SINGLE_BLOCK_DROP_TIME = .2f;
-    private static final Vector2 DOWN_DIRECTION = new Vector2(0f, -1f);
 
     private static Array<BlockType> blockTypes;
 
@@ -40,11 +38,9 @@ public class Board extends Group {
     private Rectangle boardBounds;
     private int boardWidth, boardHeight;
     private int numBlocks;
-    private int width, height;
 
     private MusicHandler musicHandler;
 
-    private Queue<BoardTask> tasks;
 
     private float blockSpacing;
 
@@ -56,11 +52,8 @@ public class Board extends Group {
         super();
         Board.blockTextures = blockTextures;
         numBlocks = numBlocksAcross;
-        width = Gdx.graphics.getWidth();
-        height = Gdx.graphics.getHeight();
         createBoard();
         setBoardHandler(100, 500, 2000, 1500);
-        tasks = new Queue<BoardTask>();
         musicHandler = new MusicHandler();
     }
 
@@ -72,13 +65,14 @@ public class Board extends Group {
             blockTypes.removeValue(BlockType.BLANK, true);
         }
 
-        //boardWidth = (int) (Math.round(CandidateCrush.V_WIDTH * 0.94));
+        //boardWidth = ;
         boardWidth = CandidateCrush.V_WIDTH;
-        int boardx = (CandidateCrush.V_WIDTH - boardWidth) / 2;
+        int boardX = (CandidateCrush.V_WIDTH - boardWidth) / 2;
         //noinspection SuspiciousNameCombination
         boardHeight = boardWidth;
-        int boardy = (CandidateCrush.V_HEIGHT - boardHeight) / 2;
-        super.setPosition(boardx, boardy);
+        int boardY = (CandidateCrush.V_HEIGHT - boardHeight) / 2;
+
+        super.setPosition(boardX, boardY);
         super.setWidth(boardWidth);
         super.setHeight(boardHeight);
         super.setOrigin(0, 0);
@@ -93,7 +87,7 @@ public class Board extends Group {
         addActor(bgImage);
         blockSpacing = (float) boardWidth / numBlocks;
 
-        boardBounds = new Rectangle(boardx, boardy,
+        boardBounds = new Rectangle(boardX, boardY,
                 boardWidth, boardHeight);
 
 
@@ -104,13 +98,14 @@ public class Board extends Group {
             }
         }
         shouldAnalyze = true;
-        shouldProcessInput = false;
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
-        this.handleInput(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+        Vector2 m0 = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+        Vector2 m1 = getStage().getViewport().unproject(new Vector2(m0));
+        this.handleInput(m1);
         boardHandler.update(delta);
     }
 
@@ -224,15 +219,25 @@ public class Board extends Group {
         for (int bottomRow = numRows - crushedBlocksInCol, i = 0; bottomRow + i < numRows; i++) {
             Block b = blocks[bottomRow + i][col];
             b.setPosition(initialBlockPosition.x, initialBlockPosition.y);
-            VisibleAction hideA = new VisibleAction();
-            hideA.setVisible(false);
+
             DelayAction da = new DelayAction(SINGLE_BLOCK_DROP_TIME * i);
-            VisibleAction showA = new VisibleAction();
-            showA.setVisible(true);
+
+            MyInflaterAction sizeDownAction = new MyInflaterAction(0f);
+            sizeDownAction.setDuration(0f);
+
+            MyInflaterAction sizeUpAction = new MyInflaterAction(b.getHeight());
+            sizeUpAction.setDuration(SINGLE_BLOCK_DROP_TIME);
+
             MoveByAction mba = new MoveByAction();
             mba.setAmount(0, -(crushedBlocksInCol - i) * blockSpacing);
             mba.setDuration(SINGLE_BLOCK_DROP_TIME * (crushedBlocksInCol - i));
-            SequenceAction sa = new SequenceAction(hideA, da, showA, mba);
+
+            VisibleAction showA = new VisibleAction();
+            showA.setVisible(true);
+
+            ParallelAction pa = new ParallelAction(sizeUpAction, mba, showA);
+
+            SequenceAction sa = new SequenceAction(da, sizeDownAction, pa);
             b.addAction(sa);
         }
     }
@@ -330,6 +335,7 @@ public class Board extends Group {
             int crushedBlocksInCol = totalCrushedBlocksInCols[col];
             for (int row = numRows - crushedBlocksInCol; row < numRows; row++) {
                 Block fillBlock = getNewRandomBlock(row, col);
+                fillBlock.setVisible(false);
                 insertBlock(fillBlock);
             }
             animateFillDown(col, crushedBlocksInCol);
@@ -405,12 +411,6 @@ public class Board extends Group {
         return groups;
     }
 
-    public void update(float dt) {
-        if (boardHandler != null) {
-        }
-        act(dt);
-    }
-
     public boolean doChildrenHaveActions() {
         for (Block[] row : blocks) {
             for (Block b : row) {
@@ -421,127 +421,98 @@ public class Board extends Group {
     }
 
 
-    private boolean shouldProcessInput, shouldAnalyze;
+    private boolean shouldAnalyze;
 
 
-    public void handleInput2(Vector2 mouse) {
-
-        boolean isUserFlippingBlocks = false; // TODO properly initialize isUserFlippingBlocks
-        boolean hasMatches = analyzeAndRefillBoard(isUserFlippingBlocks);
-        if (isUserFlippingBlocks) {
-            if (!hasMatches) {
-                flipBlocksAndAnimate(blockSelectedPreviously, blockSelectedNow);
-            }
-            blockSelectedPreviously = null;
-            blockSelectedNow = null;
-            areBlocksFlipping = false;
-        }
-
-        if (!hasMatches) {
-
-        }
-    }
-
-    boolean process = true;
     public void handleInput(Vector2 mouse) {
-        if (!process) return;
         if (doChildrenHaveActions()) {
-            shouldProcessInput = false;
+            return;
         } else {
-
-            if (blockGroups != null) {
-                refillBoard(blockGroups);
-                blockGroups = null;
-                process = false;
-                shouldProcessInput = false;
-            }
-            // no blocks are currently animating (screen is static)
-            // user might be touching the screen
-            else if (shouldAnalyze) {
-                boolean gotMatches = analyzeAndRefillBoard(areBlocksFlipping);
-                if (areBlocksFlipping) {
-                    // player flipped the blocks
-                    if (!gotMatches) {
-                        // player got no matches
-                        flipBlocksAndAnimate(blockSelectedPreviously, blockSelectedNow);
+            if (shouldAnalyze) {
+                boolean gotMatches = analyzeAndRefillBoard(userFlippedBlocks);
+                if (gotMatches) {
+                    refillBoard(blockGroups);
+                    shouldAnalyze = true;
+                } else {
+                    if (userFlippedBlocks) {
+                        flipBlocksAndAnimate(secondSelectedBlock, firstSelectedBlock);
                     }
-                    blockSelectedPreviously = null;
-                    blockSelectedNow = null;
-                    areBlocksFlipping = false;
-                    shouldProcessInput = !gotMatches;
-                } else
-                    shouldAnalyze = gotMatches;
-            } else {
-                shouldProcessInput = true;
+                    shouldAnalyze = false;
+                }
+                if (userFlippedBlocks) {
+                    firstSelectedBlock = null;
+                    secondSelectedBlock = null;
+                    userFlippedBlocks = false;
+                }
             }
         }
-
+        boolean shouldProcessInput = !shouldAnalyze;
         if (shouldProcessInput) {
             if (Gdx.input.isTouched()) {
-                blockSelectedNow = getSelectedBlock(mouse);
 
-                if (Gdx.input.isTouched(0) && blockSelectedNow != null) {
-                    if (blockSelectedPreviously == null) {
-                        blockSelectedPreviously = blockSelectedNow;
-                        blockSelectedNow = null;
-                    } else {
-                        if (blockSelectedPreviously.getRow() != blockSelectedNow.getRow()
-                                || blockSelectedPreviously.getCol() != blockSelectedNow.getCol()) {
-                            // player flipped two blocks
+                if (firstSelectedBlock == null) {
+                    firstSelectedBlock = getSelectedBlock(mouse);
+                } else {
+                    secondSelectedBlock = getSelectedBlock(mouse);
+                }
+                if (Gdx.input.isTouched(0) && secondSelectedBlock != null) {
+                    if (firstSelectedBlock.getRow() != secondSelectedBlock.getRow()
+                            || firstSelectedBlock.getCol() != secondSelectedBlock.getCol()) {
+                        // player flipped two blocks
 
-                            // infer blockSelectedNow
-                            Vector2 dir = new Vector2(
-                                    blockSelectedNow.getCol() - blockSelectedPreviously.getCol(),
-                                    blockSelectedNow.getRow() - blockSelectedPreviously.getRow()
-                            );
-                            if (Math.abs(dir.x) > Math.abs(dir.y)) {
-                                dir.set(dir.x, 0);
-                            } else {
-                                dir.set(0, dir.y);
-                            }
-                            dir.setLength(1f);
-                            blockSelectedNow = blocks
-                                    [blockSelectedPreviously.getRow() + Math.round(dir.y)]
-                                    [blockSelectedPreviously.getCol() + Math.round(dir.x)];
-                            // blockSelectedNow now correct
-
-                            flipBlocksAndAnimate(blockSelectedPreviously, blockSelectedNow);
-                            areBlocksFlipping = true;
-                            shouldProcessInput = false;
-                            shouldAnalyze = true;
+                        // infer secondSelectedBlock
+                        Vector2 dir = new Vector2(
+                                secondSelectedBlock.getCol() - firstSelectedBlock.getCol(),
+                                secondSelectedBlock.getRow() - firstSelectedBlock.getRow()
+                        );
+                        if (Math.abs(dir.x) > Math.abs(dir.y)) {
+                            dir.set(dir.x, 0);
+                        } else {
+                            dir.set(0, dir.y);
                         }
+                        dir.setLength(1f);
+                        secondSelectedBlock = blocks
+                                [firstSelectedBlock.getRow() + Math.round(dir.y)]
+                                [firstSelectedBlock.getCol() + Math.round(dir.x)];
+                        // secondSelectedBlock now correct
+
+                        flipBlocksAndAnimate(firstSelectedBlock, secondSelectedBlock);
+                        userFlippedBlocks = true;
+                        shouldAnalyze = true;
                     }
                 }
             } else {
-                blockSelectedPreviously = null;
+                firstSelectedBlock = null;
+                secondSelectedBlock = null;
             }
         }
+
     }
 
     Array<BlockGroup> getBlockGroups() {
         return blockGroups;
     }
 
-    private Block blockSelectedPreviously, blockSelectedNow;
+    private Block firstSelectedBlock, secondSelectedBlock;
 
-    private boolean areBlocksFlipping;
+    private boolean userFlippedBlocks;
 
     private void flipBlocksAndAnimate(Block from, Block to) {
         if (to.getCol() == from.getCol()) {
             if (to.getRow() > from.getRow()) {
-                shiftBlockOneRight(from);
-                shiftBlockOneLeft(to);
-            } else {
-                shiftBlockOneLeft(from);
-                shiftBlockOneRight(to);
-            }
-        } else {
-            if (to.getCol() > from.getCol()) {
                 shiftBlockOneUp(from);
                 shiftBlockOneDown(to);
             } else {
                 shiftBlockOneDown(from);
                 shiftBlockOneUp(to);
+            }
+        } else {
+            if (to.getCol() > from.getCol()) {
+                shiftBlockOneRight(from);
+                shiftBlockOneLeft(to);
+            } else {
+                shiftBlockOneLeft(from);
+                shiftBlockOneRight(to);
             }
         }
         flipBlocks(from, to);
@@ -552,7 +523,7 @@ public class Board extends Group {
     }
 
     private int getSelectedRow(Vector2 mouse) {
-        return blocks.length - 1 - (int) Math.floor((mouse.y - boardBounds.y) / blockSpacing);
+        return (int) Math.floor((mouse.y - boardBounds.y) / blockSpacing);
     }
 
     private Block getSelectedBlock(Vector2 mouse) {

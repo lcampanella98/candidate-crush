@@ -114,7 +114,7 @@ public class PlayScreen implements Screen {
 
         game.batch.setProjectionMatrix(cam.combined);
         playStage.act(delta);
-        playStage.draw(); // draws my stage (background, table (labels))
+        playStage.draw();
     }
 
     @Override
