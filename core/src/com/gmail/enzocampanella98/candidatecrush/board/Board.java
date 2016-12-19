@@ -65,7 +65,6 @@ public class Board extends Group {
             blockTypes.removeValue(BlockType.BLANK, true);
         }
 
-        //boardWidth = ;
         boardWidth = CandidateCrush.V_WIDTH;
         int boardX = (CandidateCrush.V_WIDTH - boardWidth) / 2;
         //noinspection SuspiciousNameCombination
