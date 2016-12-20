@@ -360,9 +360,33 @@ public class Board extends Group {
         return added;
     }
 
+    private static void doAnalysisMerge(Array<BlockGroup> colGroups, Array<BlockGroup> groups, Array<BlockGroup> rowGroups) {
+        BlockGroup lastG = colGroups.get(colGroups.size - 1);
+        BlockGroup merged = null;
+        boolean didMerge = false;
+        for (int i = 0; i < groups.size; i++) {
+            BlockGroup m;
+            if (didMerge) {
+                m = BlockGroup.getMergedGroup(merged, rowGroups.get(i));
+            } else {
+                m = BlockGroup.getMergedGroup(lastG, rowGroups.get(i));
+            }
+            if (m != null) {
+                groups.removeIndex(i);
+                i--;
+                didMerge = true;
+                merged = m;
+            }
+        }
+        if (didMerge) {
+            groups.add(merged);
+            colGroups.removeValue(lastG, true);
+        }
+    }
+
     private static Array<BlockGroup> analyzeBoard(Board board) {
         int minLen = 3;
-        Array<BlockGroup> groups = new Array<BlockGroup>();
+        Array<BlockGroup> rowGroups = new Array<BlockGroup>();
         Block[][] blocks = board.getBlocks();
         int numCols = blocks[0].length;
 
@@ -370,53 +394,30 @@ public class Board extends Group {
             Array<Block> currentString = new Array<Block>();
             for (int j = 0; j < numCols; j++) {
                 Block currentBlock = row[j];
-                analysisCurrentBlock(currentBlock, groups, currentString, minLen, numCols);
+                analysisCurrentBlock(currentBlock, rowGroups, currentString, minLen, numCols);
             }
             if (currentString.size >= minLen) {
-                groups.add(new BlockGroup(currentString, numCols));
+                rowGroups.add(new BlockGroup(currentString, numCols));
             }
         }
-        Array<BlockGroup> colMatches = new Array<BlockGroup>();
+        Array<BlockGroup> colGroups = new Array<BlockGroup>();
+        Array<BlockGroup> groups = new Array<BlockGroup>(rowGroups);
+
         for (int j = 0; j < numCols; j++) {
             Array<Block> currentString = new Array<Block>();
             for (Block[] row : blocks) {
                 Block currentBlock = row[j];
-                if (analysisCurrentBlock(currentBlock, colMatches, currentString, minLen, numCols)) {
-                    BlockGroup lastG = colMatches.get(colMatches.size - 1);
-                    for (int i = 0; i < groups.size; i++) {
-                        BlockGroup merged = BlockGroup.getMergedGroup(lastG, groups.get(i));
-                        if (merged != null) {
-                            groups.set(i, merged);
-                            break;
-                        }
-                    }
+                if (analysisCurrentBlock(currentBlock, colGroups, currentString, minLen, numCols)) {
+                    doAnalysisMerge(colGroups, groups, rowGroups);
                 }
             }
             if (currentString.size >= minLen) {
-                colMatches.add(new BlockGroup(currentString, numCols));
+                colGroups.add(new BlockGroup(currentString, numCols));
+                doAnalysisMerge(colGroups, groups, rowGroups);
             }
         }
-/*
-        Array<BlockGroup> mergedGroups = new Array<BlockGroup>();
+        groups.addAll(colGroups);
 
-        for (int i = 0; i < rowMatches.size; i++) {
-            BlockGroup nextRowGroup = rowMatches.get(i);
-            for (int j = 0; j < colMatches.size; j++) {
-                BlockGroup nextColGroup = colMatches.get(j);
-                BlockGroup merged = BlockGroup.getMergedGroup(nextRowGroup, nextColGroup);
-                if (merged != null) {
-                    mergedGroups.add(merged);
-                    rowMatches.removeIndex(i);
-                    colMatches.removeIndex(j);
-                    i--;
-                    break;
-                }
-            }
-        }
-        Array<BlockGroup> groups = new Array<BlockGroup>(mergedGroups.size + rowMatches.size + colMatches.size);
-        groups.addAll(mergedGroups);
-        groups.addAll(rowMatches);
-        groups.addAll(colMatches);*/
         return groups;
     }
 

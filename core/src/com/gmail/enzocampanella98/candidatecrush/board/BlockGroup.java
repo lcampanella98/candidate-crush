@@ -78,18 +78,23 @@ public class BlockGroup {
         }
 
         Block b1, b2;
+        Array<Block> merged = new Array<Block>(group1.group);
+        boolean didMerge = false;
         for (int i = 0; i < group1.group.size; i++) {
             b1 = group1.group.get(i);
             for (int j = 0; j < group2.group.size; j++) {
                 b2 = group2.group.get(j);
-                if (b1.getRow() == b2.getRow() && b1.getCol() == b2.getCol()) {
-                    Array<Block> group = new Array<Block>(group2.group);
-                    group.removeIndex(j);
-                    group.addAll(group1.group);
-                    return new BlockGroup(group, group1.numCols);
+                if (b1.getRow() != b2.getRow() || b1.getCol() != b2.getCol()) {
+                    merged.add(b2);
+                } else {
+                    didMerge = true;
                 }
             }
         }
+        if (didMerge)
+            return new BlockGroup(merged,
+                    Math.max(group1.colRange[1], group2.colRange[1])
+                            - Math.min(group1.colRange[0], group2.colRange[0]));
         return null;
     }
 }
