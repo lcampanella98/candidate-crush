@@ -1,6 +1,11 @@
 package com.gmail.enzocampanella98.candidatecrush.board;
 
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectSet;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Lorenzo Campanella on 6/14/2016.
@@ -24,7 +29,7 @@ public class BlockGroup {
 
     public BlockType getGroupBlockType() {
         if (group.size > 0) {
-            return group.get(0).getBlockType();
+            return group.first().getBlockType();
         } else return null;
     }
 
@@ -69,30 +74,19 @@ public class BlockGroup {
                 || (r1[0] >= r2[0] && r1[1] <= r2[1]);
     }
 
+    @Override
+    public String toString() {
+        return group.toString();
+    }
+
     public static BlockGroup getMergedGroup(BlockGroup group1, BlockGroup group2) {
-        if (group1.numCols != group2.numCols) return null;
 
-        if (!(areRangesOverlapping(group1.rowRange, group2.rowRange)
-                && areRangesOverlapping(group1.colRange, group2.colRange))) {
-            return null;
-        }
+        ObjectSet<Block> merged = new ObjectSet<Block>();
+        merged.addAll(group1.group);
+        merged.addAll(group2.group);
 
-        Block b1, b2;
-        Array<Block> merged = new Array<Block>(group1.group);
-        boolean didMerge = false;
-        for (int i = 0; i < group1.group.size; i++) {
-            b1 = group1.group.get(i);
-            for (int j = 0; j < group2.group.size; j++) {
-                b2 = group2.group.get(j);
-                if (b1.getRow() != b2.getRow() || b1.getCol() != b2.getCol()) {
-                    merged.add(b2);
-                } else {
-                    didMerge = true;
-                }
-            }
-        }
-        if (didMerge)
-            return new BlockGroup(merged,
+        if (merged.size < group1.getNumBlocks() + group2.getNumBlocks())
+            return new BlockGroup(merged.iterator().toArray(),
                     Math.max(group1.colRange[1], group2.colRange[1])
                             - Math.min(group1.colRange[0], group2.colRange[0]));
         return null;

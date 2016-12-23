@@ -112,11 +112,14 @@ public class Block extends Image {
     public boolean equals(Object other) {
         if (other instanceof Block) {
             Block b = (Block) other;
-            return b.getRow() == getRow()
-                    && b.getCol() == getCol()
-                    && b.getBlockType() == getBlockType();
+            return hashCode() == b.hashCode();
         } else {
             return false;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return 100 * row + 10 * col + blockType.ordinal();
     }
 }
