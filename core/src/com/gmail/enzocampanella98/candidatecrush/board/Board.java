@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
@@ -70,7 +71,8 @@ public class Board extends Group {
         int boardHeight = boardWidth;
         int boardY = (CandidateCrush.V_HEIGHT - boardHeight) / 2;
 
-        super.setPosition(boardX, boardY);
+        //super.setPosition(boardX, boardY);
+
         super.setWidth(boardWidth);
         super.setHeight(boardHeight);
         super.setOrigin(0, 0);
@@ -85,7 +87,7 @@ public class Board extends Group {
         addActor(bgImage);
         blockSpacing = (float) boardWidth / numBlocks;
 
-        boardBounds = new Rectangle(boardX, boardY,
+        boardBounds = new Rectangle(0, 0,
                 boardWidth, boardHeight);
 
 
@@ -101,9 +103,9 @@ public class Board extends Group {
     @Override
     public void act(float delta) {
         super.act(delta);
-        Vector2 m0 = new Vector2(Gdx.input.getX(), Gdx.input.getY());
-        Vector2 m1 = getStage().getViewport().unproject(new Vector2(m0));
-        this.handleInput(m1);
+        Vector2 mouse = screenToLocalCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+
+        this.handleInput(mouse);
         boardHandler.update(delta);
     }
 
@@ -526,14 +528,15 @@ public class Board extends Group {
     }
 
     private int getSelectedCol(Vector2 mouse) {
-        return (int) Math.floor((mouse.x - boardBounds.x) / blockSpacing);
+        return (int) Math.floor(mouse.x / blockSpacing);
     }
 
     private int getSelectedRow(Vector2 mouse) {
-        return (int) Math.floor((mouse.y - boardBounds.y) / blockSpacing);
+        return (int) Math.floor(mouse.y / blockSpacing);
     }
 
     private Block getSelectedBlock(Vector2 mouse) {
+
         if (boardBounds.contains(mouse)) {
             int selectedRow = getSelectedRow(mouse);
             if (selectedRow >= blocks.length || selectedRow < 0) return null;

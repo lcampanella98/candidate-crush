@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -43,7 +44,6 @@ public class PlayScreen implements Screen {
     private Board gameBoard;
     private Image tImage;
     private Label tLabelHello;
-    private Table table;
 
     private ObjectMap<BlockType, Texture> blockTextures;
 
@@ -77,13 +77,6 @@ public class PlayScreen implements Screen {
         worldTexture = new Texture(myWorldPixmap);
         s = new Sprite(worldTexture);
 
-        // init font
-        FreeTypeFontGenerator fg = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ShareTechMono-Regular.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter p = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        p.size = 50;
-        p.color = Color.WHITE;
-        font = fg.generateFont(p);
-
         // init stage
         playStage = new Stage(gameViewport, game.batch);
 
@@ -91,13 +84,26 @@ public class PlayScreen implements Screen {
         gameBoard = new Board(8, blockTextures);
 
         // init mainTable
-        table = new Table();
+        Table mainTable = new Table();
+        mainTable.setFillParent(true);
+
+        // add board to main table
+        Table boardTable = new Table();
+        boardTable.add(gameBoard);
 
         // init hud
-        hud = new InGameHUD(gameBoard.getBoardHandler(), table);
+        Table hudTable = new Table();
+        hud = new InGameHUD(gameBoard.getBoardHandler(), hudTable);
 
-        table.addActor(gameBoard);
-        playStage.addActor(table);
+
+        // add tables to the mainTable
+        mainTable.add(boardTable);
+        mainTable.row();
+        mainTable.add(hudTable);
+
+        // add main table to stage
+        playStage.addActor(mainTable);
+
     }
 
     @Override
@@ -113,6 +119,8 @@ public class PlayScreen implements Screen {
         cam.update(); // update camera
 
         game.batch.setProjectionMatrix(cam.combined);
+
+        hud.update(delta);
         playStage.act(delta);
         playStage.draw();
     }
