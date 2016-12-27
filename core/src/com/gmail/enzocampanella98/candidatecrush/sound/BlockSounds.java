@@ -1,12 +1,8 @@
 package com.gmail.enzocampanella98.candidatecrush.sound;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Array;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Created by Lorenzo Campanella on 7/30/2016.

@@ -17,6 +17,7 @@ public class Block extends Image {
     private BlockType blockType;
 
     private Texture texture;
+    private TextureRegion textureRegion;
 
 
     public Block(BlockType blockType, Texture texture, Vector2 initialPosition,
@@ -30,8 +31,8 @@ public class Block extends Image {
         setPosition(initialPosition.x, initialPosition.y);
 
         this.texture = texture;
-        TextureRegion myTextureRegion = new TextureRegion(texture);
-        super.setDrawable(new TextureRegionDrawable(myTextureRegion));
+        textureRegion = new TextureRegion(texture);
+        super.setDrawable(new TextureRegionDrawable(textureRegion));
 
         setWidth(width);
         setHeight(height);
@@ -86,6 +87,10 @@ public class Block extends Image {
 
     public Texture getTexture() {
         return texture;
+    }
+
+    public TextureRegion getTextureRegion() {
+        return textureRegion;
     }
 
     public static void flipRowAndCol(Block b1, Block b2) {

@@ -9,11 +9,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.action.MyInflaterAction;
+import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 import java.util.Random;
@@ -25,7 +24,7 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
  */
 public class Board extends Group {
 
-    private static final float SINGLE_BLOCK_DROP_TIME = .2f;
+    private static final float SINGLE_BLOCK_DROP_TIME = 1f;
 
     private static Array<BlockType> blockTypes;
 
@@ -219,10 +218,10 @@ public class Board extends Group {
 
             DelayAction da = new DelayAction(SINGLE_BLOCK_DROP_TIME * i);
 
-            MyInflaterAction sizeDownAction = new MyInflaterAction(0f);
+            MyBlockInflaterAction sizeDownAction = new MyBlockInflaterAction(0f);
             sizeDownAction.setDuration(0f);
 
-            MyInflaterAction sizeUpAction = new MyInflaterAction(b.getHeight());
+            MyBlockInflaterAction sizeUpAction = new MyBlockInflaterAction(b.getHeight());
             sizeUpAction.setDuration(SINGLE_BLOCK_DROP_TIME);
 
             MoveByAction mba = new MoveByAction();

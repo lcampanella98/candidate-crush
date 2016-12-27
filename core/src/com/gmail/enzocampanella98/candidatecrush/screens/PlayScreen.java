@@ -5,9 +5,6 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -20,8 +17,8 @@ import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.scenes.InGameHUD;
 
-import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
+import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 
 /**
  * Created by Lorenzo Campanella on 8/7/2016.
@@ -149,7 +146,7 @@ public class PlayScreen implements Screen {
     public void dispose() {
         playStage.dispose();
         font.dispose();
-        for(ObjectMap.Entry<BlockType, Texture> e : blockTextures) {
+        for (ObjectMap.Entry<BlockType, Texture> e : blockTextures) {
             e.value.dispose();
         }
         blockTextures.clear();

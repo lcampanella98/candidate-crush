@@ -3,12 +3,11 @@ package com.gmail.enzocampanella98.candidatecrush.action;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 /**
  * Created by Lorenzo Campanella on 12/19/2016.
  */
-public class MyInflaterAction extends Action {
+public class MyBlockInflaterAction extends Action {
 
     private float duration;
     private float time;
@@ -18,7 +17,7 @@ public class MyInflaterAction extends Action {
     private float h0;
     private float h;
 
-    public MyInflaterAction(float finalHeight) {
+    public MyBlockInflaterAction(float finalHeight) {
         super();
         started = finished = false;
         duration = 0f;
@@ -58,6 +57,7 @@ public class MyInflaterAction extends Action {
         h += delH;
 
         a.setHeight(h);
+
         a.setOrigin(prevOrigin.x, prevOrigin.y);
         return finished;
     }

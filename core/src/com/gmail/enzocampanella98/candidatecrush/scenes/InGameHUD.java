@@ -34,7 +34,7 @@ public class InGameHUD {
         font = gen.generateFont(param);
 
         // init table elements
-        scorePrefix = "Votes:";
+        scorePrefix = "Votes: ";
         labelStyle = new Label.LabelStyle(font, Color.BLACK);
         labelScoreLabel = new Label(scorePrefix, labelStyle);
         labelScore = new Label(Integer.toString(boardHandler.getScore()), labelStyle);
