@@ -24,7 +24,7 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
  */
 public class Board extends Group {
 
-    private static final float SINGLE_BLOCK_DROP_TIME = 1f;
+    private static final float SINGLE_BLOCK_DROP_TIME = .2f;
 
     private static Array<BlockType> blockTypes;
 
@@ -243,7 +243,7 @@ public class Board extends Group {
         b.addAction(Actions.moveBy(0, -blockSpacing * spaces, SINGLE_BLOCK_DROP_TIME * spaces));
     }
 
-    private boolean analyzeAndRefillBoard(final boolean userInvoked) {
+    private boolean analyzeAndAnimateBoard(final boolean userInvoked) {
 
         Array<BlockGroup> analysis = analyzeBoard(this);
         if (analysis.size > 0) { // there was a match
@@ -430,6 +430,7 @@ public class Board extends Group {
 
 
     private boolean shouldAnalyze;
+    private boolean gotMatches;
 
     private void handleInput(Vector2 mouse) {
 
@@ -437,7 +438,10 @@ public class Board extends Group {
             return;
         } else {
             if (shouldAnalyze) {
-                boolean gotMatches = analyzeAndRefillBoard(userFlippedBlocks);
+                gotMatches = analyzeAndAnimateBoard(userFlippedBlocks);
+                shouldAnalyze = false;
+                return;
+            } else {
                 if (gotMatches) {
                     refillBoard(blockGroups);
                     shouldAnalyze = true;
