@@ -1,8 +1,6 @@
 # candidate-crush
-crush candidates with vigor!
 
-This game uses libGDX.
-This branch Candidate Crush is still under development, but there is a working version in the master branch.
+This game is built in libGDX.
 
 Game Description:
 
