@@ -2,7 +2,6 @@ package com.gmail.enzocampanella98.candidatecrush.board;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.gmail.enzocampanella98.candidatecrush.sound.BlockSounds;
 
 /**
  * Created by Lorenzo Campanella on 6/2/2016.
@@ -17,16 +16,14 @@ public enum BlockType {
     BLANK();
 
     private boolean isEmpty;
-    private static final String SPRITE_ROOT = "img/block_sprites/";
+    private static final String SPRITE_ROOT = "data/img/block_sprites/";
     private String friendlyName, internalPath, lname;
-    private BlockSounds blockSounds;
 
     BlockType(String lname, String friendlyName) {
         this.lname = lname;
         this.internalPath = SPRITE_ROOT + lname + "_sprite.png";
         this.friendlyName = friendlyName;
         this.isEmpty = false;
-        setBlockSounds();
     }
 
     BlockType() {
@@ -44,14 +41,6 @@ public enum BlockType {
 
     public String getFriendlyName() {
         return friendlyName;
-    }
-
-    private void setBlockSounds() {
-        blockSounds = new BlockSounds(lname);
-    }
-
-    public BlockSounds getBlockSounds() {
-        return blockSounds;
     }
 
     public String getLname() {

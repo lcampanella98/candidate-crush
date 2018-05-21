@@ -52,7 +52,7 @@ public class Board extends Group {
         this.blockTextures = blockTextures;
         numBlocks = numBlocksAcross;
         createBoard();
-        setBoardHandler(100, 500, 2000, 1500);
+        setBoardHandler(100, 1000, 3000, 2000); // three, four, five, t-shape
         musicHandler = new MusicHandler();
     }
 
@@ -507,7 +507,7 @@ public class Board extends Group {
 
     private Block firstSelectedBlock, secondSelectedBlock;
 
-    private boolean userFlippedBlocks;
+    boolean userFlippedBlocks;
 
     private void flipBlocksAndAnimate(Block from, Block to) {
         if (to.getCol() == from.getCol()) {

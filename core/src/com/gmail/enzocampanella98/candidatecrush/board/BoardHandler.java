@@ -53,6 +53,9 @@ public class BoardHandler {
                     curScore = group.isJoinedGroup() ? scoreJoined : score5;
                     break;
             }
+            if (!board.userFlippedBlocks) {
+                curScore /= 10;
+            }
             totalScore += curScore;
         }
     }

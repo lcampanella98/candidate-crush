@@ -45,7 +45,7 @@ public class MenuScreen implements Screen{
         viewport = new FitViewport(CandidateCrush.V_WIDTH, CandidateCrush.V_HEIGHT, cam);
 
         // init font
-        FreeTypeFontGenerator fontGen = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ShareTechMono-Regular.ttf"));
+        FreeTypeFontGenerator fontGen = new FreeTypeFontGenerator(Gdx.files.internal("data/fonts/ShareTechMono-Regular.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
         param.size = 70;
         param.borderWidth = 2;
@@ -62,10 +62,10 @@ public class MenuScreen implements Screen{
         table.setFillParent(true);
 
         // init textures
-        texturebg = new Texture(Gdx.files.internal("img/general/menu_image_boxing.jpg"));
+        texturebg = new Texture(Gdx.files.internal("data/img/general/menu_image_boxing.jpg"));
 
         // init play button
-        TextureAtlas btnAtlas = new TextureAtlas("playbutton.pack");
+        TextureAtlas btnAtlas = new TextureAtlas("data/playbutton.pack");
         Skin skinPlay = new Skin(btnAtlas);
         ImageTextButton.ImageTextButtonStyle btnPlayStyle = new ImageTextButton.ImageTextButtonStyle();
         btnPlayStyle.up = skinPlay.getDrawable("skin-up");
