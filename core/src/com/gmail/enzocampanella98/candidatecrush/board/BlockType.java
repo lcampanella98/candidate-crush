@@ -2,6 +2,8 @@ package com.gmail.enzocampanella98.candidatecrush.board;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.utils.ObjectMap;
 
 /**
  * Created by Lorenzo Campanella on 6/2/2016.
@@ -64,5 +66,17 @@ public enum BlockType {
         for (BlockType t : values()) {
 //            t.getBlockSounds().dispose();
         }
+    }
+
+    // BE SURE TO DISPOSE WHEN DONE!
+    public static ObjectMap<BlockType, Texture> getBlockTextures() {
+        ObjectMap<BlockType, Texture> blockTextures = new ObjectMap<BlockType, Texture>();
+        for (BlockType b : BlockType.values()) {
+            Texture t;
+            if (b.equals(BlockType.BLANK)) continue;
+            t = new Texture(b.getInternalPath());
+            blockTextures.put(b, t);
+        }
+        return blockTextures;
     }
 }

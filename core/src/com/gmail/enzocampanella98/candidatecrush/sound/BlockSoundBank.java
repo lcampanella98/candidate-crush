@@ -15,6 +15,7 @@ public class BlockSoundBank {
     private BlockSoundBank() {
         initFilenames();
     }
+
     public static BlockSoundBank getInstance() {
         return instance;
     }

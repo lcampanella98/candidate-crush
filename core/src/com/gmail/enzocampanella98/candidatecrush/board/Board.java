@@ -11,11 +11,13 @@ import com.badlogic.gdx.scenes.scene2d.actions.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.Queue;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 import java.util.Random;
+import java.util.Stack;
 
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
@@ -43,8 +45,9 @@ public class Board extends Group {
 
     private float blockSpacing;
 
-    private Array<BlockGroup> blockGroups;
-    private BoardHandler boardHandler;
+    private Array<BlockGroup> blockGroups; // not set to null because we need it to animate
+
+    public Stack<Array<BlockGroup>> blockGroupsProcessStack; // enqueue every crush
 
 
     public Board(int numBlocksAcross, ObjectMap<BlockType, Texture> blockTextures) {
@@ -52,7 +55,6 @@ public class Board extends Group {
         this.blockTextures = blockTextures;
         numBlocks = numBlocksAcross;
         createBoard();
-        setBoardHandler(100, 1000, 3000, 2000); // three, four, five, t-shape
         musicHandler = new MusicHandler();
     }
 
@@ -75,6 +77,8 @@ public class Board extends Group {
         super.setWidth(boardWidth);
         super.setHeight(boardHeight);
         super.setOrigin(0, 0);
+
+        blockGroupsProcessStack = new Stack<Array<BlockGroup>>();
 
         Pixmap boardPixmap = new Pixmap(boardWidth, boardHeight, RGBA8888);
         boardPixmap.setColor(Color.BLUE);
@@ -105,27 +109,6 @@ public class Board extends Group {
         Vector2 mouse = screenToLocalCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
 
         this.handleInput(mouse);
-        boardHandler.update(delta);
-    }
-
-    public void setBoardHandler(int score3, int score4, int score5, int scoreJoined) {
-        boardHandler = new BoardHandler(this, score3, score4, score5, scoreJoined);
-    }
-
-    public BoardHandler getBoardHandler() {
-        return boardHandler;
-    }
-
-    public int getScore() {
-        return boardHandler.getScore();
-    }
-
-    public void setScore(int score) {
-        boardHandler.setScore(score);
-    }
-
-    public void resetScore() {
-        boardHandler.resetScore();
     }
 
     public Rectangle getBoardBounds() {
@@ -436,28 +419,31 @@ public class Board extends Group {
 
         if (doChildrenHaveActions()) {
             return;
+        }
+        if (shouldAnalyze) {
+            gotMatches = analyzeAndAnimateBoard(userFlippedBlocks); // crush
+            shouldAnalyze = false;
+            if (blockGroups != null) { // enqueue block groups only directly after crush
+                blockGroupsProcessStack.push(blockGroups);
+            }
+            return;
         } else {
-            if (shouldAnalyze) {
-                gotMatches = analyzeAndAnimateBoard(userFlippedBlocks);
-                shouldAnalyze = false;
-                return;
+            if (gotMatches) {
+                refillBoard(blockGroups); // we need blockGroups to animate the board in subsequent updates after crush
+                shouldAnalyze = true;
             } else {
-                if (gotMatches) {
-                    refillBoard(blockGroups);
-                    shouldAnalyze = true;
-                } else {
-                    if (userFlippedBlocks) {
-                        flipBlocksAndAnimate(secondSelectedBlock, firstSelectedBlock);
-                    }
-                    shouldAnalyze = false;
-                }
                 if (userFlippedBlocks) {
-                    firstSelectedBlock = null;
-                    secondSelectedBlock = null;
-                    userFlippedBlocks = false;
+                    flipBlocksAndAnimate(secondSelectedBlock, firstSelectedBlock);
                 }
+                shouldAnalyze = false;
+            }
+            if (userFlippedBlocks) {
+                firstSelectedBlock = null;
+                secondSelectedBlock = null;
+                userFlippedBlocks = false;
             }
         }
+
         boolean shouldProcessInput = !shouldAnalyze;
         if (shouldProcessInput) {
             if (Gdx.input.isTouched()) {
@@ -501,13 +487,13 @@ public class Board extends Group {
 
     }
 
-    Array<BlockGroup> getBlockGroups() {
-        return blockGroups;
+    public Stack<Array<BlockGroup>> getCrushStack() {
+        return blockGroupsProcessStack;
     }
 
     private Block firstSelectedBlock, secondSelectedBlock;
 
-    boolean userFlippedBlocks;
+    public boolean userFlippedBlocks;
 
     private void flipBlocksAndAnimate(Block from, Block to) {
         if (to.getCol() == from.getCol()) {

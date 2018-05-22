@@ -39,7 +39,7 @@ public class ArrayTools {
 
     public static <T> String getArrayString(Array<T> a) {
         String s = "{\n";
-        for (T t: a) {
+        for (T t : a) {
             s += t.toString() + " , ";
         }
         s += "\n}";
@@ -48,7 +48,7 @@ public class ArrayTools {
 
     public static <T> String getArrayString(T[] a) {
         String s = "{\n";
-        for (T t: a) {
+        for (T t : a) {
             s += t.toString() + " , ";
         }
         s += "\n}";

@@ -2,27 +2,33 @@ package com.gmail.enzocampanella98.candidatecrush.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.VoteTargetGameMode;
 
 /**
  * Created by lorenzo on 9/5/2016.
  */
-public class MenuScreen implements Screen{
+public class MenuScreen implements Screen {
 
     private CandidateCrush game;
     private Stage menuStage;
@@ -78,7 +84,11 @@ public class MenuScreen implements Screen{
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 dispose();
-                game.setScreen(new PlayScreen(game));
+
+                CandidateCrushPlayScreen playScreen = new CandidateCrushPlayScreen(game);
+                CCGameMode gameMode = new VoteTargetGameMode(playScreen.mainTable, 6, 40000);
+                playScreen.setGameMode(gameMode);
+                game.setScreen(playScreen);
             }
         });
 

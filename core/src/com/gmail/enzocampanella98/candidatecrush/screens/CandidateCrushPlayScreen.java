@@ -2,20 +2,20 @@ package com.gmail.enzocampanella98.candidatecrush.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
-import com.gmail.enzocampanella98.candidatecrush.board.Board;
-import com.gmail.enzocampanella98.candidatecrush.scenes.InGameHUD;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
@@ -23,10 +23,13 @@ import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 /**
  * Created by Lorenzo Campanella on 8/7/2016.
  */
-public class PlayScreen implements Screen {
 
-    private InGameHUD hud;
-    private CandidateCrush game;
+// TODO move most of this to Gamemode class
+public class CandidateCrushPlayScreen implements Screen {
+
+    private final CandidateCrush game;
+
+    private CCGameMode gameMode;
 
     private Viewport gameViewport;
     private OrthographicCamera cam;
@@ -35,30 +38,16 @@ public class PlayScreen implements Screen {
     private Pixmap bgMap;
     private Sprite s;
 
-    private BitmapFont font;
 
     private Stage playStage;
-    private Board gameBoard;
+    public Table mainTable;
+
     private Image tImage;
     private Label tLabelHello;
 
-    private ObjectMap<BlockType, Texture> blockTextures;
 
-    private static ObjectMap<BlockType, Texture> getBlockTextures() {
-        ObjectMap<BlockType, Texture> blockTextures = new ObjectMap<BlockType, Texture>();
-        for (BlockType b : BlockType.values()) {
-            Texture t;
-            if (b.equals(BlockType.BLANK)) continue;
-            t = new Texture(b.getInternalPath());
-            blockTextures.put(b, t);
-        }
-        return blockTextures;
-    }
-
-    public PlayScreen(CandidateCrush game) {
+    public CandidateCrushPlayScreen(CandidateCrush game) {
         this.game = game;
-
-        blockTextures = getBlockTextures();
 
         // init camera
         cam = new OrthographicCamera();
@@ -77,30 +66,17 @@ public class PlayScreen implements Screen {
         // init stage
         playStage = new Stage(gameViewport, game.batch);
 
-        // init gameBoard
-        gameBoard = new Board(8, blockTextures);
-
         // init mainTable
-        Table mainTable = new Table();
+        mainTable = new Table();
         mainTable.setFillParent(true);
-
-        // add board to main table
-        Table boardTable = new Table();
-        boardTable.add(gameBoard);
-
-        // init hud
-        Table hudTable = new Table();
-        hud = new InGameHUD(gameBoard.getBoardHandler(), hudTable);
-
-
-        // add tables to the mainTable
-        mainTable.add(boardTable);
-        mainTable.row();
-        mainTable.add(hudTable);
 
         // add main table to stage
         playStage.addActor(mainTable);
 
+    }
+
+    public void setGameMode(CCGameMode gameMode) {
+        this.gameMode = gameMode;
     }
 
     @Override
@@ -117,7 +93,8 @@ public class PlayScreen implements Screen {
 
         game.batch.setProjectionMatrix(cam.combined);
 
-        hud.update(delta);
+        gameMode.update(delta);
+
         playStage.act(delta);
         playStage.draw();
     }
@@ -144,14 +121,9 @@ public class PlayScreen implements Screen {
 
     @Override
     public void dispose() {
+        gameMode.dispose();
         playStage.dispose();
-        font.dispose();
-        for (ObjectMap.Entry<BlockType, Texture> e : blockTextures) {
-            e.value.dispose();
-        }
-        blockTextures.clear();
-        gameBoard.dispose();
-        s.getTexture().dispose();
         worldTexture.dispose();
     }
+
 }
