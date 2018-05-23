@@ -1,15 +1,15 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public abstract class CCTimeBasedGameMode extends CCGameMode {
 
     protected double t;
     protected double gameLength;
 
-    protected CCTimeBasedGameMode(Table table, double gameLength) {
-        super(table);
+    protected CCTimeBasedGameMode(Stage stage, double gameLength) {
+        super(stage);
         this.gameLength = gameLength;
         this.t = 0.0;
     }

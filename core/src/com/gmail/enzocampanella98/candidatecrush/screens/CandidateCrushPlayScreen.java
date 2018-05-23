@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -33,14 +34,14 @@ public class CandidateCrushPlayScreen implements Screen {
 
     private Viewport gameViewport;
     private OrthographicCamera cam;
+    private SpriteBatch hudBatch;
 
     private Texture worldTexture;
     private Pixmap bgMap;
     private Sprite s;
 
 
-    private Stage playStage;
-    public Table mainTable;
+    public Stage playStage;
 
     private Image tImage;
     private Label tLabelHello;
@@ -66,13 +67,6 @@ public class CandidateCrushPlayScreen implements Screen {
         // init stage
         playStage = new Stage(gameViewport, game.batch);
 
-        // init mainTable
-        mainTable = new Table();
-        mainTable.setFillParent(true);
-
-        // add main table to stage
-        playStage.addActor(mainTable);
-
     }
 
     public void setGameMode(CCGameMode gameMode) {
@@ -97,6 +91,8 @@ public class CandidateCrushPlayScreen implements Screen {
 
         playStage.act(delta);
         playStage.draw();
+
+        gameMode.drawHUD(delta);
     }
 
     @Override

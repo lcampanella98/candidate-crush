@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.Queue;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 import java.util.Random;
@@ -243,11 +244,9 @@ public class Board extends Group {
                 }
             }
             if (userInvoked) {
-                char maxLevel;
                 assert largestGroup != null;
-                maxLevel = largestGroup.isJoinedGroup() ? 't'
-                        : String.valueOf(largestGroup.getNumBlocks()).charAt(0);
-                musicHandler.playRandomMusic(largestGroup.getGroupBlockType(), maxLevel);
+                musicHandler.playRandomMusic(largestGroup.getGroupBlockType(),
+                        ScoringSystem.getCrushType(largestGroup));
             } else if (!musicHandler.isMusicPlaying()) musicHandler.playPopSound();
 
 

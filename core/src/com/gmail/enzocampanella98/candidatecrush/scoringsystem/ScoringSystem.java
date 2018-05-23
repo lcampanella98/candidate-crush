@@ -44,4 +44,12 @@ public abstract class ScoringSystem {
         crushValues.put(crushType, value);
     }
 
+    public static char getCrushType(BlockGroup blockGroup) {
+        int nBlocks = blockGroup.getNumBlocks();
+        if (nBlocks >= 5) return CRUSHTYPE_FIVE;
+        if (blockGroup.isJoinedGroup()) return CRUSHTYPE_T_SHAPE;
+        if (nBlocks == 4) return CRUSHTYPE_FOUR;
+        return CRUSHTYPE_THREE;
+    }
+
 }

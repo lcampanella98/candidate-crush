@@ -12,17 +12,21 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeButton;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.VoteTargetGameMode;
 
 /**
@@ -33,13 +37,18 @@ public class MenuScreen implements Screen {
     private CandidateCrush game;
     private Stage menuStage;
     private Table table;
-    private ImageTextButton btnPlay;
-    private Label titleLabel;
-    private BitmapFont font;
+
     private Viewport viewport;
     private OrthographicCamera cam;
+
+    private BitmapFont font;
     private Texture texturebg;
     private Sprite bgSprite;
+
+    private ImageTextButton btnPlay;
+    private Label titleLabel;
+
+    private Array<GameModeButton> gameModeButtons;
 
     public MenuScreen(final CandidateCrush game) {
         this.game = game;
@@ -70,6 +79,29 @@ public class MenuScreen implements Screen {
         // init textures
         texturebg = new Texture(Gdx.files.internal("data/img/general/menu_image_boxing.jpg"));
 
+        // init game mode selection buttons
+        gameModeButtons = new Array<GameModeButton>();
+
+        GameModeButton btnGameModeVoteTarget = new GameModeButton("Vote Target", CCGameMode.GameModeType.VOTE_TARGET);
+        gameModeButtons.add(btnGameModeVoteTarget);
+
+        GameModeButton btnGameModeRaceToWhitehouse = new GameModeButton("Race", CCGameMode.GameModeType.RACE_TO_WHITEHOUSE);
+        gameModeButtons.add(btnGameModeRaceToWhitehouse);
+
+        for (GameModeButton b : gameModeButtons) {
+            b.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    GameModeButton btn = (GameModeButton)actor;
+                    if (btn.isChecked()) {
+                        for (GameModeButton cur : gameModeButtons) {
+                            if (cur != btn) cur.setChecked(false);
+                        }
+                    }
+                }
+            });
+        }
+
         // init play button
         TextureAtlas btnAtlas = new TextureAtlas("data/playbutton.pack");
         Skin skinPlay = new Skin(btnAtlas);
@@ -78,19 +110,42 @@ public class MenuScreen implements Screen {
         btnPlayStyle.down = skinPlay.getDrawable("skin-down");
         btnPlayStyle.font = font;
         btnPlayStyle.fontColor = com.badlogic.gdx.graphics.Color.BLACK;
+
         btnPlay = new ImageTextButton("Start the Crush", btnPlayStyle);
         btnPlay.pad(50, 80, 50, 80);
+
         btnPlay.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 dispose();
 
-                CandidateCrushPlayScreen playScreen = new CandidateCrushPlayScreen(game);
-                CCGameMode gameMode = new VoteTargetGameMode(playScreen.mainTable, 6, 40000);
-                playScreen.setGameMode(gameMode);
-                game.setScreen(playScreen);
+                GameModeButton checkedButton = null;
+                for (GameModeButton b : gameModeButtons) {
+                    if (b.isChecked()) {
+                        checkedButton = b;
+                        break;
+                    }
+                }
+
+                if (checkedButton != null) {
+                    CandidateCrushPlayScreen playScreen = new CandidateCrushPlayScreen(game);
+                    CCGameMode gameMode = null;
+                    switch (checkedButton.getGameModeType()) {
+                        case RACE_TO_WHITEHOUSE:
+                            break;
+                        case VOTE_TARGET:
+                        default:
+                            gameMode = new VoteTargetGameMode(playScreen.playStage);
+                            break;
+                    }
+                    assert gameMode != null;
+                    playScreen.setGameMode(gameMode);
+                    game.setScreen(playScreen);
+                }
+
             }
         });
+
 
         // init title label
         Label.LabelStyle titleLabelStyle = new Label.LabelStyle(font, Color.WHITE);
@@ -100,7 +155,24 @@ public class MenuScreen implements Screen {
         table.center();
         table.add(titleLabel).padBottom(CandidateCrush.V_HEIGHT / 4);
         table.row();
-        table.add(btnPlay);
+
+        // add game mode selection buttons
+        Table gameModeTable = new Table();
+        int buttonsPerRow = 2;
+        int numButtonsInCurRow = 0;
+        for (GameModeButton b : gameModeButtons) {
+            if (numButtonsInCurRow >= buttonsPerRow) {
+                gameModeTable.row();
+                numButtonsInCurRow = 0;
+            }
+            gameModeTable.add(b).width(500).padLeft(10).padRight(10);
+            numButtonsInCurRow++;
+        }
+        table.add(gameModeTable);
+        table.row();
+
+        // add play button
+        table.add(btnPlay).padTop(200);
 
 
         bgSprite = new Sprite(texturebg);

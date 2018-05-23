@@ -5,31 +5,36 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.Queue;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockGroup;
+import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
+import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
 public class VoteTargetGameMode extends CCTimeBasedGameMode {
     private static int boardWidth = 8;
+    private static int defaultGameLength = 60; // 60 seconds
+    private static int defaultTargetScore = 20000;
 
     private ObjectMap<BlockType, Texture> blockTextures;
-    private HeadsUpDisplay hud;
 
     private VoteTargetScoringSystem scoringSystem;
     private int targetScore;
 
+    private Table mainTable;
 
-    public VoteTargetGameMode(Table table, double gameLength, int targetScore) {
-        super(table, gameLength);
+    public VoteTargetGameMode(Stage stage) {
+        this(stage, defaultGameLength, defaultTargetScore);
+    }
+
+    public VoteTargetGameMode(Stage stage, double gameLength, int targetScore) {
+        super(stage, gameLength);
 
         this.targetScore = targetScore;
         this.blockTextures = BlockType.getBlockTextures();
@@ -39,22 +44,19 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         double nonUserInvokedCrushScale = 1.0 / 5.0;
         this.scoringSystem = new VoteTargetScoringSystem(score3, score4, score5, scoreT, nonUserInvokedCrushScale);
 
+        this.mainTable = new Table();
+        this.mainTable.setFillParent(true);
 
-        // create and add HUD
+        // instantiate hud
         this.hud = new HeadsUpDisplay(this);
 
-        // add top of HUD
-        this.table.add(hud.getTopHUDTable());
-        this.table.row();
 
         // add board to main table
         Table boardTable = new Table();
         boardTable.add(board);
-        this.table.add(boardTable);
-        this.table.row();
+        this.mainTable.add(boardTable);
 
-        // add bottom part of HUD
-        this.table.add(hud.getBottomHUDTable());
+        this.stage.addActor(mainTable);
 
     }
 
@@ -79,7 +81,6 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         while (board.getCrushStack().size() > 0) {
             this.scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
         }
-        this.hud.updateLabels();
         if (this.scoringSystem.getUserScore() >= targetScore) { // WIN
             onGameEnd();
         }
@@ -93,13 +94,12 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         this.hud.dispose();
     }
 
-    private class HeadsUpDisplay implements Disposable {
+    private class HeadsUpDisplay extends HUD {
         private VoteTargetGameMode gameMode;
-        private Table topHUDTable;
-        private Table bottomHUDTable;
+        private Table table;
 
-        private BitmapFont font;
-        private Label.LabelStyle labelStyle;
+        private BitmapFont largeFont, medFont, smallFont;
+        private int largeFontSize = 120, medFontSize = 90, smallFontSize = 70;
 
         private Label labelScore;
         private Label labelTimeLeft;
@@ -111,44 +111,63 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
             // init font
             FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal("data/fonts/ShareTechMono-Regular.ttf"));
             FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-            param.size = 70;
             param.color = Color.BLACK;
-            font = gen.generateFont(param);
+
+            param.size = largeFontSize;
+            largeFont = gen.generateFont(param);
+
+            param.size = medFontSize;
+            medFont = gen.generateFont(param);
+
+            param.size = smallFontSize;
+            smallFont = gen.generateFont(param);
 
             // init table elements
-            labelStyle = new Label.LabelStyle(font, Color.BLACK);
+            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(medFont, Color.BLACK);
+            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(largeFont, Color.BLACK);
+            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(medFont, Color.BLACK);
 
-            labelScore = new Label(null, labelStyle);
-            labelTimeLeft = new Label(null, labelStyle);
-            labelTargetScore = new Label(null, labelStyle);
+            labelScore = new Label(null, scoreLabelStyle);
+            labelTimeLeft = new Label(null, timeLabelStyle);
+            labelTargetScore = new Label(null, targetLabelStyle);
 
             updateLabels();
 
-            topHUDTable = new Table();
-            topHUDTable.add(labelTimeLeft);
-            topHUDTable.row();
-            topHUDTable.add(labelTargetScore);
+            table = new Table();
+//            table.setDebug(true);
+            table.setFillParent(true);
+            table.top();
 
-            bottomHUDTable = new Table();
-            bottomHUDTable.add(labelScore);
-        }
+            table.add(labelTimeLeft).padTop(50).padBottom(100);
+            table.row();
+            table.add(labelTargetScore);
 
-        public Table getTopHUDTable() {
-            return topHUDTable;
-        }
+            table.row();
+            table.add(labelScore).padTop(80 + board.getHeight());
 
-        public Table getBottomHUDTable() {
-            return bottomHUDTable;
+            hudStage.addActor(table);
         }
 
         private void updateLabels() {
             labelScore.setText("Votes: " + getCommaSeparatedNumber(gameMode.scoringSystem.getUserScore()));
-            labelTargetScore.setText("Target Score: " + getCommaSeparatedNumber(gameMode.targetScore));
-            labelTimeLeft.setText("Time Left: " + ((int) Math.ceil(gameMode.getTimeLeft())));
+            labelTargetScore.setText("Target: " + getCommaSeparatedNumber(gameMode.targetScore));
+            labelTimeLeft.setText("" + ((int) Math.ceil(gameMode.getTimeLeft())));
         }
 
         public void dispose() {
-            font.dispose();
+            largeFont.dispose();
+            medFont.dispose();
+            smallFont.dispose();
+        }
+
+        @Override
+        public void render(float dt) {
+            hudCam.update();
+
+            updateLabels();
+
+            hudStage.act(dt);
+            hudStage.draw();
         }
     }
 }
