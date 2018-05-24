@@ -16,14 +16,18 @@ public class RaceToWhitehouseScoringSystem extends ScoringSystem {
 
     private List<Candidate> scores;
     private BlockType userBlockType;
+    private Candidate userCandidate;
 
     public RaceToWhitehouseScoringSystem(BlockType userBlockType, List<BlockType> blockTypes, int crushVal3, int crushVal4, int crushVal5, int crushValTShape) {
         super(crushVal3, crushVal4, crushVal5, crushValTShape);
         this.userBlockType = userBlockType;
 
         scores = new ArrayList<Candidate>();
+        Candidate c;
         for (BlockType b : blockTypes) {
+            c = new Candidate(b);
             scores.add(new Candidate(b));
+            if (b == userBlockType) userCandidate = c;
         }
     }
 
@@ -31,6 +35,10 @@ public class RaceToWhitehouseScoringSystem extends ScoringSystem {
         for (Candidate c : scores) {
             c.score = 0;
         }
+    }
+
+    public Candidate getUserCandidate() {
+        return userCandidate;
     }
 
     public List<Candidate> getScores() {
@@ -44,13 +52,23 @@ public class RaceToWhitehouseScoringSystem extends ScoringSystem {
             char crushType = getCrushType(crushedGroup);
             int val = getCrushValue(crushType);
             if (blockType == userBlockType && !wasUserInvoked) {
-                val /= 2;
+                val *= 0.8;
             }
             for (Candidate c : scores) {
-                if (c.type == blockType)
-                    c.score += val;
+                if (c.type == blockType) {
+                    if (userCandidate.score == 0) {
+                        c.score += val;
+                    } else {
+                        int diff = userCandidate.score - c.score;
+                        double diffProportion = ((double)diff) / userCandidate.score;
+                        double newVal = (1+diffProportion) * val;
+                        newVal = (((int)newVal) / 10) * 10.0;
+                        c.score += (int)newVal;
+                    }
+                }
             }
         }
         Collections.sort(scores);
+        Collections.reverse(scores);
     }
 }

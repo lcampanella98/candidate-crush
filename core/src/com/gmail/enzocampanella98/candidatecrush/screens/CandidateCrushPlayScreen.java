@@ -87,10 +87,12 @@ public class CandidateCrushPlayScreen implements Screen {
 
         game.batch.setProjectionMatrix(cam.combined);
 
+        gameMode.update(delta);
+
         playStage.act(delta);
         playStage.draw();
 
-        gameMode.update(delta);
+
         gameMode.drawHUD(delta);
     }
 

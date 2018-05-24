@@ -20,14 +20,12 @@ import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
+import java.util.Random;
 
 public class RaceToWhitehouseGameMode extends CCGameMode {
     private static int boardWidth = 8;
+    private static int defaultNumMoves = 20;
 
     private int numMoves;
     private BlockType userBlockType;
@@ -39,17 +37,21 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
     private Table mainTable;
     private int numMovesLeft;
 
-    public RaceToWhitehouseGameMode(Stage stage, int numMoves, BlockType userBlockType) {
+    public RaceToWhitehouseGameMode(Stage stage) {
+        this(stage, defaultNumMoves);
+    }
+
+    public RaceToWhitehouseGameMode(Stage stage, int numMoves) {
         super(stage);
 
         this.numMoves = numMoves;
-        this.userBlockType = userBlockType;
 
         this.blockTypes = new ArrayList<BlockType>(Arrays.asList(BlockType.values()));
         this.blockTypes.remove(BlockType.BLANK);
 
-        this.blockTextures = BlockType.getBlockTextures(this.blockTypes);
+        this.userBlockType = this.blockTypes.get(new Random().nextInt(blockTypes.size()));
 
+        this.blockTextures = BlockType.getBlockTextures(this.blockTypes);
 
         this.board = new Board(boardWidth, this.blockTypes, this.blockTextures);
 
@@ -60,6 +62,10 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
         this.mainTable = new Table();
         this.mainTable.setFillParent(true);
+
+        this.mainTable.add(board).center();
+
+        this.stage.addActor(this.mainTable);
 
         this.hud = new HeadsUpDisplay(this);
     }
@@ -86,11 +92,13 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
             onGameEnd();
             return;
         }
+        while (board.getCrushStack().size() > 0) {
+            this.scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
+        }
     }
 
     @Override
     public void dispose() {
-        System.out.println("disposed race game mode");
         this.board.dispose();
         this.hud.dispose();
         for (ObjectMap.Entry<BlockType, Texture> e : blockTextures) {
@@ -108,7 +116,6 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
         private Label labelNumMovesLeft;
 
-        private Table scoresTable;
         private ScoreTable topScoreTable;
         private ScoreTable[] otherScoreTables;
 
@@ -143,29 +150,24 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
                 otherScoreTables[i] = new ScoreTable(otherScoreLabelStyle);
             }
 
-            scoresTable = new Table();
-            scoresTable.setDebug(true);
-
-
-            updateLabels();
 
             table = new Table();
-            table.setDebug(true);
+//            table.setDebug(true);
             table.setFillParent(true);
-//            table.top();
+            table.top();
 
-            table.add(labelNumMovesLeft).padTop(50).padBottom(50).center();
+            table.add(labelNumMovesLeft).padTop(20).padBottom(20).center();
             table.row();
 
-            Texture userTexture = gameMode.blockTextures.get(gameMode.userBlockType);
+            Texture userTexture = this.gameMode.blockTextures.get(this.gameMode.userBlockType);
             Image userImg = new Image(userTexture);
-            userImg.scaleBy(3);
+            userImg.scaleBy(2.5f);
             userImg.setOrigin(Align.center);
 
-            table.add(userImg).padTop(200).center();
+            table.add(userImg).padTop(70).center();
             table.row();
 
-            table.add(topScoreTable).padTop(board.getHeight()).center();
+            table.add(topScoreTable).padTop(120+board.getHeight()).center();
             table.row();
 
             int numScoresPerRow = 3;
@@ -176,11 +178,14 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
                     otherScoresTable.row();
                     curScoresInRow = 0;
                 }
-                otherScoresTable.add(scoreTable).expandX();
+                otherScoresTable.add(scoreTable).expandX().padLeft(30).padRight(30);
             }
             table.add(otherScoresTable).center();
 
             hudStage.addActor(table);
+
+            updateLabels();
+
         }
 
         private void updateLabels() {
@@ -194,8 +199,8 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
             topScoreTable.getScoreLabel().setText(String.valueOf(topCandidate.score));
 
             for (int i = 0; i < scores.size() - 1 && i < otherScoreTables.length; ++i) {
-                otherScoreTables[i].getNameLabel().setText(scores.get(i+1).type.getFriendlyName());
-                otherScoreTables[i].getScoreLabel().setText(String.valueOf(scores.get(i+1).score));
+                otherScoreTables[i].getNameLabel().setText(scores.get(i + 1).type.getFriendlyName());
+                otherScoreTables[i].getScoreLabel().setText(String.valueOf(scores.get(i + 1).score));
             }
 
         }
@@ -220,6 +225,7 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
         private class ScoreTable extends Table {
             private Label nameLabel;
             private Label scoreLabel;
+
             public ScoreTable(Label.LabelStyle labelStyle) {
                 nameLabel = new Label(null, labelStyle);
                 scoreLabel = new Label(null, labelStyle);
@@ -238,8 +244,6 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
             }
         }
     }
-
-
 
 
 }

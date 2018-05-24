@@ -63,6 +63,7 @@ public class Board extends Group {
     }
 
     private void initBoard() {
+
         musicHandler = new MusicHandler();
 
         blocks = new Block[numBlocksAcross][numBlocksAcross];
@@ -106,6 +107,7 @@ public class Board extends Group {
             }
         }
         shouldAnalyze = true;
+
     }
 
     @Override
@@ -436,7 +438,8 @@ public class Board extends Group {
             shouldAnalyze = false;
             if (gotMatches) { // user crushed blocks
                 blockGroupsProcessStack.push(blockGroups); // enqueue block groups only directly after crush
-                numTotalCrushes++; // increment
+                if (userFlippedBlocks)
+                    numTotalCrushes++; // increment
             }
             return;
         } else {
@@ -552,7 +555,6 @@ public class Board extends Group {
     }
 
     public void dispose() {
-        System.out.println("dispose board");
         boardTexture.dispose();
     }
 }

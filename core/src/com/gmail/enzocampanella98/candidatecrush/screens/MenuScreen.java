@@ -136,8 +136,7 @@ public class MenuScreen implements Screen {
                     CCGameMode gameMode = null;
                     switch (checkedButton.getGameModeType()) {
                         case RACE_TO_WHITEHOUSE:
-                            gameMode = new RaceToWhitehouseGameMode(playScreen.playStage, 20,
-                                    BlockType.values()[new Random().nextInt(BlockType.values().length)]);
+                            gameMode = new RaceToWhitehouseGameMode(playScreen.playStage);
                             break;
                         case VOTE_TARGET:
                         default:
