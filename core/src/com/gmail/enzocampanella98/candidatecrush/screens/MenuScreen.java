@@ -25,9 +25,13 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeButton;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.RaceToWhitehouseGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.VoteTargetGameMode;
+
+import java.util.Random;
 
 /**
  * Created by lorenzo on 9/5/2016.
@@ -117,7 +121,6 @@ public class MenuScreen implements Screen {
         btnPlay.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                dispose();
 
                 GameModeButton checkedButton = null;
                 for (GameModeButton b : gameModeButtons) {
@@ -128,10 +131,13 @@ public class MenuScreen implements Screen {
                 }
 
                 if (checkedButton != null) {
+                    dispose();
                     CandidateCrushPlayScreen playScreen = new CandidateCrushPlayScreen(game);
                     CCGameMode gameMode = null;
                     switch (checkedButton.getGameModeType()) {
                         case RACE_TO_WHITEHOUSE:
+                            gameMode = new RaceToWhitehouseGameMode(playScreen.playStage, 20,
+                                    BlockType.values()[new Random().nextInt(BlockType.values().length)]);
                             break;
                         case VOTE_TARGET:
                         default:

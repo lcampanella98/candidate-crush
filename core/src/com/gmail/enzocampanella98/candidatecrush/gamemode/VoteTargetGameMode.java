@@ -9,11 +9,14 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
@@ -22,10 +25,11 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
     private static int defaultGameLength = 60; // 60 seconds
     private static int defaultTargetScore = 20000;
 
-    private ObjectMap<BlockType, Texture> blockTextures;
-
     private VoteTargetScoringSystem scoringSystem;
     private int targetScore;
+
+    private List<BlockType> blockTypes;
+    private ObjectMap<BlockType, Texture> blockTextures;
 
     private Table mainTable;
 
@@ -37,8 +41,13 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         super(stage, gameLength);
 
         this.targetScore = targetScore;
-        this.blockTextures = BlockType.getBlockTextures();
-        this.board = new Board(boardWidth, this.blockTextures);
+
+        this.blockTypes = new ArrayList<BlockType>(Arrays.asList(BlockType.values()));
+        this.blockTypes.remove(BlockType.BLANK);
+
+        this.blockTextures = BlockType.getBlockTextures(this.blockTypes);
+
+        this.board = new Board(boardWidth, this.blockTypes, this.blockTextures);
 
         int score3 = 100, score4 = 1000, score5 = 3000, scoreT = 2000;
         double nonUserInvokedCrushScale = 1.0 / 5.0;
@@ -67,17 +76,23 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
 
     @Override
     public void onGameEnd() {
+        if (super.isGameTimeUp()) { // LOSE
 
+        } else { // WIN
+
+        }
     }
 
     @Override
     public void update(float dt) {
         // call this after all acting of screen stage has been completed
-        super.advanceGameTime(dt);
         if (super.isGameTimeUp()) { // LOSE
             onGameEnd();
             return;
         }
+
+        super.advanceGameTime(dt);
+
         while (board.getCrushStack().size() > 0) {
             this.scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
         }
@@ -88,10 +103,12 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
 
     @Override
     public void dispose() {
+        this.hud.dispose();
+        this.board.dispose();
         for (ObjectMap.Entry<BlockType, Texture> e : blockTextures) {
             e.value.dispose(); // dispose of block textures
         }
-        this.hud.dispose();
+        blockTextures.clear();
     }
 
     private class HeadsUpDisplay extends HUD {

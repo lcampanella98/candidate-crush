@@ -11,35 +11,36 @@ import com.badlogic.gdx.scenes.scene2d.actions.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.Queue;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
-/**
- * Created by Lorenzo Campanella on 6/2/2016.
- */
+
+
 public class Board extends Group {
 
     private static final float SINGLE_BLOCK_DROP_TIME = .2f;
-
-    private static Array<BlockType> blockTypes;
 
     private Block[][] blocks;
 
     private Random random;
 
     private ObjectMap<BlockType, Texture> blockTextures;
+    private List<BlockType> blockTypes;
 
     private Texture boardTexture;
     private Rectangle boardBounds;
-    private int numBlocks;
+
+    private int numBlocksAcross;
 
     private MusicHandler musicHandler;
 
@@ -48,27 +49,30 @@ public class Board extends Group {
 
     private Array<BlockGroup> blockGroups; // not set to null because we need it to animate
 
-    public Stack<Array<BlockGroup>> blockGroupsProcessStack; // enqueue every crush
+    private Stack<Array<BlockGroup>> blockGroupsProcessStack; // push every crush
+
+    private int numTotalCrushes;
 
 
-    public Board(int numBlocksAcross, ObjectMap<BlockType, Texture> blockTextures) {
-        super();
+    public Board(int numBlocksAcross, List<BlockType> blockTypes, ObjectMap<BlockType, Texture> blockTextures) {
+        this.numBlocksAcross = numBlocksAcross;
+        this.blockTypes = blockTypes;
         this.blockTextures = blockTextures;
-        numBlocks = numBlocksAcross;
-        createBoard();
-        musicHandler = new MusicHandler();
+
+        initBoard();
     }
 
-    private void createBoard() {
-        blocks = new Block[numBlocks][numBlocks];
+    private void initBoard() {
+        musicHandler = new MusicHandler();
+
+        blocks = new Block[numBlocksAcross][numBlocksAcross];
         random = new Random();
-        if (blockTypes == null) {
-            blockTypes = new Array<BlockType>(BlockType.values());
-            blockTypes.removeValue(BlockType.BLANK, true);
-        }
+
+        this.numTotalCrushes = 0; // track number of user-invoked crushes
 
         int boardWidth = CandidateCrush.V_WIDTH;
         int boardX = (CandidateCrush.V_WIDTH - boardWidth) / 2;
+
         //noinspection SuspiciousNameCombination
         int boardHeight = boardWidth;
         int boardY = (CandidateCrush.V_HEIGHT - boardHeight) / 2;
@@ -89,7 +93,7 @@ public class Board extends Group {
         bgImage.setPosition(0, 0);
         bgImage.setFillParent(true);
         addActor(bgImage);
-        blockSpacing = (float) boardWidth / numBlocks;
+        blockSpacing = (float) boardWidth / numBlocksAcross;
 
         boardBounds = new Rectangle(0, 0,
                 boardWidth, boardHeight);
@@ -126,7 +130,7 @@ public class Board extends Group {
     }
 
     private Block getNewRandomBlock(int row, int col) {
-        return getNewBlock(row, col, blockTypes.get(random.nextInt(blockTypes.size)));
+        return getNewBlock(row, col, blockTypes.get(random.nextInt(blockTypes.size())));
     }
 
     private Block getNewBlock(int row, int col, BlockType blockType) {
@@ -410,6 +414,14 @@ public class Board extends Group {
         return false;
     }
 
+    public boolean isWaitingForInput() {
+        return !shouldAnalyze && !userFlippedBlocks && !doChildrenHaveActions();
+    }
+
+    public int getNumTotalUserCrushes() {
+        return numTotalCrushes;
+    }
+
 
     private boolean shouldAnalyze;
     private boolean gotMatches;
@@ -422,8 +434,9 @@ public class Board extends Group {
         if (shouldAnalyze) {
             gotMatches = analyzeAndAnimateBoard(userFlippedBlocks); // crush
             shouldAnalyze = false;
-            if (blockGroups != null) { // enqueue block groups only directly after crush
-                blockGroupsProcessStack.push(blockGroups);
+            if (gotMatches) { // user crushed blocks
+                blockGroupsProcessStack.push(blockGroups); // enqueue block groups only directly after crush
+                numTotalCrushes++; // increment
             }
             return;
         } else {
@@ -534,11 +547,12 @@ public class Board extends Group {
         } else return null;
     }
 
+    public List<BlockType> getBlockTypes() {
+        return this.blockTypes;
+    }
+
     public void dispose() {
+        System.out.println("dispose board");
         boardTexture.dispose();
-        for (ObjectMap.Entry<BlockType, Texture> e : blockTextures.entries()) {
-            e.value.dispose();
-        }
-        blockTextures.clear();
     }
 }

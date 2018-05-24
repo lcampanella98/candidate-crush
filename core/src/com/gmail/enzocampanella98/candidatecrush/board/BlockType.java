@@ -5,6 +5,10 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ObjectMap;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by Lorenzo Campanella on 6/2/2016.
  */
@@ -69,13 +73,20 @@ public enum BlockType {
     }
 
     // BE SURE TO DISPOSE WHEN DONE!
-    public static ObjectMap<BlockType, Texture> getBlockTextures() {
+    public static ObjectMap<BlockType, Texture> getAllBlockTextures() {
+        return getBlockTextures(new ArrayList<BlockType>(Arrays.asList(BlockType.values())));
+    }
+
+    public static ObjectMap<BlockType, Texture> getBlockTextures(List<BlockType> blockTypes) {
         ObjectMap<BlockType, Texture> blockTextures = new ObjectMap<BlockType, Texture>();
-        for (BlockType b : BlockType.values()) {
-            Texture t;
-            if (b.equals(BlockType.BLANK)) continue;
-            t = new Texture(b.getInternalPath());
-            blockTextures.put(b, t);
+        Texture t;
+        for (BlockType b : blockTypes) {
+            if (b.equals(BlockType.BLANK)) {
+                blockTextures.put(b, null);
+            } else {
+                t = new Texture(b.getInternalPath());
+                blockTextures.put(b, t);
+            }
         }
         return blockTextures;
     }
