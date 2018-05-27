@@ -107,7 +107,7 @@ public class Board extends Group {
             }
         }
         shouldAnalyze = true;
-
+        isInputPaused = false;
     }
 
     @Override
@@ -244,9 +244,15 @@ public class Board extends Group {
                 for (Block b : group.getGroup()) {
                     fadeBlockOut(b);
                 }
-                if (group.getNumBlocks() > largestGroupNumBlocks) {
-                    largestGroupNumBlocks = group.getNumBlocks();
-                    largestGroup = group;
+                if (group.getNumBlocks() >= largestGroupNumBlocks) {
+                    if (group.getNumBlocks() > largestGroupNumBlocks) {
+                        largestGroupNumBlocks = group.getNumBlocks();
+                        largestGroup = group;
+                    } else { // equal
+                        if (userFlippedBlocks && group.getGroupBlockType() == firstSelectedBlock.getBlockType()) {
+                            largestGroup = group;
+                        }
+                    }
                 }
             }
             if (userInvoked) {
@@ -429,6 +435,7 @@ public class Board extends Group {
     private boolean gotMatches;
 
     private void handleInput(Vector2 mouse) {
+        if (isInputPaused) return;
 
         if (doChildrenHaveActions()) {
             return;
@@ -556,5 +563,15 @@ public class Board extends Group {
 
     public void dispose() {
         boardTexture.dispose();
+    }
+
+    private boolean isInputPaused;
+
+    public void pauseInput() {
+        isInputPaused = true;
+    }
+
+    public void resumeInput() {
+        isInputPaused = false;
     }
 }

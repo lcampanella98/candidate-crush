@@ -1,10 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -12,11 +9,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.Candidate;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceToWhitehouseScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
+import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,12 +36,12 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
     private Table mainTable;
     private int numMovesLeft;
 
-    public RaceToWhitehouseGameMode(Stage stage) {
-        this(stage, defaultNumMoves);
+    public RaceToWhitehouseGameMode(CandidateCrush game, Stage stage) {
+        this(game, stage, defaultNumMoves);
     }
 
-    public RaceToWhitehouseGameMode(Stage stage, int numMoves) {
-        super(stage);
+    public RaceToWhitehouseGameMode(CandidateCrush game, Stage stage, int numMoves) {
+        super(game, stage);
 
         this.numMoves = numMoves;
 
@@ -68,6 +67,7 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
         this.stage.addActor(this.mainTable);
 
         this.hud = new HeadsUpDisplay(this);
+        setupInputMultiplexer();
     }
 
     public int getNumMovesLeft() {
@@ -79,16 +79,36 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
     }
 
+    private float messageTimer;
+
     @Override
     public void onGameEnd() {
+        this.board.pauseInput();
+        String msg;
+        if (win()) msg = "You win!";
+        else msg = "You lose!";
 
+        hud.addMessage(msg, hud.getFont(((HeadsUpDisplay) hud).largeFontSize));
+        messageTimer = 4;
+    }
+
+    protected boolean win() {
+        return isGameOver && scoringSystem.getScores().get(0).type == userBlockType;
     }
 
     @Override
     public void update(float dt) {
+        if (isGameOver) {
+            messageTimer -= dt;
+            if (messageTimer <= 0) {
+                game.getScreen().dispose();
+                game.setScreen(new MenuScreen(game));
+            }
+            return;
+        }
         numMovesLeft = numMoves - board.getNumTotalUserCrushes();
 
-        if (numMovesLeft >= 0 && board.isWaitingForInput()) {
+        if (numMovesLeft <= 0 && board.isWaitingForInput()) {
             onGameEnd();
             return;
         }
@@ -107,11 +127,8 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
         blockTextures.clear();
     }
 
-    private class HeadsUpDisplay extends HUD implements Disposable {
-        private RaceToWhitehouseGameMode gameMode;
-        private Table table;
+    protected class HeadsUpDisplay extends HUD implements Disposable {
 
-        private BitmapFont largeFont, medFont, smallFont;
         private int largeFontSize = 120, medFontSize = 60, smallFontSize = 40;
 
         private Label labelNumMovesLeft;
@@ -121,26 +138,15 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
 
         public HeadsUpDisplay(RaceToWhitehouseGameMode gameMode) {
-            this.gameMode = gameMode;
+            super(gameMode);
 
             // init font
-            FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal("data/fonts/ShareTechMono-Regular.ttf"));
-            FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-            param.color = Color.BLACK;
-
-            param.size = largeFontSize;
-            largeFont = gen.generateFont(param);
-
-            param.size = medFontSize;
-            medFont = gen.generateFont(param);
-
-            param.size = smallFontSize;
-            smallFont = gen.generateFont(param);
+            addFontSizes(new int[]{largeFontSize, medFontSize, smallFontSize});
 
             // init table elements
-            Label.LabelStyle topScoreLabelStyle = new Label.LabelStyle(medFont, Color.BLACK);
-            Label.LabelStyle numMovesLeftLabelStyle = new Label.LabelStyle(largeFont, Color.BLACK);
-            Label.LabelStyle otherScoreLabelStyle = new Label.LabelStyle(smallFont, Color.BLACK);
+            Label.LabelStyle topScoreLabelStyle = new Label.LabelStyle(getFont(medFontSize), Color.BLACK);
+            Label.LabelStyle numMovesLeftLabelStyle = new Label.LabelStyle(getFont(largeFontSize), Color.BLACK);
+            Label.LabelStyle otherScoreLabelStyle = new Label.LabelStyle(getFont(smallFontSize), Color.BLACK);
 
             labelNumMovesLeft = new Label(null, numMovesLeftLabelStyle);
 
@@ -152,22 +158,26 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
 
             table = new Table();
+
 //            table.setDebug(true);
             table.setFillParent(true);
             table.top();
 
-            table.add(labelNumMovesLeft).padTop(20).padBottom(20).center();
+            addExitButton();
+
+            table.add(labelNumMovesLeft).padBottom(20).center();
             table.row();
 
-            Texture userTexture = this.gameMode.blockTextures.get(this.gameMode.userBlockType);
+            Texture userTexture = ((RaceToWhitehouseGameMode) this.gameMode).blockTextures.get(
+                    ((RaceToWhitehouseGameMode) this.gameMode).userBlockType);
             Image userImg = new Image(userTexture);
-            userImg.scaleBy(2.5f);
+            userImg.scaleBy(2.2f);
             userImg.setOrigin(Align.center);
 
-            table.add(userImg).padTop(70).center();
+            table.add(userImg).padTop(50).center();
             table.row();
 
-            table.add(topScoreTable).padTop(120+board.getHeight()).center();
+            table.add(topScoreTable).padTop(120 + board.getHeight()).center().expandX();
             table.row();
 
             int numScoresPerRow = 3;
@@ -190,10 +200,10 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
         private void updateLabels() {
             // update num moves label
-            labelNumMovesLeft.setText(String.valueOf(gameMode.getNumMovesLeft()));
+            labelNumMovesLeft.setText(String.valueOf(((RaceToWhitehouseGameMode) gameMode).getNumMovesLeft()));
 
             // update scores labels
-            List<Candidate> scores = gameMode.scoringSystem.getScores();
+            List<Candidate> scores = ((RaceToWhitehouseGameMode) gameMode).scoringSystem.getScores();
             Candidate topCandidate = scores.get(0);
             topScoreTable.getNameLabel().setText(topCandidate.type.getFriendlyName());
             topScoreTable.getScoreLabel().setText(String.valueOf(topCandidate.score));
@@ -211,15 +221,14 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
             updateLabels();
 
+            if (hasMessage()) {
+                batch.begin();
+                drawCenteredMessage();
+                batch.end();
+            }
+
             hudStage.act(dt);
             hudStage.draw();
-        }
-
-        @Override
-        public void dispose() {
-            largeFont.dispose();
-            medFont.dispose();
-            smallFont.dispose();
         }
 
         private class ScoreTable extends Table {
@@ -229,6 +238,8 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
             public ScoreTable(Label.LabelStyle labelStyle) {
                 nameLabel = new Label(null, labelStyle);
                 scoreLabel = new Label(null, labelStyle);
+
+                setFillParent(false);
 
                 add(nameLabel);
                 row();

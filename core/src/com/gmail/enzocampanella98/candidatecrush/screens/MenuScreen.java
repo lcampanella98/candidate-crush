@@ -12,26 +12,21 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeButton;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.RaceToWhitehouseGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.VoteTargetGameMode;
-
-import java.util.Random;
 
 /**
  * Created by lorenzo on 9/5/2016.
@@ -96,7 +91,7 @@ public class MenuScreen implements Screen {
             b.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    GameModeButton btn = (GameModeButton)actor;
+                    GameModeButton btn = (GameModeButton) actor;
                     if (btn.isChecked()) {
                         for (GameModeButton cur : gameModeButtons) {
                             if (cur != btn) cur.setChecked(false);
@@ -136,11 +131,11 @@ public class MenuScreen implements Screen {
                     CCGameMode gameMode = null;
                     switch (checkedButton.getGameModeType()) {
                         case RACE_TO_WHITEHOUSE:
-                            gameMode = new RaceToWhitehouseGameMode(playScreen.playStage);
+                            gameMode = new RaceToWhitehouseGameMode(game, playScreen.playStage);
                             break;
                         case VOTE_TARGET:
                         default:
-                            gameMode = new VoteTargetGameMode(playScreen.playStage);
+                            gameMode = new VoteTargetGameMode(game, playScreen.playStage);
                             break;
                     }
                     assert gameMode != null;

@@ -1,6 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 
@@ -16,6 +17,7 @@ public class CandidateCrush extends Game {
     public void create() {
         batch = new SpriteBatch();
         setScreen(new MenuScreen(this));
+
     }
 
     @Override

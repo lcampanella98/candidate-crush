@@ -9,10 +9,12 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
+import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,12 +35,12 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
 
     private Table mainTable;
 
-    public VoteTargetGameMode(Stage stage) {
-        this(stage, defaultGameLength, defaultTargetScore);
+    public VoteTargetGameMode(CandidateCrush game, Stage stage) {
+        this(game, stage, defaultGameLength, defaultTargetScore);
     }
 
-    public VoteTargetGameMode(Stage stage, double gameLength, int targetScore) {
-        super(stage, gameLength);
+    public VoteTargetGameMode(CandidateCrush game, Stage stage, double gameLength, int targetScore) {
+        super(game, stage, gameLength);
 
         this.targetScore = targetScore;
 
@@ -58,6 +60,7 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
 
         // instantiate hud
         this.hud = new HeadsUpDisplay(this);
+        setupInputMultiplexer();
 
 
         // add board to main table
@@ -66,7 +69,6 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         this.mainTable.add(boardTable);
 
         this.stage.addActor(mainTable);
-
     }
 
     @Override
@@ -74,17 +76,35 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
 
     }
 
+    private float messageTimer;
+
     @Override
     public void onGameEnd() {
-        if (super.isGameTimeUp()) { // LOSE
+        this.isGameOver = true;
+        this.board.pauseInput();
+        String msg;
+        if (win()) msg = "You win!";
+        else msg = "You lose!";
 
-        } else { // WIN
+        hud.addMessage(msg, hud.getFont(((HeadsUpDisplay)hud).largeFontSize));
+        messageTimer = 5;
+    }
 
-        }
+    public boolean win() {
+        return isGameOver && !super.isGameTimeUp();
     }
 
     @Override
     public void update(float dt) {
+        if (isGameOver) {
+            messageTimer -= dt;
+            if (messageTimer <= 0) {
+                game.getScreen().dispose();
+                game.setScreen(new MenuScreen(game));
+            }
+            return;
+        };
+
         // call this after all acting of screen stage has been completed
         if (super.isGameTimeUp()) { // LOSE
             onGameEnd();
@@ -112,10 +132,7 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
     }
 
     private class HeadsUpDisplay extends HUD {
-        private VoteTargetGameMode gameMode;
-        private Table table;
 
-        private BitmapFont largeFont, medFont, smallFont;
         private int largeFontSize = 120, medFontSize = 90, smallFontSize = 70;
 
         private Label labelScore;
@@ -123,26 +140,15 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         private Label labelTargetScore;
 
         public HeadsUpDisplay(VoteTargetGameMode gameMode) {
-            this.gameMode = gameMode;
+            super(gameMode);
 
             // init font
-            FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal("data/fonts/ShareTechMono-Regular.ttf"));
-            FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-            param.color = Color.BLACK;
-
-            param.size = largeFontSize;
-            largeFont = gen.generateFont(param);
-
-            param.size = medFontSize;
-            medFont = gen.generateFont(param);
-
-            param.size = smallFontSize;
-            smallFont = gen.generateFont(param);
+            addFontSizes(new int[]{smallFontSize,medFontSize,largeFontSize});
 
             // init table elements
-            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(medFont, Color.BLACK);
-            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(largeFont, Color.BLACK);
-            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(medFont, Color.BLACK);
+            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(getFont(medFontSize), Color.BLACK);
+            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(getFont(largeFontSize), Color.BLACK);
+            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(getFont(medFontSize), Color.BLACK);
 
             labelScore = new Label(null, scoreLabelStyle);
             labelTimeLeft = new Label(null, timeLabelStyle);
@@ -155,33 +161,37 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
             table.setFillParent(true);
             table.top();
 
-            table.add(labelTimeLeft).padTop(50).padBottom(100);
+            addExitButton();
+
+            table.add(labelTimeLeft).padBottom(100);
             table.row();
             table.add(labelTargetScore);
 
             table.row();
-            table.add(labelScore).padTop(80 + board.getHeight());
+            table.add(labelScore).padTop(80 + board.getHeight()).expandX();
 
             hudStage.addActor(table);
         }
 
         private void updateLabels() {
+            VoteTargetGameMode gameMode = (VoteTargetGameMode) this.gameMode;
             labelScore.setText("Votes: " + getCommaSeparatedNumber(gameMode.scoringSystem.getUserScore()));
             labelTargetScore.setText("Target: " + getCommaSeparatedNumber(gameMode.targetScore));
             labelTimeLeft.setText("" + ((int) Math.ceil(gameMode.getTimeLeft())));
         }
 
-        public void dispose() {
-            largeFont.dispose();
-            medFont.dispose();
-            smallFont.dispose();
-        }
 
         @Override
         public void render(float dt) {
             hudCam.update();
 
             updateLabels();
+
+            if (hasMessage()) {
+                batch.begin();
+                drawCenteredMessage();
+                batch.end();
+            }
 
             hudStage.act(dt);
             hudStage.draw();

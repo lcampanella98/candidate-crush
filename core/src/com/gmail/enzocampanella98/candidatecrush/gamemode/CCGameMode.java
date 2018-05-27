@@ -1,9 +1,10 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Disposable;
+import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 
@@ -17,10 +18,16 @@ public abstract class CCGameMode implements Disposable {
     protected Stage stage;
     protected Board board;
     protected HUD hud;
+    protected CandidateCrush game;
+    protected InputMultiplexer inputMultiplexer;
+
+    protected boolean isGameOver;
 
 
-    protected CCGameMode(Stage stage) {
+    protected CCGameMode(CandidateCrush game, Stage stage) {
         this.stage = stage;
+        this.game = game;
+        isGameOver = false;
     }
 
     public abstract void onGameStart();
@@ -29,6 +36,16 @@ public abstract class CCGameMode implements Disposable {
 
     public abstract void update(float dt);
 
+    protected void setupInputMultiplexer() {
+        inputMultiplexer = new InputMultiplexer();
+        Gdx.input.setInputProcessor(inputMultiplexer);
+        inputMultiplexer.addProcessor(this.hud.hudStage);
+        inputMultiplexer.addProcessor(this.stage);
+    }
+
+    public CandidateCrush getGame() {
+        return game;
+    }
 
     public void drawHUD(float delta) {
         if (this.hud != null) {

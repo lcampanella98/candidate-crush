@@ -1,31 +1,133 @@
 package com.gmail.enzocampanella98.candidatecrush.screens;
 
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 
-public abstract class HUD implements Disposable{
+import java.util.HashMap;
+
+public abstract class HUD implements Disposable {
+
+    private static final String FONT_FILE = "data/fonts/ShareTechMono-Regular.ttf";
 
     protected Camera hudCam;
     protected Viewport hudViewport;
-    protected Stage hudStage;
     protected SpriteBatch batch;
+    protected Table table;
+    protected CCGameMode gameMode;
 
+    private HashMap<Integer, BitmapFont> fonts;
 
-    protected HUD() {
+    public Stage hudStage;
+
+    protected TextureAtlas btnExitAtlas;
+    protected ImageButton btnExit;
+
+    private String messageText;
+    private BitmapFont messageFont;
+
+    protected HUD(CCGameMode gameMode) {
+        this.gameMode = gameMode;
+
         hudCam = new OrthographicCamera();
-        hudViewport = new StretchViewport(CandidateCrush.V_WIDTH,CandidateCrush.V_HEIGHT,hudCam);
-        hudViewport.apply();
+        hudViewport = new FitViewport(CandidateCrush.V_WIDTH, CandidateCrush.V_HEIGHT, hudCam);
+        hudViewport.apply(false);
         batch = new SpriteBatch();
         hudStage = new Stage(hudViewport, batch);
+
+        fonts = new HashMap<Integer, BitmapFont>();
+    }
+
+    protected void addFontSize(int fontSize) {
+        FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal(FONT_FILE));
+        FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        param.color = Color.BLACK;
+        param.size = fontSize;
+        fonts.put(fontSize, gen.generateFont(param));
+        gen.dispose();
+    }
+
+    protected void addFontSizes(int[] sizes) {
+        FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal(FONT_FILE));
+        FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        param.color = Color.BLACK;
+        for (int fontSize : sizes) {
+            param.size = fontSize;
+            fonts.put(fontSize, gen.generateFont(param));
+        }
+        gen.dispose();
+    }
+
+    public BitmapFont getFont(int fontSize) {
+        return fonts.get(fontSize);
+    }
+
+    protected void addExitButton() {
+        // init exit button
+        btnExitAtlas = new TextureAtlas("data/img/button_skin/btn-exit.atlas");
+        Skin exitBtnSkin = new Skin(btnExitAtlas);
+        ImageButton.ImageButtonStyle btnExitStyle = new ImageButton.ImageButtonStyle();
+        btnExitStyle.up = exitBtnSkin.getDrawable("btn");
+        btnExitStyle.down = exitBtnSkin.getDrawable("btn");
+        btnExitStyle.over = exitBtnSkin.getDrawable("btn");
+
+        btnExit = new ImageButton(btnExitStyle);
+        btnExit.addListener(new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                gameMode.getGame().getScreen().dispose();
+                gameMode.getGame().setScreen(new MenuScreen(gameMode.getGame()));
+                return true;
+            }
+        });
+        if (table != null) {
+            table.add(btnExit).left();
+            table.row();
+        }
+    }
+
+    public void addMessage(String msg, BitmapFont font) {
+        this.messageText = msg;
+        this.messageFont = font;
+    }
+
+    public void clearMessage() {
+        this.messageText = null;
+        this.messageFont = null;
+    }
+
+    public boolean hasMessage() {
+        return messageFont != null && messageText != null;
+    }
+
+    public void drawCenteredMessage() {
+        GlyphLayout layout = new GlyphLayout(messageFont, messageText);
+        messageFont.draw(batch, messageText, CandidateCrush.V_WIDTH / 2 - layout.width / 2, CandidateCrush.V_HEIGHT / 2 - layout.height / 2);
     }
 
     public abstract void render(float dt);
+
+    public void dispose() {
+        if (btnExitAtlas != null) btnExitAtlas.dispose();
+        for (BitmapFont font : fonts.values()) font.dispose();
+    }
 
 }
