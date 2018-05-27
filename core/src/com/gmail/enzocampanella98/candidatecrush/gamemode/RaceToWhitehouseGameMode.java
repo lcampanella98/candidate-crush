@@ -24,7 +24,7 @@ import java.util.Random;
 
 public class RaceToWhitehouseGameMode extends CCGameMode {
     private static int boardWidth = 8;
-    private static int defaultNumMoves = 1;
+    private static int defaultNumMoves = 20;
 
     private int numMoves;
     private BlockType userBlockType;
@@ -90,7 +90,7 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
         else msg = "You lose!";
 
         hud.addMessage(msg, hud.getFont(((HeadsUpDisplay) hud).largeFontSize));
-        messageTimer = 4;
+        messageTimer = 5;
     }
 
     protected boolean win() {
