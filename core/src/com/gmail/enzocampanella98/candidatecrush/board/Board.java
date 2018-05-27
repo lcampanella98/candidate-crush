@@ -435,7 +435,6 @@ public class Board extends Group {
     private boolean gotMatches;
 
     private void handleInput(Vector2 mouse) {
-        if (isInputPaused) return;
 
         if (doChildrenHaveActions()) {
             return;
@@ -466,7 +465,7 @@ public class Board extends Group {
             }
         }
 
-        boolean shouldProcessInput = !shouldAnalyze;
+        boolean shouldProcessInput = !shouldAnalyze && !isInputPaused;
         if (shouldProcessInput) {
             if (Gdx.input.isTouched()) {
 

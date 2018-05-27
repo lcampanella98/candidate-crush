@@ -1,10 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -24,7 +21,7 @@ import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSe
 
 public class VoteTargetGameMode extends CCTimeBasedGameMode {
     private static int boardWidth = 8;
-    private static int defaultGameLength = 60; // 60 seconds
+    private static int defaultGameLength = 2; // 60 seconds
     private static int defaultTargetScore = 20000;
 
     private VoteTargetScoringSystem scoringSystem;
@@ -86,7 +83,7 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         if (win()) msg = "You win!";
         else msg = "You lose!";
 
-        hud.addMessage(msg, hud.getFont(((HeadsUpDisplay)hud).largeFontSize));
+        hud.addMessage(msg, hud.getFont(((HeadsUpDisplay) hud).largeFontSize));
         messageTimer = 5;
     }
 
@@ -103,7 +100,7 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
                 game.setScreen(new MenuScreen(game));
             }
             return;
-        };
+        }
 
         // call this after all acting of screen stage has been completed
         if (super.isGameTimeUp()) { // LOSE
@@ -143,7 +140,7 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
             super(gameMode);
 
             // init font
-            addFontSizes(new int[]{smallFontSize,medFontSize,largeFontSize});
+            addFontSizes(new int[]{smallFontSize, medFontSize, largeFontSize});
 
             // init table elements
             Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(getFont(medFontSize), Color.BLACK);
