@@ -25,7 +25,6 @@ import java.util.Stack;
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
 
-
 public class Board extends Group {
 
     private static final float SINGLE_BLOCK_DROP_TIME = .2f;
@@ -52,6 +51,7 @@ public class Board extends Group {
     private Stack<Array<BlockGroup>> blockGroupsProcessStack; // push every crush
 
     private int numTotalCrushes;
+    private float boardPad;
 
 
     public Board(int numBlocksAcross, List<BlockType> blockTypes, ObjectMap<BlockType, Texture> blockTextures) {
@@ -89,12 +89,15 @@ public class Board extends Group {
         Pixmap boardPixmap = new Pixmap(boardWidth, boardHeight, RGBA8888);
         boardPixmap.setColor(Color.BLUE);
         boardPixmap.fillRectangle(0, 0, boardWidth, boardHeight);
-        boardTexture = new Texture(boardPixmap);
+        String boardTexturePath = "data/img/general/board_bg.png";
+        boardTexture = new Texture(boardTexturePath);
         Image bgImage = new Image(boardTexture);
         bgImage.setPosition(0, 0);
         bgImage.setFillParent(true);
         addActor(bgImage);
-        blockSpacing = (float) boardWidth / numBlocksAcross;
+
+        this.boardPad = 23.0f;
+        blockSpacing = (boardWidth - 2 * boardPad) / numBlocksAcross;
 
         boardBounds = new Rectangle(0, 0,
                 boardWidth, boardHeight);
@@ -136,9 +139,12 @@ public class Board extends Group {
     }
 
     private Block getNewBlock(int row, int col, BlockType blockType) {
-        return new Block(blockType, blockTextures.get(blockType),
-                new Vector2(col * blockSpacing, row * blockSpacing),
+        return new Block(blockType, blockTextures.get(blockType), getBlockPosition(row, col),
                 blockSpacing, blockSpacing, row, col);
+    }
+
+    private Vector2 getBlockPosition(int row, int col) {
+        return new Vector2(boardPad + col * blockSpacing, boardPad + row * blockSpacing);
     }
 
     private Block[][] getBlocks() {
@@ -201,7 +207,7 @@ public class Board extends Group {
 
     private void animateFillDown(int col, int crushedBlocksInCol) {
         int numRows = blocks.length;
-        Vector2 initialBlockPosition = new Vector2(col * blockSpacing, boardBounds.getHeight());
+        Vector2 initialBlockPosition = getBlockPosition(numRows, col);
         for (int bottomRow = numRows - crushedBlocksInCol, i = 0; bottomRow + i < numRows; i++) {
             Block b = blocks[bottomRow + i][col];
             b.setPosition(initialBlockPosition.x, initialBlockPosition.y);
