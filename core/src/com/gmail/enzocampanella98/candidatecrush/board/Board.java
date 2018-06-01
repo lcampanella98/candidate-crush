@@ -367,57 +367,6 @@ public class Board extends Group {
         }
     }
 
-    private static boolean analysisCurrentBlock(
-            Block currentBlock, Array<BlockGroup> matches, Array<Block> currentString, int minLen, int numCols, boolean last) {
-        boolean added = false;
-        if (currentString.size > 0) {
-            if (currentBlock.getBlockType() == currentString.get(0).getBlockType()) {
-                currentString.add(currentBlock);
-                if (last && currentString.size >= minLen) {
-                    matches.add(new BlockGroup(currentString, numCols));
-                    added = true;
-                    currentString.clear();
-                }
-            } else {
-                if (currentString.size >= minLen) {
-                    matches.add(new BlockGroup(currentString, numCols));
-                    added = true;
-                }
-                currentString.clear();
-                currentString.add(currentBlock);
-            }
-        } else {
-            currentString.add(currentBlock);
-        }
-        return added;
-    }
-
-    private static void doAnalysisMerge(Array<BlockGroup> colGroups, Array<BlockGroup> groups) {
-        BlockGroup lastColGroup = colGroups.get(colGroups.size - 1);
-        BlockGroup merged = null;
-        boolean didMerge = false;
-        for (int i = 0; i < groups.size; i++) {
-            BlockGroup m;
-            if (didMerge) {
-                if (merged.getGroupBlockType() != groups.get(i).getGroupBlockType()) continue;
-                m = BlockGroup.getMergedGroup(merged, groups.get(i));
-            } else {
-                if (lastColGroup.getGroupBlockType() != groups.get(i).getGroupBlockType()) continue;
-                m = BlockGroup.getMergedGroup(lastColGroup, groups.get(i));
-            }
-            if (m != null) {
-                groups.removeIndex(i);
-                i--;
-                didMerge = true;
-                merged = m;
-            }
-        }
-        if (didMerge) {
-            groups.add(merged);
-            colGroups.removeValue(lastColGroup, true);
-        }
-    }
-
     private static Array<SimpleBlockGroup> analyzeBoard2(Board board) {
         int minCrushLen = 3;
         Array<SimpleBlockGroup> groups = new Array<SimpleBlockGroup>();
@@ -548,37 +497,6 @@ public class Board extends Group {
                 }
             }
         }
-        return groups;
-    }
-
-    private static Array<BlockGroup> analyzeBoard(Board board) {
-        int minLen = 3;
-        Array<BlockGroup> rowGroups = new Array<BlockGroup>();
-        Block[][] blocks = board.getBlocks();
-        int numCols = blocks[0].length;
-
-        for (Block[] row : blocks) {
-            Array<Block> currentString = new Array<Block>();
-            for (int c = 0; c < numCols; c++) {
-                Block currentBlock = row[c];
-                analysisCurrentBlock(currentBlock, rowGroups, currentString, minLen, numCols, c == numCols - 1);
-            }
-        }
-
-        Array<BlockGroup> colGroups = new Array<BlockGroup>();
-        Array<BlockGroup> groups = new Array<BlockGroup>(rowGroups);
-
-        for (int c = 0; c < numCols; c++) {
-            Array<Block> currentString = new Array<Block>();
-            for (int r = 0; r < blocks.length; r++) {
-                Block currentBlock = blocks[r][c];
-                if (analysisCurrentBlock(currentBlock, colGroups, currentString, minLen, numCols, r == blocks.length - 1)) {
-                    doAnalysisMerge(colGroups, groups);
-                }
-            }
-        }
-        groups.addAll(colGroups);
-
         return groups;
     }
 
