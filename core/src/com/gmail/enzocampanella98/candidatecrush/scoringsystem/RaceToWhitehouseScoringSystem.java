@@ -1,7 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush.scoringsystem;
 
 import com.badlogic.gdx.utils.Array;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockGroup;
+import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 
 import java.util.ArrayList;
@@ -46,9 +46,9 @@ public class RaceToWhitehouseScoringSystem extends ScoringSystem {
     }
 
     @Override
-    public void updateScore(Array<BlockGroup> crushedBlocks, boolean wasUserInvoked) {
-        for (BlockGroup crushedGroup : crushedBlocks) {
-            BlockType blockType = crushedGroup.getGroupBlockType();
+    public void updateScore(Array<SimpleBlockGroup> crushedBlocks, boolean wasUserInvoked) {
+        for (SimpleBlockGroup crushedGroup : crushedBlocks) {
+            BlockType blockType = crushedGroup.getType();
             char crushType = getCrushType(crushedGroup);
             int val = getCrushValue(crushType);
             if (blockType == userBlockType && !wasUserInvoked) {

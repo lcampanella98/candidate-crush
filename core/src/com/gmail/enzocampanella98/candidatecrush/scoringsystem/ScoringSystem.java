@@ -2,7 +2,7 @@ package com.gmail.enzocampanella98.candidatecrush.scoringsystem;
 
 
 import com.badlogic.gdx.utils.Array;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockGroup;
+import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 
 import java.util.HashMap;
 
@@ -34,7 +34,7 @@ public abstract class ScoringSystem {
         crushValues.put(CRUSHTYPE_T_SHAPE, crushValTShape);
     }
 
-    public abstract void updateScore(Array<BlockGroup> crushedBlocks, boolean wasUserInvoked);
+    public abstract void updateScore(Array<SimpleBlockGroup> crushedBlocks, boolean wasUserInvoked);
 
     public int getCrushValue(char crushType) {
         return crushValues.get(crushType);
@@ -44,10 +44,10 @@ public abstract class ScoringSystem {
         crushValues.put(crushType, value);
     }
 
-    public static char getCrushType(BlockGroup blockGroup) {
-        int nBlocks = blockGroup.getNumBlocks();
+    public static char getCrushType(SimpleBlockGroup blockGroup) {
+        int nBlocks = blockGroup.size();
+        if (blockGroup.isLShape()) return CRUSHTYPE_T_SHAPE;
         if (nBlocks >= 5) return CRUSHTYPE_FIVE;
-        if (blockGroup.isJoinedGroup()) return CRUSHTYPE_T_SHAPE;
         if (nBlocks == 4) return CRUSHTYPE_FOUR;
         return CRUSHTYPE_THREE;
     }

@@ -48,9 +48,9 @@ public class Board extends Group {
 
     private float blockSpacing;
 
-    private Array<BlockGroup> blockGroups; // not set to null because we need it to animate
+    private Array<SimpleBlockGroup> blockGroups; // not set to null because we need it to animate
 
-    private Stack<Array<BlockGroup>> blockGroupsProcessStack; // push every crush
+    private Stack<Array<SimpleBlockGroup>> blockGroupsProcessStack; // push every crush
 
     private int numTotalCrushes;
     private float boardPad;
@@ -88,7 +88,7 @@ public class Board extends Group {
         super.setHeight(boardHeight);
         super.setOrigin(0, 0);
 
-        blockGroupsProcessStack = new Stack<Array<BlockGroup>>();
+        blockGroupsProcessStack = new Stack<Array<SimpleBlockGroup>>();
 
         Pixmap boardPixmap = new Pixmap(boardWidth, boardHeight, RGBA8888);
         boardPixmap.setColor(Color.BLUE);
@@ -261,21 +261,21 @@ public class Board extends Group {
 
     private boolean analyzeAndAnimateBoard(final boolean userInvoked) {
 
-        Array<BlockGroup> analysis = analyzeBoard(this);
+        Array<SimpleBlockGroup> analysis = analyzeBoard2(this);
         if (analysis.size > 0) { // there was a match
             blockGroups = analysis;
             int largestGroupNumBlocks = 0;
-            BlockGroup largestGroup = null;
-            for (BlockGroup group : blockGroups) {
-                for (Block b : group.getGroup()) {
+            SimpleBlockGroup largestGroup = null;
+            for (SimpleBlockGroup group : blockGroups) {
+                for (Block b : group) {
                     fadeBlockOut(b);
                 }
-                if (group.getNumBlocks() >= largestGroupNumBlocks) {
-                    if (group.getNumBlocks() > largestGroupNumBlocks) {
-                        largestGroupNumBlocks = group.getNumBlocks();
+                if (group.size() >= largestGroupNumBlocks) {
+                    if (group.size() > largestGroupNumBlocks) {
+                        largestGroupNumBlocks = group.size();
                         largestGroup = group;
                     } else { // equal
-                        if (userFlippedBlocks && group.getGroupBlockType() == firstSelectedBlock.getBlockType()) {
+                        if (userFlippedBlocks && group.getType() == firstSelectedBlock.getBlockType()) {
                             largestGroup = group;
                         }
                     }
@@ -283,7 +283,7 @@ public class Board extends Group {
             }
             if (userInvoked) {
                 assert largestGroup != null;
-                musicHandler.playRandomMusic(largestGroup.getGroupBlockType(),
+                musicHandler.playRandomMusic(largestGroup.getType(),
                         ScoringSystem.getCrushType(largestGroup));
             } else if (!musicHandler.isMusicPlaying()) musicHandler.playPopSound();
 
@@ -316,12 +316,12 @@ public class Board extends Group {
         b.addAction(Actions.moveBy(0, -blockSpacing, SINGLE_BLOCK_DROP_TIME));
     }
 
-    private void refillBoard(Array<BlockGroup> groups) {
+    private void refillBoard(Array<SimpleBlockGroup> groups) {
         int numCols = blocks[0].length, numRows = blocks.length;
         int[] totalCrushedBlocksInCols = new int[numCols];
 
-        for (BlockGroup group : groups) {
-            for (Block b : group.getGroup()) {
+        for (SimpleBlockGroup group : groups) {
+            for (Block b : group) {
                 overwriteBlock(b.getRow(), b.getCol());
                 totalCrushedBlocksInCols[b.getCol()]++;
             }
@@ -408,9 +408,9 @@ public class Board extends Group {
         }
     }
 
-    private static List<SimpleBlockGroup> analyzeBoard2(Board board) {
+    private static Array<SimpleBlockGroup> analyzeBoard2(Board board) {
         int minCrushLen = 3;
-        List<SimpleBlockGroup> groups = new ArrayList<SimpleBlockGroup>();
+        Array<SimpleBlockGroup> groups = new Array<SimpleBlockGroup>();
         Block[][] blocks = board.blocks;
 
         for (Block[] row : blocks) {
@@ -420,7 +420,6 @@ public class Board extends Group {
             }
         }
 
-//        List<Block> curHorizontalString = new ArrayList<Block>();
         Block b;
         SimpleBlockGroup curGroup = new SimpleBlockGroup();
         for (int r = 0; r < blocks.length; ++r) {
@@ -659,7 +658,7 @@ public class Board extends Group {
 
     }
 
-    public Stack<Array<BlockGroup>> getCrushStack() {
+    public Stack<Array<SimpleBlockGroup>> getCrushStack() {
         return blockGroupsProcessStack;
     }
 
