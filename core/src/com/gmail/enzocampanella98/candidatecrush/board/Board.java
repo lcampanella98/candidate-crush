@@ -7,7 +7,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.actions.*;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
+import com.badlogic.gdx.scenes.scene2d.actions.MoveByAction;
+import com.badlogic.gdx.scenes.scene2d.actions.ParallelAction;
+import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
+import com.badlogic.gdx.scenes.scene2d.actions.VisibleAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
@@ -16,12 +21,12 @@ import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.Stack;
 
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
@@ -29,7 +34,7 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
 public class Board extends Group {
 
-    private static final float SINGLE_BLOCK_DROP_TIME = .2f;
+    private static final float SINGLE_BLOCK_DROP_TIME = .1f;
 
     private Block[][] blocks;
 
@@ -121,7 +126,10 @@ public class Board extends Group {
     public void act(float delta) {
         super.act(delta);
         Vector2 mouse = screenToLocalCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
-
+        if (time > 0) {
+            time -= delta;
+            return;
+        }
         this.handleInput(mouse);
     }
 
@@ -146,7 +154,7 @@ public class Board extends Group {
         if (blockTypeFrequencies != null) {
             double rand = random.nextDouble();
 
-            for (Map.Entry<BlockType,Double> freq : blockTypeFrequencies.entrySet()) {
+            for (Map.Entry<BlockType, Double> freq : blockTypeFrequencies.entrySet()) {
                 if (rand <= freq.getValue()) return freq.getKey();
                 rand -= freq.getValue();
             }
@@ -200,11 +208,13 @@ public class Board extends Group {
     }
 
     private boolean overwriteBlock(int row, int col) {
+        if (blocks[row][col] == null) {
+            boolean breakpoint = true;
+        }
         Block toOverwrite = blocks[row][col];
-        removeActor(toOverwrite);
         toOverwrite.clear();
-        toOverwrite.remove();
         blocks[row][col] = null;
+        removeActor(toOverwrite);
         return true;
     }
 
@@ -421,8 +431,9 @@ public class Board extends Group {
         }
 
         Block b;
-        SimpleBlockGroup curGroup = new SimpleBlockGroup();
+        SimpleBlockGroup curGroup;
         for (int r = 0; r < blocks.length; ++r) {
+            curGroup = new SimpleBlockGroup();
             for (int c = 0; c < blocks[r].length; ++c) {
                 b = blocks[r][c];
                 boolean typeMatch = curGroup.typeMatch(b);
@@ -438,17 +449,17 @@ public class Board extends Group {
                             // 3. look for l-shape
                             Block b1, b2;
                             for (int curCol = curGroup.minCol; curCol <= curGroup.maxCol; ++curCol) {
-                                if (    (r > 1
-                                                && curGroup.typeMatch((b1=blocks[r-1][curCol]))
-                                                && curGroup.typeMatch((b2=blocks[r-2][curCol])))
+                                if ((r > 1
+                                        && curGroup.typeMatch((b1 = blocks[r - 1][curCol]))
+                                        && curGroup.typeMatch((b2 = blocks[r - 2][curCol])))
                                         ||
                                         (r < blocks.length - 2
-                                                && curGroup.typeMatch((b1=blocks[r+1][curCol]))
-                                                && curGroup.typeMatch((b2=blocks[r+2][curCol])))
+                                                && curGroup.typeMatch((b1 = blocks[r + 1][curCol]))
+                                                && curGroup.typeMatch((b2 = blocks[r + 2][curCol])))
                                         ||
                                         (r > 0 && r < blocks.length - 1
-                                                && curGroup.typeMatch((b1=blocks[r+1][curCol]))
-                                                && curGroup.typeMatch((b2=blocks[r-1][curCol])))) {
+                                                && curGroup.typeMatch((b1 = blocks[r + 1][curCol]))
+                                                && curGroup.typeMatch((b2 = blocks[r - 1][curCol])))) {
                                     if (curGroup.size() == 4) {
                                         if (curCol == curGroup.minCol || curCol == curGroup.minCol + 1) {
                                             curGroup.remove(blocks[r][curGroup.maxCol]);
@@ -470,8 +481,8 @@ public class Board extends Group {
                 }
             }
         }
-        curGroup = new SimpleBlockGroup();
         for (int c = 0; c < blocks[0].length; ++c) {
+            curGroup = new SimpleBlockGroup();
             for (int r = 0; r < blocks.length; ++r) {
                 b = blocks[r][c];
                 boolean typeMatch = curGroup.typeMatch(b);
@@ -484,48 +495,56 @@ public class Board extends Group {
 
                     // 1. determine if it is a crush
                     if (curGroup.size() >= minCrushLen) {
-                        // 2. determine if any blocks in group already have a group
-                        SimpleBlockGroup mergeInto = null;
+                        // 2. determine if there are any horizontal groups attached
+                        Set<SimpleBlockGroup> attachedGroups = new HashSet<SimpleBlockGroup>();
                         for (Block b1 : curGroup) {
                             if (b1.blockGroup != null) {
-                                // we have some sort of l-shape joining the groups
-                                // consider merging the groups
-                                if (curGroup.size() < 5) {
-                                    if (curGroup.size() == 4) {
-                                        // we must remove one
-                                        Block toRemove;
-                                        if (b1.getRow() == curGroup.minRow || b1.getRow() == curGroup.minRow + 1) {
-                                            curGroup.remove((toRemove=blocks[curGroup.maxRow][b1.getCol()]));
-                                            toRemove.blockGroup = null;
-                                        } else {
-                                            curGroup.remove((toRemove=blocks[curGroup.minRow][b1.getCol()]));
-                                            toRemove.blockGroup = null;
-                                        }
+                                attachedGroups.add(b1.blockGroup);
+                            }
+                        }
+                        boolean shouldAddVerticalGroup = true;
+                        if (attachedGroups.size() > 0) {
+                            int fiveHorizontalCount = 0, lShapeCount = 0;
+                            for (SimpleBlockGroup g : attachedGroups) {
+                                if (g.isLShape()) ++lShapeCount;
+                                else ++fiveHorizontalCount;
+                            }
+                            if (fiveHorizontalCount > 0) {
+                                // keep all horizontal fives and remove all l-shapes
+                                for (SimpleBlockGroup g : attachedGroups) {
+                                    if (g.isLShape()) {
+                                        groups.removeValue(g, true);
+                                        for (Block block : g) block.blockGroup = null;
                                     }
-                                    if (b1.blockGroup.size() == 4) {
-                                        Block toRemove;
-                                        if (b1.getCol() == b1.blockGroup.minCol || b1.getCol() == b1.blockGroup.minCol + 1) {
-                                            curGroup.remove((toRemove=blocks[b1.getRow()][b1.blockGroup.maxCol]));
-                                            toRemove.blockGroup = null;
-                                        } else {
-                                            curGroup.remove((toRemove=blocks[b1.getRow()][b1.blockGroup.minCol]));
-                                            toRemove.blockGroup = null;
-                                        }
+                                }
+                                shouldAddVerticalGroup = false;
+                            } else if (curGroup.size() < 5) {
+                                // keep first l-shape we see and remove everything else
+                                SimpleBlockGroup toKeep = null;
+                                for (SimpleBlockGroup g : attachedGroups) {
+                                    if (toKeep == null) toKeep = g;
+                                    else {
+                                        groups.removeValue(g, true);
+                                        for (Block block : g) block.blockGroup = null;
                                     }
-                                    mergeInto = b1.blockGroup;
-                                    break;
+                                }
+                                shouldAddVerticalGroup = false;
+                            } else {
+                                shouldAddVerticalGroup = true;
+                                // remove all attached groups
+                                for (SimpleBlockGroup g : attachedGroups) {
+                                    groups.removeValue(g, true);
+                                    for (Block block : g) block.blockGroup = null;
                                 }
                             }
                         }
-                        if (mergeInto != null) {
-                            mergeInto.addAllFrom(curGroup);
-                        }
-                        else {
+                        if (shouldAddVerticalGroup) {
                             groups.add(curGroup);
+                            for (Block block : curGroup) block.blockGroup = curGroup;
                         }
-                        curGroup = new SimpleBlockGroup();
-                        if (typeMatch) curGroup.addBlock(b);
                     }
+                    curGroup = new SimpleBlockGroup();
+                    if (!typeMatch) curGroup.addBlock(b);
                 }
             }
         }
@@ -584,8 +603,9 @@ public class Board extends Group {
     private boolean shouldAnalyze;
     private boolean gotMatches;
 
-    private void handleInput(Vector2 mouse) {
+    private float time = 1;
 
+    private void handleInput(Vector2 mouse) {
         if (doChildrenHaveActions()) {
             return;
         }
