@@ -5,24 +5,27 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Disposable;
+import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 
 
-public class GameModeButton extends TextButton implements Disposable{
-    private static TextButtonStyle style = getButtonStyle();
+public class GameModeButton extends ImageTextButton implements Disposable{
+    private static ImageTextButtonStyle style = getButtonStyle();
 
-    private static TextureAtlas voteButtonAtlas;
+    private static Skin voteButtonSkin;
     private static BitmapFont font;
 
-    private static TextButtonStyle getButtonStyle() {
-        if (voteButtonAtlas == null) {
-            voteButtonAtlas = new TextureAtlas("data/img/button_skin/vote_button.atlas");
+    private static ImageTextButtonStyle getButtonStyle() {
+        if (voteButtonSkin == null) {
+            voteButtonSkin = new Skin(new TextureAtlas("data/img/button_skin/vote_button.atlas"));
         }
         if (font == null) {
             // init font
-            FreeTypeFontGenerator fontGen = new FreeTypeFontGenerator(Gdx.files.internal("data/fonts/ShareTechMono-Regular.ttf"));
+            FreeTypeFontGenerator fontGen = new FreeTypeFontGenerator(Gdx.files.internal(HUD.FONT_FILE));
             FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
             param.size = 50;
             param.borderWidth = 2;
@@ -30,9 +33,8 @@ public class GameModeButton extends TextButton implements Disposable{
             font = fontGen.generateFont(param);
             fontGen.dispose();
         }
-        Skin voteButtonSkin = new Skin(voteButtonAtlas);
 
-        TextButton.TextButtonStyle voteButtonStyle = new TextButton.TextButtonStyle();
+        ImageTextButton.ImageTextButtonStyle voteButtonStyle = new ImageTextButton.ImageTextButtonStyle();
         voteButtonStyle.checked = voteButtonSkin.getDrawable("btn-checked");
         voteButtonStyle.down = voteButtonSkin.getDrawable("btn-down");
         voteButtonStyle.up = voteButtonSkin.getDrawable("btn-up");
@@ -51,11 +53,15 @@ public class GameModeButton extends TextButton implements Disposable{
         return this.gameModeType;
     }
 
+    public float getHeightToWidthRatio() {
+        return voteButtonSkin.getDrawable("btn-checked").getMinHeight() / voteButtonSkin.getDrawable("btn-checked").getMinWidth();
+    }
+
     @Override
     public void dispose() {
-        if (voteButtonAtlas != null) {
-            voteButtonAtlas.dispose();
-            voteButtonAtlas = null;
+        if (voteButtonSkin != null) {
+            voteButtonSkin.dispose();
+            voteButtonSkin = null;
         }
         if (font != null) {
             font.dispose();

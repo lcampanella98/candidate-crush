@@ -18,7 +18,9 @@ import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Stack;
 
@@ -52,6 +54,8 @@ public class Board extends Group {
 
     private int numTotalCrushes;
     private float boardPad;
+
+    private HashMap<BlockType, Double> blockTypeFrequencies;
 
 
     public Board(int numBlocksAcross, List<BlockType> blockTypes, ObjectMap<BlockType, Texture> blockTextures) {
@@ -134,8 +138,24 @@ public class Board extends Group {
         }
     }
 
+    public void setBlockTypeFrequencies(HashMap<BlockType, Double> frequencies) {
+        this.blockTypeFrequencies = frequencies;
+    }
+
+    private BlockType getRandomBlockType() {
+        if (blockTypeFrequencies != null) {
+            double rand = random.nextDouble();
+
+            for (Map.Entry<BlockType,Double> freq : blockTypeFrequencies.entrySet()) {
+                if (rand <= freq.getValue()) return freq.getKey();
+                rand -= freq.getValue();
+            }
+        }
+        return blockTypes.get(random.nextInt(blockTypes.size()));
+    }
+
     private Block getNewRandomBlock(int row, int col) {
-        return getNewBlock(row, col, blockTypes.get(random.nextInt(blockTypes.size())));
+        return getNewBlock(row, col, getRandomBlockType());
     }
 
     private Block getNewBlock(int row, int col, BlockType blockType) {
@@ -386,6 +406,131 @@ public class Board extends Group {
             groups.add(merged);
             colGroups.removeValue(lastColGroup, true);
         }
+    }
+
+    private static List<SimpleBlockGroup> analyzeBoard2(Board board) {
+        int minCrushLen = 3;
+        List<SimpleBlockGroup> groups = new ArrayList<SimpleBlockGroup>();
+        Block[][] blocks = board.blocks;
+
+        for (Block[] row : blocks) {
+            for (Block b : row) { // clear
+                b.visited = false;
+                b.blockGroup = null;
+            }
+        }
+
+//        List<Block> curHorizontalString = new ArrayList<Block>();
+        Block b;
+        SimpleBlockGroup curGroup = new SimpleBlockGroup();
+        for (int r = 0; r < blocks.length; ++r) {
+            for (int c = 0; c < blocks[r].length; ++c) {
+                b = blocks[r][c];
+                boolean typeMatch = curGroup.typeMatch(b);
+                if (typeMatch) curGroup.addBlock(b);
+
+                if (!typeMatch || c == blocks[r].length - 1) {
+                    // terminate block group
+
+                    // 1. determine if it is a crush
+                    if (curGroup.size() >= minCrushLen) {
+                        // 2. determine whether to look for an l-shape
+                        if (curGroup.size() < 5) { // we don't look for l-shape for horizontal sizes >= 5
+                            // 3. look for l-shape
+                            Block b1, b2;
+                            for (int curCol = curGroup.minCol; curCol <= curGroup.maxCol; ++curCol) {
+                                if (    (r > 1
+                                                && curGroup.typeMatch((b1=blocks[r-1][curCol]))
+                                                && curGroup.typeMatch((b2=blocks[r-2][curCol])))
+                                        ||
+                                        (r < blocks.length - 2
+                                                && curGroup.typeMatch((b1=blocks[r+1][curCol]))
+                                                && curGroup.typeMatch((b2=blocks[r+2][curCol])))
+                                        ||
+                                        (r > 0 && r < blocks.length - 1
+                                                && curGroup.typeMatch((b1=blocks[r+1][curCol]))
+                                                && curGroup.typeMatch((b2=blocks[r-1][curCol])))) {
+                                    if (curGroup.size() == 4) {
+                                        if (curCol == curGroup.minCol || curCol == curGroup.minCol + 1) {
+                                            curGroup.remove(blocks[r][curGroup.maxCol]);
+                                        } else {
+                                            curGroup.remove(blocks[r][curGroup.minCol]);
+                                        }
+                                    }
+                                    curGroup.addBlock(b1);
+                                    curGroup.addBlock(b2);
+                                    break;
+                                }
+                            }
+                        }
+                        for (Block block : curGroup) block.blockGroup = curGroup;
+                        groups.add(curGroup);
+                    }
+                    curGroup = new SimpleBlockGroup();
+                    if (!typeMatch) curGroup.addBlock(b);
+                }
+            }
+        }
+        curGroup = new SimpleBlockGroup();
+        for (int c = 0; c < blocks[0].length; ++c) {
+            for (int r = 0; r < blocks.length; ++r) {
+                b = blocks[r][c];
+                boolean typeMatch = curGroup.typeMatch(b);
+                if (typeMatch) {
+                    curGroup.addBlock(b);
+                }
+
+                if (!typeMatch || r == blocks.length - 1) {
+                    // terminate current group
+
+                    // 1. determine if it is a crush
+                    if (curGroup.size() >= minCrushLen) {
+                        // 2. determine if any blocks in group already have a group
+                        SimpleBlockGroup mergeInto = null;
+                        for (Block b1 : curGroup) {
+                            if (b1.blockGroup != null) {
+                                // we have some sort of l-shape joining the groups
+                                // consider merging the groups
+                                if (curGroup.size() < 5) {
+                                    if (curGroup.size() == 4) {
+                                        // we must remove one
+                                        Block toRemove;
+                                        if (b1.getRow() == curGroup.minRow || b1.getRow() == curGroup.minRow + 1) {
+                                            curGroup.remove((toRemove=blocks[curGroup.maxRow][b1.getCol()]));
+                                            toRemove.blockGroup = null;
+                                        } else {
+                                            curGroup.remove((toRemove=blocks[curGroup.minRow][b1.getCol()]));
+                                            toRemove.blockGroup = null;
+                                        }
+                                    }
+                                    if (b1.blockGroup.size() == 4) {
+                                        Block toRemove;
+                                        if (b1.getCol() == b1.blockGroup.minCol || b1.getCol() == b1.blockGroup.minCol + 1) {
+                                            curGroup.remove((toRemove=blocks[b1.getRow()][b1.blockGroup.maxCol]));
+                                            toRemove.blockGroup = null;
+                                        } else {
+                                            curGroup.remove((toRemove=blocks[b1.getRow()][b1.blockGroup.minCol]));
+                                            toRemove.blockGroup = null;
+                                        }
+                                    }
+                                    mergeInto = b1.blockGroup;
+                                    break;
+                                }
+                            }
+                        }
+                        if (mergeInto != null) {
+                            mergeInto.addAllFrom(curGroup);
+                        }
+                        else {
+                            groups.add(curGroup);
+                        }
+                        curGroup = new SimpleBlockGroup();
+                        if (typeMatch) curGroup.addBlock(b);
+                    }
+                }
+            }
+        }
+        return groups;
     }
 
     private static Array<BlockGroup> analyzeBoard(Board board) {

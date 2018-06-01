@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -59,7 +60,7 @@ public class MenuScreen implements Screen {
         viewport = new FitViewport(CandidateCrush.V_WIDTH, CandidateCrush.V_HEIGHT, cam);
 
         // init font
-        FreeTypeFontGenerator fontGen = new FreeTypeFontGenerator(Gdx.files.internal("data/fonts/ShareTechMono-Regular.ttf"));
+        FreeTypeFontGenerator fontGen = new FreeTypeFontGenerator(Gdx.files.internal(HUD.FONT_FILE));
         FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
         param.size = 70;
         param.borderWidth = 2;
@@ -74,6 +75,7 @@ public class MenuScreen implements Screen {
         // init table
         table = new Table();
         table.setFillParent(true);
+//        table.setDebug(true);
 
         // init textures
         texturebg = new Texture(Gdx.files.internal("data/img/general/menu_image_boxing.jpg"));
@@ -165,7 +167,7 @@ public class MenuScreen implements Screen {
                 gameModeTable.row();
                 numButtonsInCurRow = 0;
             }
-            gameModeTable.add(b).width(500).padLeft(10).padRight(10);
+            gameModeTable.add(b).width(500f).height(500f * b.getHeightToWidthRatio()).padLeft(10f).padRight(10f);
             numButtonsInCurRow++;
         }
         table.add(gameModeTable);

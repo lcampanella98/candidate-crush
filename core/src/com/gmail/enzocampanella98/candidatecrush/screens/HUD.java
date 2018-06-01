@@ -26,7 +26,7 @@ import java.util.HashMap;
 
 public abstract class HUD implements Disposable {
 
-    private static final String FONT_FILE = "data/fonts/ShareTechMono-Regular.ttf";
+    public static final String FONT_FILE = "data/fonts/LibreFranklin-Bold.ttf";
 
     protected Camera hudCam;
     protected Viewport hudViewport;

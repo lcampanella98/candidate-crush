@@ -29,7 +29,6 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
     private int numMoves;
     private BlockType userBlockType;
     private List<BlockType> blockTypes;
-    private ObjectMap<BlockType, Texture> blockTextures;
 
     private RaceToWhitehouseScoringSystem scoringSystem;
 
@@ -58,6 +57,10 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
         this.scoringSystem = new RaceToWhitehouseScoringSystem(
                 userBlockType, this.blockTypes,
                 score3, score4, score5, scoreT);
+
+        // set background texture
+        String bg1 = "data/img/general/screen_bg_race.png";
+        this.backgroundTexture = new Texture(bg1);
 
         this.mainTable = new Table();
         this.mainTable.setFillParent(true);
@@ -116,16 +119,6 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
         while (board.getCrushStack().size() > 0) {
             this.scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
         }
-    }
-
-    @Override
-    public void dispose() {
-        this.board.dispose();
-        this.hud.dispose();
-        for (ObjectMap.Entry<BlockType, Texture> e : blockTextures) {
-            e.value.dispose(); // dispose of block textures
-        }
-        blockTextures.clear();
     }
 
     protected class HeadsUpDisplay extends HUD implements Disposable {

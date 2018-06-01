@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
@@ -28,7 +29,6 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
     private int targetScore;
 
     private List<BlockType> blockTypes;
-    private ObjectMap<BlockType, Texture> blockTextures;
 
     private Table mainTable;
 
@@ -51,6 +51,10 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         int score3 = 100, score4 = 1000, score5 = 3000, scoreT = 2000;
         double nonUserInvokedCrushScale = 1.0 / 5.0;
         this.scoringSystem = new VoteTargetScoringSystem(score3, score4, score5, scoreT, nonUserInvokedCrushScale);
+
+        // set background texture
+        String bg1 = "data/img/general/screen_bg_votetarget.png";
+        this.backgroundTexture = new Texture(bg1);
 
         this.mainTable = new Table();
         this.mainTable.setFillParent(true);
@@ -118,16 +122,6 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         }
     }
 
-    @Override
-    public void dispose() {
-        this.hud.dispose();
-        this.board.dispose();
-        for (ObjectMap.Entry<BlockType, Texture> e : blockTextures) {
-            e.value.dispose(); // dispose of block textures
-        }
-        blockTextures.clear();
-    }
-
     private class HeadsUpDisplay extends HUD {
 
         private int largeFontSize = 120, medFontSize = 90, smallFontSize = 70;
@@ -160,12 +154,12 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
 
             addExitButton();
 
-            table.add(labelTimeLeft).padBottom(100);
+            table.add(labelTimeLeft).padBottom(90);
             table.row();
             table.add(labelTargetScore);
 
             table.row();
-            table.add(labelScore).padTop(80 + board.getHeight()).expandX();
+            table.add(labelScore).padTop(35 + board.getHeight()).expandX();
 
             hudStage.addActor(table);
         }

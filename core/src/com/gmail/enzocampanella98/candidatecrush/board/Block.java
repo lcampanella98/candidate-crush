@@ -19,6 +19,9 @@ public class Block extends Image {
     private Texture texture;
     private TextureRegion textureRegion;
 
+    boolean visited; // used for traversing the board
+    SimpleBlockGroup blockGroup; // used for traversing the board
+
 
     public Block(BlockType blockType, Texture texture, Vector2 initialPosition,
                  float width, float height,
