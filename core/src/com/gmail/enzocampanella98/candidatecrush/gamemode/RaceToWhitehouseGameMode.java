@@ -2,6 +2,7 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -20,12 +21,15 @@ import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class RaceToWhitehouseGameMode extends CCGameMode {
     private static int boardWidth = 8;
     private static int defaultNumMoves = 20;
+    private static double defaultUserBlockFrequencyAdvantage = 0.1;
 
     private int numMoves;
     private BlockType userBlockType;
@@ -53,6 +57,17 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
         this.blockTextures = BlockType.getBlockTextures(this.blockTypes);
 
         this.board = new Board(boardWidth, this.blockTypes, this.blockTextures);
+        Map<BlockType, Double> blockFrequencies = new HashMap<BlockType, Double>();
+        double userBlockFrequency = 1.0/this.blockTypes.size() + defaultUserBlockFrequencyAdvantage;
+        double otherBlockFrequency = (1.0-userBlockFrequency)/(this.blockTypes.size()-1);
+        for (BlockType type : this.blockTypes) {
+            if (type == userBlockType) {
+                blockFrequencies.put(type, userBlockFrequency);
+            } else {
+                blockFrequencies.put(type, otherBlockFrequency);
+            }
+        }
+        this.board.setBlockTypeFrequencies(blockFrequencies);
 
         int score3 = 100, score4 = 1000, score5 = 3000, scoreT = 2000;
         this.scoringSystem = new RaceToWhitehouseScoringSystem(
@@ -89,11 +104,9 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
     public void onGameEnd() {
         isGameOver = true;
         this.board.pauseInput();
-        String msg;
-        if (win()) msg = "You win!";
-        else msg = "You lose!";
 
-        hud.addMessage(msg, hud.getFont(((HeadsUpDisplay) hud).largeFontSize));
+        ((HeadsUpDisplay)hud).showEndGameMessage(win());
+
         messageTimer = 5;
     }
 
@@ -206,6 +219,22 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
             updateLabels();
 
+        }
+
+        public void hideEndGameMessage() {
+            clearMessage();
+        }
+
+        public void showEndGameMessage(boolean win) {
+            String msg;
+            if (win) msg = "You win!";
+            else msg = "You lose!";
+
+            String endFont = "end-font";
+            if (!hasNamedFont(endFont))
+                addNewFont(largeFontSize, win ? Color.GREEN : Color.RED, endFont);
+
+            addMessage(msg, getFont(endFont));
         }
 
         private void updateLabels() {

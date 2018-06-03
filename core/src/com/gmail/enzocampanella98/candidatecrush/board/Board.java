@@ -60,7 +60,7 @@ public class Board extends Group {
     private int numTotalCrushes;
     private float boardPad;
 
-    private HashMap<BlockType, Double> blockTypeFrequencies;
+    private Map<BlockType, Double> blockTypeFrequencies;
 
 
     public Board(int numBlocksAcross, List<BlockType> blockTypes, ObjectMap<BlockType, Texture> blockTextures) {
@@ -146,7 +146,7 @@ public class Board extends Group {
         }
     }
 
-    public void setBlockTypeFrequencies(HashMap<BlockType, Double> frequencies) {
+    public void setBlockTypeFrequencies(Map<BlockType, Double> frequencies) {
         this.blockTypeFrequencies = frequencies;
     }
 

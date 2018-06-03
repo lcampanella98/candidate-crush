@@ -20,12 +20,17 @@ public class GameInfoBox extends Table implements Disposable {
     private Drawable bgDrawable;
 
     public GameInfoBox() {
-        if (bgTexture == null) bgTexture = new Texture(bgPath);
+        getTexture();
         TextureRegion region = new TextureRegion(bgTexture, bgTexture.getWidth(), bgTexture.getHeight());
         bgDrawable = new TextureRegionDrawable(region);
         bgDrawable.setMinHeight(0);
         bgDrawable.setMinWidth(0);
         setBackground(bgDrawable);
+    }
+
+    public static Texture getTexture() {
+        if (bgTexture == null) bgTexture = new Texture(bgPath);
+        return bgTexture;
     }
 
     @Override

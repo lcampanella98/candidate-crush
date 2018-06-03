@@ -21,7 +21,7 @@ import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSe
 
 public class VoteTargetGameMode extends CCTimeBasedGameMode {
     private static int boardWidth = 8;
-    private static int defaultGameLength = 60; // 60 seconds
+    private static int defaultGameLength = 2; // 60 seconds
     private static int defaultTargetScore = 20000;
 
     private VoteTargetScoringSystem scoringSystem;
@@ -82,11 +82,9 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
     public void onGameEnd() {
         this.isGameOver = true;
         this.board.pauseInput();
-        String msg;
-        if (win()) msg = "You win!";
-        else msg = "You lose!";
 
-        hud.addMessage(msg, hud.getFont(((HeadsUpDisplay) hud).largeFontSize));
+
+        ((HeadsUpDisplay)hud).showEndGameMessage(win());
         messageTimer = 5;
     }
 
@@ -176,6 +174,22 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
             table.add(infoBox).padTop(45 + board.getHeight()).expandX();
 
             hudStage.addActor(table);
+        }
+
+        public void hideEndGameMessage() {
+            clearMessage();
+        }
+
+        public void showEndGameMessage(boolean win) {
+            String msg;
+            if (win) msg = "You win!";
+            else msg = "You lose!";
+
+            String endFont = "end-font";
+            if (!hasNamedFont(endFont))
+                addNewFont(largeFontSize, win ? Color.GREEN : Color.RED, endFont);
+
+            addMessage(msg, getFont(endFont));
         }
 
         private void updateLabels() {
