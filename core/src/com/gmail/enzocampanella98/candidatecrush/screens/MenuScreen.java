@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -25,7 +24,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
-import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeButton;
+import com.gmail.enzocampanella98.candidatecrush.customui.GameModeButton;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.RaceToWhitehouseGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.VoteTargetGameMode;
 

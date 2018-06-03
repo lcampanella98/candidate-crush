@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
+import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
@@ -122,7 +123,7 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
 
     private class HeadsUpDisplay extends HUD {
 
-        private int largeFontSize = 120, medFontSize = 90, smallFontSize = 70;
+        private int largeFontSize = 100, medFontSize = 70, smallFontSize = 50;
 
         private Label labelScore;
         private Label labelTimeLeft;
@@ -152,12 +153,27 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
 
             addExitButton();
 
-            table.add(labelTimeLeft).padBottom(90);
-            table.row();
-            table.add(labelTargetScore);
+            GameInfoBox infoBox;
 
+            infoBox = new GameInfoBox();
+            infoBox.add(labelTimeLeft).pad(20f);
+            infoBox.pack();
+
+            table.add(infoBox).padBottom(35);
             table.row();
-            table.add(labelScore).padTop(35 + board.getHeight()).expandX();
+
+            infoBox = new GameInfoBox();
+            infoBox.add(labelTargetScore).pad(20f);
+            infoBox.pack();
+
+            table.add(infoBox);
+            table.row();
+
+            infoBox = new GameInfoBox();
+            infoBox.add(labelScore).pad(20f);
+            infoBox.pack();
+
+            table.add(infoBox).padTop(45 + board.getHeight()).expandX();
 
             hudStage.addActor(table);
         }

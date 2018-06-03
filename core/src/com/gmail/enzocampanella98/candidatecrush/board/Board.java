@@ -34,7 +34,7 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
 public class Board extends Group {
 
-    private static final float SINGLE_BLOCK_DROP_TIME = .1f;
+    private static final float SINGLE_BLOCK_DROP_TIME = .2f;
 
     private Block[][] blocks;
 
@@ -126,8 +126,8 @@ public class Board extends Group {
     public void act(float delta) {
         super.act(delta);
         Vector2 mouse = screenToLocalCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
-        if (time > 0) {
-            time -= delta;
+        if (initialWaitTime > 0) {
+            initialWaitTime -= delta;
             return;
         }
         this.handleInput(mouse);
@@ -521,7 +521,7 @@ public class Board extends Group {
     private boolean shouldAnalyze;
     private boolean gotMatches;
 
-    private float time = 1;
+    private float initialWaitTime = 0.5f;
 
     private void handleInput(Vector2 mouse) {
         if (doChildrenHaveActions()) {
