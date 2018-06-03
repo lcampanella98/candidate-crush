@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
+import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.Candidate;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceToWhitehouseScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
@@ -123,7 +124,7 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
     protected class HeadsUpDisplay extends HUD implements Disposable {
 
-        private int largeFontSize = 120, medFontSize = 60, smallFontSize = 40;
+        private int largeFontSize = 100, medFontSize = 60, smallFontSize = 40;
 
         private Label labelNumMovesLeft;
 
@@ -159,19 +160,29 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
             addExitButton();
 
-            table.add(labelNumMovesLeft).padBottom(20).center();
+            GameInfoBox infoBox;
+
+            infoBox = new GameInfoBox();
+            infoBox.add(labelNumMovesLeft).pad(10f);
+            infoBox.pack();
+
+            table.add(infoBox).padBottom(20).center();
             table.row();
 
             Texture userTexture = ((RaceToWhitehouseGameMode) this.gameMode).blockTextures.get(
                     ((RaceToWhitehouseGameMode) this.gameMode).userBlockType);
             Image userImg = new Image(userTexture);
-            userImg.scaleBy(2.2f);
+            userImg.scaleBy(2.1f);
             userImg.setOrigin(Align.center);
 
             table.add(userImg).padTop(50).center();
             table.row();
 
-            table.add(topScoreTable).padTop(120 + board.getHeight()).center().expandX();
+            infoBox = new GameInfoBox();
+            infoBox.add(topScoreTable).pad(20f);
+            infoBox.pack();
+
+            table.add(infoBox).padTop(100 + board.getHeight()).center().expandX();
             table.row();
 
             int numScoresPerRow = 3;
@@ -184,7 +195,12 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
                 }
                 otherScoresTable.add(scoreTable).expandX().padLeft(30).padRight(30);
             }
-            table.add(otherScoresTable).center();
+
+            infoBox = new GameInfoBox();
+            infoBox.add(otherScoresTable).pad(20f);
+            infoBox.pack();
+
+            table.add(infoBox).center().padTop(30f);
 
             hudStage.addActor(table);
 
