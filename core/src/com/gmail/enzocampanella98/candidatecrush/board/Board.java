@@ -409,6 +409,7 @@ public class Board extends Group {
                                         (r > 0 && r < blocks.length - 1
                                                 && curGroup.typeMatch((b1 = blocks[r + 1][curCol]))
                                                 && curGroup.typeMatch((b2 = blocks[r - 1][curCol])))) {
+                                    if (b1.blockGroup != null || b2.blockGroup != null) continue;
                                     if (curGroup.size() == 4) {
                                         if (curCol == curGroup.minCol || curCol == curGroup.minCol + 1) {
                                             curGroup.remove(blocks[r][curGroup.maxCol]);
