@@ -21,7 +21,7 @@ import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSe
 
 public class VoteTargetGameMode extends CCTimeBasedGameMode {
     private static int boardWidth = 8;
-    private static int defaultGameLength = 2; // 60 seconds
+    private static int defaultGameLength = 60; // 60 seconds
     private static int defaultTargetScore = 20000;
 
     private VoteTargetScoringSystem scoringSystem;
