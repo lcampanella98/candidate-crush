@@ -1,6 +1,11 @@
 package com.gmail.enzocampanella98.candidatecrush.board;
 
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectSet;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Lorenzo Campanella on 6/14/2016.
@@ -8,8 +13,7 @@ import com.badlogic.gdx.utils.Array;
 public class BlockGroup {
 
     private Array<Block> group;
-    private int[] numBlocksInCols, rowRange, colRange;
-    private Block[] topBlocks;
+    private int[] rowRange, colRange;
     private int numCols;
 
     public BlockGroup(Array<Block> group, int numCols) {
@@ -19,31 +23,14 @@ public class BlockGroup {
     public BlockGroup(int numCols) {
         this.numCols = numCols;
         this.group = new Array<Block>();
-        topBlocks = new Block[numCols];
-        numBlocksInCols = new int[numCols];
         rowRange = new int[]{~0, 0};
         colRange = new int[]{~0, 0};
     }
 
     public BlockType getGroupBlockType() {
         if (group.size > 0) {
-            return group.get(0).getBlockType();
+            return group.first().getBlockType();
         } else return null;
-    }
-
-    private void setColData() {
-        int topIndex = 0, topRow = -1;
-        for (int i = 0; i < group.size; i++) {
-            Block b = group.get(i);
-            numBlocksInCols[b.getCol()]++;
-            if (topBlocks[b.getCol()] == null) {
-                topBlocks[b.getCol()] = b;
-            } else {
-                if (b.getRow() > topBlocks[b.getCol()].getRow()) {
-                    topBlocks[b.getCol()] = b;
-                }
-            }
-        }
     }
 
     private void setRanges() {
@@ -72,20 +59,9 @@ public class BlockGroup {
     public void setGroup(Array<Block> group, int numCols) {
         this.numCols = numCols;
         this.group = new Array<Block>(group);
-        topBlocks = new Block[numCols];
-        numBlocksInCols = new int[numCols];
         rowRange = new int[]{Integer.MAX_VALUE, 0};
         colRange = new int[]{Integer.MAX_VALUE, 0};
-        setColData();
         setRanges();
-    }
-
-    public int[] getNumBlocksInCols() {
-        return numBlocksInCols;
-    }
-
-    public Block[] getTopBlocks() {
-        return topBlocks;
     }
 
     public Array<Block> getGroup() {
@@ -98,29 +74,21 @@ public class BlockGroup {
                 || (r1[0] >= r2[0] && r1[1] <= r2[1]);
     }
 
+    @Override
+    public String toString() {
+        return group.toString();
+    }
+
     public static BlockGroup getMergedGroup(BlockGroup group1, BlockGroup group2) {
-        if (group1.numCols != group2.numCols) return null;
 
-        if (!(areRangesOverlapping(group1.rowRange, group2.rowRange)
-                && areRangesOverlapping(group1.colRange, group2.colRange))) {
-            return null;
-        }
+        ObjectSet<Block> merged = new ObjectSet<Block>();
+        merged.addAll(group1.group);
+        merged.addAll(group2.group);
 
-        Block b1, b2;
-        //Array<Block> commonBlocks = new Array<Block>();
-        for (int i = 0; i < group1.group.size; i++) {
-            b1 = group1.group.get(i);
-            for (int j = 0; j < group2.group.size; j++) {
-                b2 = group2.group.get(j);
-                if (b1.getRow() == b2.getRow() && b1.getCol() == b2.getCol()) {
-                    //commonBlocks.add(b2);'
-                    Array<Block> group = new Array<Block>(group2.group);
-                    group.removeIndex(j);
-                    group.addAll(group1.group);
-                    return new BlockGroup(group, group1.numCols);
-                }
-            }
-        }
+        if (merged.size < group1.getNumBlocks() + group2.getNumBlocks())
+            return new BlockGroup(merged.iterator().toArray(),
+                    Math.max(group1.colRange[1], group2.colRange[1])
+                            - Math.min(group1.colRange[0], group2.colRange[0]));
         return null;
     }
 }

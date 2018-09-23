@@ -4,19 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
-import com.sun.org.apache.bcel.internal.generic.POP;
 
+import java.util.List;
 import java.util.Random;
 
-/**
- * Created by Lorenzo Campanella on 7/30/2016.
- */
+
 public class MusicHandler {
 
     private Random rand;
-    private static final String POP_SOUND_LOCATION = "sounds/effects/pop_sound.mp3";
+    private static final String POP_SOUND_LOCATION = "data/sounds/effects/pop_sound.mp3";
     private static Sound popSound;
     private Music lastPlayedMusic;
 
@@ -35,23 +32,21 @@ public class MusicHandler {
     }
 
     private FileHandle getRandomMusic(BlockType type, char level) {
-        Array<FileHandle> musicFileHandles = type.getBlockSounds().getSoundsArray(level);
-        if (musicFileHandles.size > 0) {
-            return musicFileHandles.get(rand.nextInt(musicFileHandles.size));
+        List<BlockSound> sounds = BlockSoundBank.getInstance().getBlockSounds(type.getLname(), level);
+        if (sounds.size() > 0) {
+            return sounds.get(rand.nextInt(sounds.size())).getFileHandle();
         } else return null;
     }
 
     public void playRandomMusic(BlockType type, char level) {
         FileHandle musicFileHandle = getRandomMusic(type, level);
-        if (musicFileHandle != null) {
-            lastPlayedMusic = Gdx.audio.newMusic(musicFileHandle);
-            lastPlayedMusic.play();
-            lastPlayedMusic.setOnCompletionListener(new Music.OnCompletionListener() {
-                @Override
-                public void onCompletion(Music music) {
-                    music.dispose();
-                }
-            });
-        }
+        lastPlayedMusic = Gdx.audio.newMusic(musicFileHandle);
+        lastPlayedMusic.play();
+        lastPlayedMusic.setOnCompletionListener(new Music.OnCompletionListener() {
+            @Override
+            public void onCompletion(Music music) {
+                music.dispose();
+            }
+        });
     }
 }

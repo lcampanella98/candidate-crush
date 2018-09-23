@@ -2,7 +2,12 @@ package com.gmail.enzocampanella98.candidatecrush.board;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.gmail.enzocampanella98.candidatecrush.sound.BlockSounds;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.utils.ObjectMap;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Lorenzo Campanella on 6/2/2016.
@@ -10,23 +15,21 @@ import com.gmail.enzocampanella98.candidatecrush.sound.BlockSounds;
 public enum BlockType {
 
     TRUMP("trump", "Donald Trump"),
-    //CLINTON("clinton", "Hillary Clinton"),
+    CLINTON("clinton", "Hillary Clinton"),
     SANDERS("sanders", "Bernie Sanders"),
     CRUZ("cruz", "Ted Cruz"),
-    MEZA("meza", "Daniel Meza"),
+    //MEZA("meza", "Daniel Meza"),
     BLANK();
 
     private boolean isEmpty;
-    private static final String SPRITE_ROOT = "img/block_sprites/";
+    private static final String SPRITE_ROOT = "data/img/block_sprites/";
     private String friendlyName, internalPath, lname;
-    private BlockSounds blockSounds;
 
     BlockType(String lname, String friendlyName) {
         this.lname = lname;
         this.internalPath = SPRITE_ROOT + lname + "_sprite.png";
         this.friendlyName = friendlyName;
         this.isEmpty = false;
-        setBlockSounds();
     }
 
     BlockType() {
@@ -44,14 +47,6 @@ public enum BlockType {
 
     public String getFriendlyName() {
         return friendlyName;
-    }
-
-    private void setBlockSounds() {
-        blockSounds = new BlockSounds(lname);
-    }
-
-    public BlockSounds getBlockSounds() {
-        return blockSounds;
     }
 
     public String getLname() {
@@ -75,5 +70,24 @@ public enum BlockType {
         for (BlockType t : values()) {
 //            t.getBlockSounds().dispose();
         }
+    }
+
+    // BE SURE TO DISPOSE WHEN DONE!
+    public static ObjectMap<BlockType, Texture> getAllBlockTextures() {
+        return getBlockTextures(new ArrayList<BlockType>(Arrays.asList(BlockType.values())));
+    }
+
+    public static ObjectMap<BlockType, Texture> getBlockTextures(List<BlockType> blockTypes) {
+        ObjectMap<BlockType, Texture> blockTextures = new ObjectMap<BlockType, Texture>();
+        Texture t;
+        for (BlockType b : blockTypes) {
+            if (b.equals(BlockType.BLANK)) {
+                blockTextures.put(b, null);
+            } else {
+                t = new Texture(b.getInternalPath());
+                blockTextures.put(b, t);
+            }
+        }
+        return blockTextures;
     }
 }

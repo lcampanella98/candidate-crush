@@ -4,172 +4,190 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
+import com.badlogic.gdx.scenes.scene2d.actions.MoveByAction;
+import com.badlogic.gdx.scenes.scene2d.actions.ParallelAction;
+import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
+import com.badlogic.gdx.scenes.scene2d.actions.VisibleAction;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.Queue;
-import com.gmail.enzocampanella98.candidatecrush.animation.BlockAnimation;
-import com.gmail.enzocampanella98.candidatecrush.animation.DisappearBlockAnimation;
-import com.gmail.enzocampanella98.candidatecrush.animation.FadeOutBlockAnimation;
-import com.gmail.enzocampanella98.candidatecrush.animation.TranslationBlockAnimation;
+import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
+import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.Stack;
 
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
-/**
- * Created by Lorenzo Campanella on 6/2/2016.
- */
-public class Board {
 
-    private static final float SINGLE_BLOCK_DROP_TIME = 0.20f;
-    private static final Vector2 DOWN_DIRECTION = new Vector2(0f, -1f);
+public class Board extends Group {
 
-    private static Array<BlockType> blockTypes;
+    private static final float SINGLE_BLOCK_DROP_TIME = .2f;
 
-    private Block[][] board;
+    private Block[][] blocks;
 
     private Random random;
 
-    static ObjectMap<BlockType, Texture> blockTextures;
-
-    private static Block testBlock;
-    private static Block[][] testBoard;
+    private ObjectMap<BlockType, Texture> blockTextures;
+    private List<BlockType> blockTypes;
 
     private Texture boardTexture;
     private Rectangle boardBounds;
-    private int boardWidth, boardHeight;
-    private int numBlocks;
-    private int width, height;
+
+    private int numBlocksAcross;
 
     private MusicHandler musicHandler;
 
-    private Queue<BoardTask> tasks;
 
-    float blockSpacing;
+    private float blockSpacing;
 
-    private BlockAnimation blockAnimation;
-    private Array<BlockGroup> blockGroups;
-    private BoardHandler boardHandler;
+    private Array<SimpleBlockGroup> blockGroups; // not set to null because we need it to animate
+
+    private Stack<Array<SimpleBlockGroup>> blockGroupsProcessStack; // push every crush
+
+    private int numTotalCrushes;
+    private float boardPad;
+
+    private Map<BlockType, Double> blockTypeFrequencies;
 
 
-    public Board(int numBlocks, ObjectMap<BlockType, Texture> blockTextures) {
-        Board.blockTextures = blockTextures;
-        this.numBlocks = numBlocks;
-        width = Gdx.graphics.getWidth();
-        height = Gdx.graphics.getHeight();
-        createBoard();
-        tasks = new Queue<BoardTask>();
-        musicHandler = new MusicHandler();
+    public Board(int numBlocksAcross, List<BlockType> blockTypes, ObjectMap<BlockType, Texture> blockTextures) {
+        this.numBlocksAcross = numBlocksAcross;
+        this.blockTypes = blockTypes;
+        this.blockTextures = blockTextures;
+
+        initBoard();
     }
 
-    private void createBoard() {
-        board = new Block[numBlocks][numBlocks];
-        random = new Random();
-        if (blockTypes == null) {
-            blockTypes = new Array<BlockType>(BlockType.values());
-            blockTypes.removeValue(BlockType.BLANK, true);
-        }
-        if (Gdx.graphics.getWidth() > Gdx.graphics.getHeight()) {
+    private void initBoard() {
 
-        }
-        boardWidth = (int) Math.round(Gdx.graphics.getHeight() * 0.8);
-        boardHeight = boardWidth;
+        musicHandler = new MusicHandler();
+
+        blocks = new Block[numBlocksAcross][numBlocksAcross];
+        random = new Random();
+
+        this.numTotalCrushes = 0; // track number of user-invoked crushes
+
+        int boardWidth = CandidateCrush.V_WIDTH;
+        int boardX = (CandidateCrush.V_WIDTH - boardWidth) / 2;
+
+        //noinspection SuspiciousNameCombination
+        int boardHeight = boardWidth;
+        int boardY = (CandidateCrush.V_HEIGHT - boardHeight) / 2;
+
+        //super.setPosition(boardX, boardY);
+
+        super.setWidth(boardWidth);
+        super.setHeight(boardHeight);
+        super.setOrigin(0, 0);
+
+        blockGroupsProcessStack = new Stack<Array<SimpleBlockGroup>>();
+
         Pixmap boardPixmap = new Pixmap(boardWidth, boardHeight, RGBA8888);
         boardPixmap.setColor(Color.BLUE);
         boardPixmap.fillRectangle(0, 0, boardWidth, boardHeight);
-        boardTexture = new Texture(boardPixmap);
+        String boardTexturePath = "data/img/general/board_bg.png";
+        boardTexture = new Texture(boardTexturePath);
+        Image bgImage = new Image(boardTexture);
+        bgImage.setPosition(0, 0);
+        bgImage.setFillParent(true);
+        addActor(bgImage);
 
-        int boardx = width / 2 - boardTexture.getWidth() / 2;
-        int boardy = height / 2 - boardTexture.getHeight() / 2;
-        blockSpacing = (float) boardWidth / numBlocks;
+        this.boardPad = 23.0f;
+        blockSpacing = (boardWidth - 2 * boardPad) / numBlocksAcross;
 
-        boardBounds = new Rectangle(boardx, boardy,
+        boardBounds = new Rectangle(0, 0,
                 boardWidth, boardHeight);
-        boardPixmap.dispose();
+
+
         populateRandomly();
-        /*testBlock = board[board.length-1][0];
-        animateFillDown(0, 1);
-        System.out.println("board created");*/
-        /*testBoard = new Block[][]{
-                {
-                        getNewBlock(0, 0, BlockType.TRUMP), getNewBlock(0, 1, BlockType.TRUMP), getNewBlock(0, 2, BlockType.OBAMA), getNewBlock(0, 3, BlockType.TRUMP)
-                },
-                {
-                        getNewBlock(1, 0, BlockType.CLINTON), getNewBlock(1, 1, BlockType.CLINTON), getNewBlock(1, 2, BlockType.TRUMP), getNewBlock(1, 3, BlockType.CLINTON)
-                },
-                {
-                        getNewBlock(2, 0, BlockType.SANDERS), getNewBlock(2, 1, BlockType.SANDERS), getNewBlock(2, 2, BlockType.TRUMP), getNewBlock(2, 3, BlockType.CLINTON)
-                },
-                {
-                        getNewBlock(3, 0, BlockType.OBAMA), getNewBlock(3, 1, BlockType.OBAMA), getNewBlock(3, 2, BlockType.SANDERS), getNewBlock(3, 3, BlockType.TRUMP)
-                }
-        };
-        board = testBoard;*/
+        for (Block[] row : blocks) {
+            for (Block b : row) {
+                addActor(b);
+            }
+        }
         shouldAnalyze = true;
-        shouldProcessInput = false;
+        isInputPaused = false;
     }
 
-    public void setBoardHandler(int score3, int score4, int score5, int scoreJoined) {
-        boardHandler = new BoardHandler(this, score3, score4, score5, scoreJoined);
-    }
-
-    public BoardHandler getBoardHandler() {
-        return boardHandler;
-    }
-
-    public int getScore() {
-        return boardHandler.getScore();
-    }
-
-    public void setScore(int score) {
-        boardHandler.setScore(score);
-    }
-
-    public void resetScore() {
-        boardHandler.resetScore();
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        Vector2 mouse = screenToLocalCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+        if (initialWaitTime > 0) {
+            initialWaitTime -= delta;
+            return;
+        }
+        this.handleInput(mouse);
     }
 
     public Rectangle getBoardBounds() {
         return boardBounds;
     }
 
-    public void populateRandomly() {
-        for (int i = 0; i < board.length; i++) {
-            board[i] = new Block[board.length];
-            for (int j = 0; j < board[i].length; j++) {
-                board[i][j] = getNewRandomBlock(i, j);
+    private void populateRandomly() {
+        for (int i = 0; i < blocks.length; i++) {
+            blocks[i] = new Block[blocks.length];
+            for (int j = 0; j < blocks[i].length; j++) {
+                blocks[i][j] = getNewRandomBlock(i, j);
             }
         }
     }
 
+    public void setBlockTypeFrequencies(Map<BlockType, Double> frequencies) {
+        this.blockTypeFrequencies = frequencies;
+    }
+
+    private BlockType getRandomBlockType() {
+        if (blockTypeFrequencies != null) {
+            double rand = random.nextDouble();
+
+            for (Map.Entry<BlockType, Double> freq : blockTypeFrequencies.entrySet()) {
+                if (rand <= freq.getValue()) return freq.getKey();
+                rand -= freq.getValue();
+            }
+        }
+        return blockTypes.get(random.nextInt(blockTypes.size()));
+    }
+
     private Block getNewRandomBlock(int row, int col) {
-        return getNewBlock(row, col, blockTypes.get(random.nextInt(blockTypes.size)));
+        return getNewBlock(row, col, getRandomBlockType());
     }
 
     private Block getNewBlock(int row, int col, BlockType blockType) {
-        return new Block(blockType,
-                new Vector2(boardBounds.x + col * blockSpacing,
-                        boardBounds.y + row * blockSpacing),
+        return new Block(blockType, blockTextures.get(blockType), getBlockPosition(row, col),
                 blockSpacing, blockSpacing, row, col);
     }
 
-    private Block[][] getBoard() {
-        return board;
+    private Vector2 getBlockPosition(int row, int col) {
+        return new Vector2(boardPad + col * blockSpacing, boardPad + row * blockSpacing);
+    }
+
+    private Block[][] getBlocks() {
+        return blocks;
     }
 
     private Array<Block> getRowArray(int row) {
-        return new Array<Block>(board[row]);
+        return new Array<Block>(blocks[row]);
     }
 
     private Array<Block> getColArray(int col) {
-        int numCols = board[0].length;
+        int numCols = blocks[0].length;
         Array<Block> colArray = new Array<Block>(numCols);
         for (int row = 0; row < numCols; row++) {
-            colArray.add(board[row][col]);
+            colArray.add(blocks[row][col]);
         }
         return colArray;
     }
@@ -181,143 +199,141 @@ public class Board {
     }
 
     private void flipBlocks(int i1, int j1, int i2, int j2) {
-        flipBlocks(board[i1][j1], board[i2][j2]);
+        flipBlocks(blocks[i1][j1], blocks[i2][j2]);
     }
 
     private void flipBlocks(Block b1, Block b2) {
-        flipElements(board, b1.getRow(), b1.getCol(), b2.getRow(), b2.getCol());
+        flipElements(blocks, b1.getRow(), b1.getCol(), b2.getRow(), b2.getCol());
         Block.flipRowAndCol(b1, b2);
     }
 
-    private void overwriteBlock(int row, int col) {
-        board[row][col] = null;
+    private boolean overwriteBlock(int row, int col) {
+        if (blocks[row][col] == null) {
+            boolean breakpoint = true;
+        }
+        Block toOverwrite = blocks[row][col];
+        toOverwrite.clear();
+        blocks[row][col] = null;
+        removeActor(toOverwrite);
+        return true;
     }
 
     private void moveBlock(int fromRow, int fromCol, int toRow, int toCol) {
         if (fromRow != fromCol || toRow != toCol) {
-            insertBlock(board[fromRow][fromCol], toRow, toCol);
-            overwriteBlock(fromRow, fromCol);
+            insertBlock(blocks[fromRow][fromCol], toRow, toCol);
+            blocks[fromRow][fromCol] = null;
         }
     }
 
     private void insertBlock(Block b, int row, int col) {
         b.setRowAndCol(row, col);
-        board[row][col] = b;
+        blocks[row][col] = b;
     }
 
     private void insertBlock(Block b) {
-        board[b.getRow()][b.getCol()] = b;
+        blocks[b.getRow()][b.getCol()] = b;
+        addActor(b);
     }
 
+    private void animateFillDown(int col, int crushedBlocksInCol) {
+        int numRows = blocks.length;
+        Vector2 initialBlockPosition = getBlockPosition(numRows, col);
+        for (int bottomRow = numRows - crushedBlocksInCol, i = 0; bottomRow + i < numRows; i++) {
+            Block b = blocks[bottomRow + i][col];
+            b.setPosition(initialBlockPosition.x, initialBlockPosition.y);
 
-    private void animateFillDown(int col, int space) {
-        int numRows = board.length;
-        Vector2 downDirection = new Vector2(0f, -1f);
-        Vector2 initialBlockPosition = new Vector2(boardBounds.x + col * blockSpacing,
-                boardBounds.y + boardBounds.getHeight());
-        for (int bottomRow = numRows - space, i = 0; i < space; i++) {
-            Block b = board[bottomRow + i][col];
-            b.setInitialPosition(initialBlockPosition);
-            b.resetPosition();
-            DisappearBlockAnimation dissapearAnimation = new DisappearBlockAnimation(
-                    SINGLE_BLOCK_DROP_TIME * i
-            );
-            Array<BlockAnimation> moveAnimations = new Array<BlockAnimation>();
-            moveAnimations.add(b.getDropDownCropBlockAnimation(SINGLE_BLOCK_DROP_TIME));
-            moveAnimations.add(
-                    new TranslationBlockAnimation(
-                            SINGLE_BLOCK_DROP_TIME * (space - i)
-                            , downDirection, (space - i) * blockSpacing)
-            );
-            b.addAnimation(dissapearAnimation);
-            b.addAnimation(moveAnimations);
+            DelayAction da = new DelayAction(SINGLE_BLOCK_DROP_TIME * i);
+
+            MyBlockInflaterAction sizeDownAction = new MyBlockInflaterAction(0f);
+            sizeDownAction.setDuration(0f);
+
+            MyBlockInflaterAction sizeUpAction = new MyBlockInflaterAction(b.getHeight());
+            sizeUpAction.setDuration(SINGLE_BLOCK_DROP_TIME);
+
+            MoveByAction mba = new MoveByAction();
+            mba.setAmount(0, -(crushedBlocksInCol - i) * blockSpacing);
+            mba.setDuration(SINGLE_BLOCK_DROP_TIME * (crushedBlocksInCol - i));
+
+            VisibleAction showA = new VisibleAction();
+            showA.setVisible(true);
+
+            ParallelAction pa = new ParallelAction(sizeUpAction, mba);
+
+            SequenceAction sa = new SequenceAction(da, sizeDownAction, showA, pa);
+            b.addAction(sa);
         }
     }
 
     private void shiftAndAnimateBlockDown(Block b, int spaces) {
         moveBlock(b.getRow(), b.getCol(), b.getRow() - spaces, b.getCol());
-        b.addAnimation(
-                new TranslationBlockAnimation(
-                        SINGLE_BLOCK_DROP_TIME * spaces, DOWN_DIRECTION, blockSpacing * spaces));
+        b.addAction(Actions.moveBy(0, -blockSpacing * spaces, SINGLE_BLOCK_DROP_TIME * spaces));
     }
 
-    private boolean analyzeAndRefillBoard(final boolean userInvoked) {
+    private boolean analyzeAndAnimateBoard(final boolean userInvoked) {
 
-        Array<BlockGroup> analysis = analyzeBoard(this);
+        Array<SimpleBlockGroup> analysis = analyzeBoard2(this);
         if (analysis.size > 0) { // there was a match
             blockGroups = analysis;
-            // add tasks
-            // task 1: make blocks fade out
-            addTask(new BoardTask() {
-                @Override
-                public void update(float dt) {
-                    if (wasStarted() && !isAnimating()) done();
+            int largestGroupNumBlocks = 0;
+            SimpleBlockGroup largestGroup = null;
+            for (SimpleBlockGroup group : blockGroups) {
+                for (Block b : group) {
+                    fadeBlockOut(b);
                 }
-
-                @Override
-                public void run() {
-                    start();
-                    int largestGroupNumBlocks = 0;
-                    BlockGroup largestGroup = null;
-                    for (BlockGroup group : blockGroups) {
-                        for (Block b : group.getGroup()) {
-                            fadeBlockOut(b);
-                        }
-                        if (group.getNumBlocks() > largestGroupNumBlocks) {
-                            largestGroupNumBlocks = group.getNumBlocks();
+                if (group.size() >= largestGroupNumBlocks) {
+                    if (group.size() > largestGroupNumBlocks) {
+                        largestGroupNumBlocks = group.size();
+                        largestGroup = group;
+                    } else { // equal
+                        if (userFlippedBlocks && group.getType() == firstSelectedBlock.getBlockType()) {
                             largestGroup = group;
                         }
                     }
-                    if (userInvoked) {
-                        char maxLevel;
-                        assert largestGroup != null;
-                        if (largestGroup.isJoinedGroup()) maxLevel = 't';
-                        else maxLevel = String.valueOf(largestGroup.getNumBlocks()).charAt(0);
-                        musicHandler.playRandomMusic(largestGroup.getGroupBlockType(), maxLevel);
-                    } else if (!musicHandler.isMusicPlaying()) musicHandler.playPopSound();
                 }
-            });
-            // task 2: delete faded blocks and fill in new blocks
-            addTask(new BoardTask() {
-                @Override
-                public void update(float dt) {
-                    if (wasStarted() && !isAnimating()) done();
-                }
+            }
+            if (userInvoked) {
+                assert largestGroup != null;
+                musicHandler.playRandomMusic(largestGroup.getType(),
+                        ScoringSystem.getCrushType(largestGroup));
+            } else if (!musicHandler.isMusicPlaying()) musicHandler.playPopSound();
 
-                @Override
-                public void run() {
-                    start();
-                    refillBoard(blockGroups);
-                }
-            });
 
             return true;
         } else { // there was no match
             blockGroups = null;
             return false;
         }
-
     }
+
 
     private void fadeBlockOut(Block b) {
-        float t = SINGLE_BLOCK_DROP_TIME;
-        Array<BlockAnimation> list = new Array<BlockAnimation>(2);
-        list.add(new TranslationBlockAnimation(t, new Vector2(1f, 1f), (float) (Math.hypot(b.getTextureWidth(), b.getTextureHeight()) / 2)));
-        list.add(new FadeOutBlockAnimation(t, b.getTextureWidth(), b.getTextureHeight()));
-        b.addAnimation(list);
+        b.addAction(Actions.scaleTo(0f, 0f, SINGLE_BLOCK_DROP_TIME));
     }
 
-    private void addTask(BoardTask task) {
-        tasks.addLast(task);
+    private void shiftBlockOneLeft(Block b) {
+        b.addAction(Actions.moveBy(-blockSpacing, 0, SINGLE_BLOCK_DROP_TIME));
     }
 
-    private void refillBoard(Array<BlockGroup> groups) {
-        int numCols = board[0].length, numRows = board.length;
-        int[] totalSpacesInCols = new int[numCols];
-        for (BlockGroup group : groups) {
-            for (Block b : group.getGroup()) {
+    private void shiftBlockOneRight(Block b) {
+        b.addAction(Actions.moveBy(blockSpacing, 0, SINGLE_BLOCK_DROP_TIME));
+    }
+
+    private void shiftBlockOneUp(Block b) {
+        b.addAction(Actions.moveBy(0, blockSpacing, SINGLE_BLOCK_DROP_TIME));
+    }
+
+    private void shiftBlockOneDown(Block b) {
+        b.addAction(Actions.moveBy(0, -blockSpacing, SINGLE_BLOCK_DROP_TIME));
+    }
+
+    private void refillBoard(Array<SimpleBlockGroup> groups) {
+        int numCols = blocks[0].length, numRows = blocks.length;
+        int[] totalCrushedBlocksInCols = new int[numCols];
+
+        for (SimpleBlockGroup group : groups) {
+            for (Block b : group) {
                 overwriteBlock(b.getRow(), b.getCol());
-                totalSpacesInCols[b.getCol()]++;
+                totalCrushedBlocksInCols[b.getCol()]++;
             }
         }
         for (int col = 0; col < numCols; col++) {
@@ -341,262 +357,309 @@ public class Board {
 
         }
         for (int col = 0; col < numCols; col++) {
-            int spaces = totalSpacesInCols[col];
-            for (int row = numRows - spaces; row < numRows; row++) {
+            int crushedBlocksInCol = totalCrushedBlocksInCols[col];
+            for (int row = numRows - crushedBlocksInCol; row < numRows; row++) {
                 Block fillBlock = getNewRandomBlock(row, col);
+                fillBlock.setVisible(false);
                 insertBlock(fillBlock);
             }
-            animateFillDown(col, spaces);
+            animateFillDown(col, crushedBlocksInCol);
         }
     }
 
-    private static void analysisCurrentBlock(
-            Block currentBlock, Array<BlockGroup> matches, Array<Block> currentString, int minLen, int numCols) {
-        if (currentString.size > 0) {
-            if (currentBlock.getBlockType() == currentString.get(0).getBlockType()) {
-                currentString.add(currentBlock);
-            } else {
-                if (currentString.size >= minLen) {
-                    matches.add(new BlockGroup(currentString, numCols));
+    private static Array<SimpleBlockGroup> analyzeBoard2(Board board) {
+        int minCrushLen = 3;
+        Array<SimpleBlockGroup> groups = new Array<SimpleBlockGroup>();
+        Block[][] blocks = board.blocks;
+
+        for (Block[] row : blocks) {
+            for (Block b : row) { // clear
+                b.visited = false;
+                b.blockGroup = null;
+            }
+        }
+
+        Block b;
+        SimpleBlockGroup curGroup;
+        for (int r = 0; r < blocks.length; ++r) {
+            curGroup = new SimpleBlockGroup();
+            for (int c = 0; c < blocks[r].length; ++c) {
+                b = blocks[r][c];
+                boolean typeMatch = curGroup.typeMatch(b);
+                if (typeMatch) curGroup.addBlock(b);
+
+                if (!typeMatch || c == blocks[r].length - 1) {
+                    // terminate block group
+
+                    // 1. determine if it is a crush
+                    if (curGroup.size() >= minCrushLen) {
+                        // 2. determine whether to look for an l-shape
+                        if (curGroup.size() < 5) { // we don't look for l-shape for horizontal sizes >= 5
+                            // 3. look for l-shape
+                            Block b1, b2;
+                            for (int curCol = curGroup.minCol; curCol <= curGroup.maxCol; ++curCol) {
+                                if ((r > 1
+                                        && curGroup.typeMatch((b1 = blocks[r - 1][curCol]))
+                                        && curGroup.typeMatch((b2 = blocks[r - 2][curCol])))
+                                        ||
+                                        (r < blocks.length - 2
+                                                && curGroup.typeMatch((b1 = blocks[r + 1][curCol]))
+                                                && curGroup.typeMatch((b2 = blocks[r + 2][curCol])))
+                                        ||
+                                        (r > 0 && r < blocks.length - 1
+                                                && curGroup.typeMatch((b1 = blocks[r + 1][curCol]))
+                                                && curGroup.typeMatch((b2 = blocks[r - 1][curCol])))) {
+                                    if (b1.blockGroup != null || b2.blockGroup != null) continue;
+                                    if (curGroup.size() == 4) {
+                                        if (curCol == curGroup.minCol || curCol == curGroup.minCol + 1) {
+                                            curGroup.remove(blocks[r][curGroup.maxCol]);
+                                        } else {
+                                            curGroup.remove(blocks[r][curGroup.minCol]);
+                                        }
+                                    }
+                                    curGroup.addBlock(b1);
+                                    curGroup.addBlock(b2);
+                                    break;
+                                }
+                            }
+                        }
+                        for (Block block : curGroup) block.blockGroup = curGroup;
+                        groups.add(curGroup);
+                    }
+                    curGroup = new SimpleBlockGroup();
+                    if (!typeMatch) curGroup.addBlock(b);
                 }
-                currentString.clear();
-                currentString.add(currentBlock);
-            }
-        } else {
-            currentString.add(currentBlock);
-        }
-    }
-
-    private static Array<BlockGroup> analyzeBoard(Board board) {
-        int minLen = 3;
-        Array<BlockGroup> rowMatches = new Array<BlockGroup>(),
-                colMatches = new Array<BlockGroup>();
-        Block[][] blocks = board.getBoard();
-        int numCols = blocks[0].length;
-
-        for (Block[] block : blocks) {
-            Array<Block> currentString = new Array<Block>();
-            for (int j = 0; j < numCols; j++) {
-                Block currentBlock = block[j];
-                analysisCurrentBlock(currentBlock, rowMatches, currentString, minLen, numCols);
-            }
-            if (currentString.size >= minLen) {
-                rowMatches.add(new BlockGroup(currentString, numCols));
             }
         }
+        for (int c = 0; c < blocks[0].length; ++c) {
+            curGroup = new SimpleBlockGroup();
+            for (int r = 0; r < blocks.length; ++r) {
+                b = blocks[r][c];
+                boolean typeMatch = curGroup.typeMatch(b);
+                if (typeMatch) {
+                    curGroup.addBlock(b);
+                }
 
-        for (int j = 0; j < numCols; j++) {
-            Array<Block> currentString = new Array<Block>();
-            for (Block[] rows : blocks) {
-                Block currentBlock = rows[j];
-                analysisCurrentBlock(currentBlock, colMatches, currentString, minLen, numCols);
-            }
-            if (currentString.size >= minLen) {
-                colMatches.add(new BlockGroup(currentString, numCols));
-            }
-        }
+                if (!typeMatch || r == blocks.length - 1) {
+                    // terminate current group
 
-        Array<BlockGroup> mergedGroups = new Array<BlockGroup>();
-
-        for (int i = 0; i < rowMatches.size; i++) {
-            BlockGroup nextRowGroup = rowMatches.get(i);
-            for (int j = 0; j < colMatches.size; j++) {
-                BlockGroup nextColGroup = colMatches.get(j);
-                BlockGroup merged = BlockGroup.getMergedGroup(nextRowGroup, nextColGroup);
-                if (merged != null) {
-                    mergedGroups.add(merged);
-                    rowMatches.removeIndex(i);
-                    colMatches.removeIndex(j);
-                    i--;
-                    break;
+                    // 1. determine if it is a crush
+                    if (curGroup.size() >= minCrushLen) {
+                        // 2. determine if there are any horizontal groups attached
+                        Set<SimpleBlockGroup> attachedGroups = new HashSet<SimpleBlockGroup>();
+                        for (Block b1 : curGroup) {
+                            if (b1.blockGroup != null) {
+                                attachedGroups.add(b1.blockGroup);
+                            }
+                        }
+                        boolean shouldAddVerticalGroup = true;
+                        if (attachedGroups.size() > 0) {
+                            int fiveHorizontalCount = 0, lShapeCount = 0;
+                            for (SimpleBlockGroup g : attachedGroups) {
+                                if (g.isLShape()) ++lShapeCount;
+                                else ++fiveHorizontalCount;
+                            }
+                            if (fiveHorizontalCount > 0) {
+                                // keep all horizontal fives and remove all l-shapes
+                                for (SimpleBlockGroup g : attachedGroups) {
+                                    if (g.isLShape()) {
+                                        groups.removeValue(g, true);
+                                        for (Block block : g) block.blockGroup = null;
+                                    }
+                                }
+                                shouldAddVerticalGroup = false;
+                            } else if (curGroup.size() < 5) {
+                                // keep first l-shape we see and remove everything else
+                                SimpleBlockGroup toKeep = null;
+                                for (SimpleBlockGroup g : attachedGroups) {
+                                    if (toKeep == null) toKeep = g;
+                                    else {
+                                        groups.removeValue(g, true);
+                                        for (Block block : g) block.blockGroup = null;
+                                    }
+                                }
+                                shouldAddVerticalGroup = false;
+                            } else {
+                                shouldAddVerticalGroup = true;
+                                // remove all attached groups
+                                for (SimpleBlockGroup g : attachedGroups) {
+                                    groups.removeValue(g, true);
+                                    for (Block block : g) block.blockGroup = null;
+                                }
+                            }
+                        }
+                        if (shouldAddVerticalGroup) {
+                            groups.add(curGroup);
+                            for (Block block : curGroup) block.blockGroup = curGroup;
+                        }
+                    }
+                    curGroup = new SimpleBlockGroup();
+                    if (!typeMatch) curGroup.addBlock(b);
                 }
             }
         }
-        Array<BlockGroup> groups = new Array<BlockGroup>(mergedGroups.size + rowMatches.size + colMatches.size);
-        groups.addAll(mergedGroups);
-        groups.addAll(rowMatches);
-        groups.addAll(colMatches);
         return groups;
     }
 
-    public void render(SpriteBatch sb) {
-        sb.draw(boardTexture, boardBounds.x, boardBounds.y,
-                boardBounds.getWidth(), boardBounds.getHeight());
-
-        for (Block[] boardRow : board) {
-            for (Block block : boardRow) {
-                block.render(sb);
-            }
-        }
-    }
-
-    private boolean hasTask() {
-        return tasks.size > 0;
-    }
-
-    public void update(float dt) {
-        if (hasTask()) {
-            if (tasks.first().wasStarted()) {
-                tasks.first().update(dt);
-                if (tasks.first().isDone()) {
-                    tasks.removeFirst();
-                    if (hasTask()) tasks.first().run();
-                }
-            } else tasks.first().run();
-        }
-        for (Block[] boardRow : board) {
-            for (Block block : boardRow) {
-                block.update(dt);
-            }
-        }
-        if (boardHandler != null) {
-            boardHandler.update(dt);
-        }
-    }
-
-    public boolean isAnimating() {
-        for (Block[] row : board) {
+    private boolean doChildrenHaveActions() {
+        for (Block[] row : blocks) {
             for (Block b : row) {
-                if (b.isAnimating()) return true;
+                if (b.isPerformingAction()) return true;
             }
         }
         return false;
     }
 
+    public boolean isWaitingForInput() {
+        return !shouldAnalyze && !userFlippedBlocks && !doChildrenHaveActions();
+    }
 
-    private boolean shouldProcessInput, shouldAnalyze;
+    public int getNumTotalUserCrushes() {
+        return numTotalCrushes;
+    }
 
-    public void handleInput(Vector2 mouse) {
 
-        if (hasTask()) {
-            shouldProcessInput = false;
+    private boolean shouldAnalyze;
+    private boolean gotMatches;
+
+    private float initialWaitTime = 0.5f;
+
+    private void handleInput(Vector2 mouse) {
+        if (doChildrenHaveActions()) {
+            return;
+        }
+        if (shouldAnalyze) {
+            gotMatches = analyzeAndAnimateBoard(userFlippedBlocks); // crush
+            shouldAnalyze = false;
+            if (gotMatches) { // user crushed blocks
+                blockGroupsProcessStack.push(blockGroups); // enqueue block groups only directly after crush
+                if (userFlippedBlocks)
+                    numTotalCrushes++; // increment
+            }
+            return;
         } else {
-            boolean isAnimating = isAnimating();
-
-            // don't process the user's selected blocks if blocks are animating
-            if (isAnimating) {
-                shouldProcessInput = false;
+            if (gotMatches) {
+                refillBoard(blockGroups); // we need blockGroups to animate the board in subsequent updates after crush
+                shouldAnalyze = true;
             } else {
-                // no blocks are currently animating (screen is static)
-                // user might be touching the screen
-                if (shouldAnalyze) {
-                    boolean gotMatches = analyzeAndRefillBoard(areBlocksFlipping);
-                    if (areBlocksFlipping) {
-                        // player flipped the blocks
-                        if (!gotMatches) {
-                            // player got no matches
-                            flipBlocksAndAnimate(blockSelectedPreviously, blockSelectedNow);
-                        }
-                        blockSelectedPreviously = null;
-                        blockSelectedNow = null;
-                        areBlocksFlipping = false;
-                        shouldProcessInput = false;
-                        {
-                            shouldProcessInput = !gotMatches;
-                        }
-                    } else
-                        shouldAnalyze = gotMatches;
-                } else {
-                    shouldProcessInput = true;
+                if (userFlippedBlocks) {
+                    flipBlocksAndAnimate(secondSelectedBlock, firstSelectedBlock);
                 }
+                shouldAnalyze = false;
+            }
+            if (userFlippedBlocks) {
+                firstSelectedBlock = null;
+                secondSelectedBlock = null;
+                userFlippedBlocks = false;
             }
         }
 
+        boolean shouldProcessInput = !shouldAnalyze && !isInputPaused;
         if (shouldProcessInput) {
             if (Gdx.input.isTouched()) {
-                blockSelectedNow = getSelectedBlock(mouse);
 
-                if (Gdx.input.isTouched(0) && blockSelectedNow != null) {
-                    if (blockSelectedPreviously == null) {
-                        blockSelectedPreviously = blockSelectedNow;
-                        blockSelectedNow = null;
-                    } else {
-                        if (blockSelectedPreviously.getRow() != blockSelectedNow.getRow()
-                                || blockSelectedPreviously.getCol() != blockSelectedNow.getCol()) {
-                            // player flipped two blocks
+                if (firstSelectedBlock == null) {
+                    firstSelectedBlock = getSelectedBlock(mouse);
+                } else {
+                    secondSelectedBlock = getSelectedBlock(mouse);
+                }
+                if (Gdx.input.isTouched(0) && secondSelectedBlock != null) {
+                    if (firstSelectedBlock.getRow() != secondSelectedBlock.getRow()
+                            || firstSelectedBlock.getCol() != secondSelectedBlock.getCol()) {
+                        // player flipped two blocks
 
-                            // infer blockSelectedNow
-                            Vector2 dir = new Vector2(
-                                    blockSelectedNow.getCol() - blockSelectedPreviously.getCol(),
-                                    blockSelectedNow.getRow() - blockSelectedPreviously.getRow()
-                            );
-                            if (Math.abs(dir.x) > Math.abs(dir.y)) {
-                                dir.set(dir.x, 0);
-                            } else {
-                                dir.set(0, dir.y);
-                            }
-                            dir.setLength(1f);
-                            blockSelectedNow = board
-                                    [blockSelectedPreviously.getRow() + Math.round(dir.y)]
-                                    [blockSelectedPreviously.getCol() + Math.round(dir.x)];
-                            // blockSelectedNow now correct
-
-                            flipBlocksAndAnimate(blockSelectedPreviously, blockSelectedNow);
-                            areBlocksFlipping = true;
-                            shouldProcessInput = false;
-                            shouldAnalyze = true;
+                        // infer secondSelectedBlock
+                        Vector2 dir = new Vector2(
+                                secondSelectedBlock.getCol() - firstSelectedBlock.getCol(),
+                                secondSelectedBlock.getRow() - firstSelectedBlock.getRow()
+                        );
+                        if (Math.abs(dir.x) > Math.abs(dir.y)) {
+                            dir.set(dir.x, 0);
+                        } else {
+                            dir.set(0, dir.y);
                         }
+                        dir.setLength(1f);
+                        secondSelectedBlock = blocks
+                                [firstSelectedBlock.getRow() + Math.round(dir.y)]
+                                [firstSelectedBlock.getCol() + Math.round(dir.x)];
+                        // secondSelectedBlock now correct
+
+                        flipBlocksAndAnimate(firstSelectedBlock, secondSelectedBlock);
+                        userFlippedBlocks = true;
+                        shouldAnalyze = true;
                     }
                 }
             } else {
-                blockSelectedPreviously = null;
+                firstSelectedBlock = null;
+                secondSelectedBlock = null;
             }
         }
+
     }
 
-    Array<BlockGroup> getBlockGroups() {
-        return blockGroups;
+    public Stack<Array<SimpleBlockGroup>> getCrushStack() {
+        return blockGroupsProcessStack;
     }
 
-    private Block blockSelectedPreviously, blockSelectedNow;
+    private Block firstSelectedBlock, secondSelectedBlock;
 
-    private boolean areBlocksFlipping;
+    public boolean userFlippedBlocks;
 
     private void flipBlocksAndAnimate(Block from, Block to) {
-        Vector2 dir = new Vector2(to.getCol() - from.getCol(), to.getRow() - from.getRow());
-        from.addAnimation(
-                new TranslationBlockAnimation(
-                        SINGLE_BLOCK_DROP_TIME, new Vector2(dir), blockSpacing));
-        to.addAnimation(
-                new TranslationBlockAnimation(
-                        SINGLE_BLOCK_DROP_TIME, new Vector2(dir).scl(-1f), blockSpacing));
+        if (to.getCol() == from.getCol()) {
+            if (to.getRow() > from.getRow()) {
+                shiftBlockOneUp(from);
+                shiftBlockOneDown(to);
+            } else {
+                shiftBlockOneDown(from);
+                shiftBlockOneUp(to);
+            }
+        } else {
+            if (to.getCol() > from.getCol()) {
+                shiftBlockOneRight(from);
+                shiftBlockOneLeft(to);
+            } else {
+                shiftBlockOneLeft(from);
+                shiftBlockOneRight(to);
+            }
+        }
         flipBlocks(from, to);
     }
 
-    private float getAnimationTimeLeft() {
-        float maxTimeLeft = 0f;
-        for (Block[] a : board) {
-            for (Block b : a) {
-                float timeLeft = b.getAnimationTimeLeft();
-                if (timeLeft > maxTimeLeft) maxTimeLeft = timeLeft;
-            }
-        }
-        return maxTimeLeft;
-    }
-
     private int getSelectedCol(Vector2 mouse) {
-        return (int) Math.floor((mouse.x - boardBounds.x) / blockSpacing);
+        return (int) Math.floor(mouse.x / blockSpacing);
     }
 
     private int getSelectedRow(Vector2 mouse) {
-        return board.length - 1 - (int) Math.floor((mouse.y - boardBounds.y) / blockSpacing);
+        return (int) Math.floor(mouse.y / blockSpacing);
     }
 
     private Block getSelectedBlock(Vector2 mouse) {
+
         if (boardBounds.contains(mouse)) {
             int selectedRow = getSelectedRow(mouse);
-            if (selectedRow >= board.length || selectedRow < 0) return null;
+            if (selectedRow >= blocks.length || selectedRow < 0) return null;
             int selectedCol = getSelectedCol(mouse);
-            if (selectedCol >= board[selectedRow].length || selectedCol < 0) return null;
-            return board[selectedRow][selectedCol];
+            if (selectedCol >= blocks[selectedRow].length || selectedCol < 0) return null;
+            return blocks[selectedRow][selectedCol];
         } else return null;
+    }
+
+    public List<BlockType> getBlockTypes() {
+        return this.blockTypes;
     }
 
     public void dispose() {
         boardTexture.dispose();
-        for (ObjectMap.Entry<BlockType, Texture> e : blockTextures.entries()) {
-            e.value.dispose();
-        }
-        blockTextures.clear();
+    }
+
+    private boolean isInputPaused;
+
+    public void pauseInput() {
+        isInputPaused = true;
+    }
+
+    public void resumeInput() {
+        isInputPaused = false;
     }
 }
