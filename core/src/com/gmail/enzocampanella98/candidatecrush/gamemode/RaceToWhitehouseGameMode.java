@@ -2,14 +2,12 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
@@ -18,13 +16,15 @@ import com.gmail.enzocampanella98.candidatecrush.scoringsystem.Candidate;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceToWhitehouseScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
+import com.gmail.enzocampanella98.candidatecrush.sound.EqualMusicHandler;
+import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class RaceToWhitehouseGameMode extends CCGameMode {
     private static int boardWidth = 8;
@@ -39,27 +39,32 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
     private Table mainTable;
     private int numMovesLeft;
+    MusicHandler musicHandler;
 
-    public RaceToWhitehouseGameMode(CandidateCrush game, Stage stage) {
-        this(game, stage, defaultNumMoves);
+    public RaceToWhitehouseGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes) {
+        this(game, stage, blockTypes, defaultNumMoves);
     }
 
-    public RaceToWhitehouseGameMode(CandidateCrush game, Stage stage, int numMoves) {
+    public RaceToWhitehouseGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes, int numMoves) {
         super(game, stage);
 
         this.numMoves = numMoves;
 
-        this.blockTypes = new ArrayList<BlockType>(Arrays.asList(BlockType.values()));
-        this.blockTypes.remove(BlockType.BLANK);
+        this.blockTypes = blockTypes;
 
         this.userBlockType = this.blockTypes.get(new Random().nextInt(blockTypes.size()));
 
-        this.blockTextures = BlockType.getBlockTextures(this.blockTypes);
+        Set<String> blockTypeSet = new HashSet<>();
+        for (BlockType bt : blockTypes) blockTypeSet.add(bt.getLname());
+        musicHandler = new EqualMusicHandler(blockTypeSet);
+        musicHandler.start();
 
-        this.board = new Board(boardWidth, this.blockTypes, this.blockTextures);
+        this.blockTextures = BlockType.getBlockTextures(blockTypes);
+
+        this.board = new Board(boardWidth, this.blockTypes, this.blockTextures, musicHandler);
         Map<BlockType, Double> blockFrequencies = new HashMap<BlockType, Double>();
-        double userBlockFrequency = 1.0/this.blockTypes.size() + defaultUserBlockFrequencyAdvantage;
-        double otherBlockFrequency = (1.0-userBlockFrequency)/(this.blockTypes.size()-1);
+        double userBlockFrequency = 1.0 / this.blockTypes.size() + defaultUserBlockFrequencyAdvantage;
+        double otherBlockFrequency = (1.0 - userBlockFrequency) / (this.blockTypes.size() - 1);
         for (BlockType type : this.blockTypes) {
             if (type == userBlockType) {
                 blockFrequencies.put(type, userBlockFrequency);
@@ -105,7 +110,7 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
         isGameOver = true;
         this.board.pauseInput();
 
-        ((HeadsUpDisplay)hud).showEndGameMessage(win());
+        ((HeadsUpDisplay) hud).showEndGameMessage(win());
 
         messageTimer = 5;
     }
@@ -115,11 +120,18 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
     }
 
     @Override
+    public void dispose() {
+        super.dispose();
+        game.getScreen().dispose();
+        musicHandler.dispose();
+    }
+
+    @Override
     public void update(float dt) {
         if (isGameOver) {
             messageTimer -= dt;
             if (messageTimer <= 0) {
-                game.getScreen().dispose();
+                dispose();
                 game.setScreen(new MenuScreen(game));
             }
             return;

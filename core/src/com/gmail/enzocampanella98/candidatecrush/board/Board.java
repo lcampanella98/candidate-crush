@@ -19,9 +19,8 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
-import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
+import com.gmail.enzocampanella98.candidatecrush.sound.IMusicHandler;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,7 @@ public class Board extends Group {
 
     private int numBlocksAcross;
 
-    private MusicHandler musicHandler;
+    private IMusicHandler _musicHandler;
 
 
     private float blockSpacing;
@@ -63,17 +62,21 @@ public class Board extends Group {
     private Map<BlockType, Double> blockTypeFrequencies;
 
 
-    public Board(int numBlocksAcross, List<BlockType> blockTypes, ObjectMap<BlockType, Texture> blockTextures) {
+    public Board(
+            int numBlocksAcross,
+            List<BlockType> blockTypes,
+            ObjectMap<BlockType, Texture> blockTextures,
+            IMusicHandler musicHandler
+            ) {
         this.numBlocksAcross = numBlocksAcross;
         this.blockTypes = blockTypes;
         this.blockTextures = blockTextures;
+        _musicHandler = musicHandler;
 
         initBoard();
     }
 
     private void initBoard() {
-
-        musicHandler = new MusicHandler();
 
         blocks = new Block[numBlocksAcross][numBlocksAcross];
         random = new Random();
@@ -293,11 +296,11 @@ public class Board extends Group {
             }
             if (userInvoked) {
                 assert largestGroup != null;
-                musicHandler.playRandomMusic(largestGroup.getType(),
+                _musicHandler.queueSoundByte(largestGroup.getType(),
                         ScoringSystem.getCrushType(largestGroup));
-            } else if (!musicHandler.isMusicPlaying()) musicHandler.playPopSound();
-
-
+            } else {
+                _musicHandler.playPopIfNoMusicPlaying();
+            }
             return true;
         } else { // there was no match
             blockGroups = null;

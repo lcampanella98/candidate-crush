@@ -18,11 +18,14 @@ public enum BlockType {
     CLINTON("clinton", "Hillary Clinton"),
     SANDERS("sanders", "Bernie Sanders"),
     CRUZ("cruz", "Ted Cruz"),
+    BIDEN("biden", "Joe Biden"),
+    WARREN("warren", "Elizabeth Warren"),
+    BUTTIGIEG("buttigieg", "Pete Buttigieg"),
     //MEZA("meza", "Daniel Meza"),
     BLANK();
 
     private boolean isEmpty;
-    private static final String SPRITE_ROOT = "data/img/block_sprites/";
+    private static final String SPRITE_ROOT = "./data/img/block_sprites/";
     private String friendlyName, internalPath, lname;
 
     BlockType(String lname, String friendlyName) {

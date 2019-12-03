@@ -23,15 +23,27 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameModeButton;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.RaceToWhitehouseGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.VoteTargetGameMode;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by lorenzo on 9/5/2016.
  */
 public class MenuScreen implements Screen {
+    public static final List<BlockType> BLOCK_TYPES_2020 = new ArrayList<>(Arrays.asList(
+            BlockType.TRUMP,
+            BlockType.WARREN,
+            BlockType.SANDERS,
+            BlockType.BUTTIGIEG,
+            BlockType.BIDEN
+    ));
 
     private CandidateCrush game;
     private Stage menuStage;
@@ -80,7 +92,7 @@ public class MenuScreen implements Screen {
         texturebg = new Texture(Gdx.files.internal("data/img/general/menu_image_boxing.jpg"));
 
         // init game mode selection buttons
-        gameModeButtons = new Array<GameModeButton>();
+        gameModeButtons = new Array<>();
 
         GameModeButton btnGameModeVoteTarget = new GameModeButton("Vote Target", CCGameMode.GameModeType.VOTE_TARGET);
         gameModeButtons.add(btnGameModeVoteTarget);
@@ -128,15 +140,16 @@ public class MenuScreen implements Screen {
 
                 if (checkedButton != null) {
                     dispose();
+
                     CandidateCrushPlayScreen playScreen = new CandidateCrushPlayScreen(game);
                     CCGameMode gameMode = null;
                     switch (checkedButton.getGameModeType()) {
                         case RACE_TO_WHITEHOUSE:
-                            gameMode = new RaceToWhitehouseGameMode(game, playScreen.playStage);
+                            gameMode = new RaceToWhitehouseGameMode(game, playScreen.playStage, BLOCK_TYPES_2020);
                             break;
                         case VOTE_TARGET:
                         default:
-                            gameMode = new VoteTargetGameMode(game, playScreen.playStage);
+                            gameMode = new VoteTargetGameMode(game, playScreen.playStage, BLOCK_TYPES_2020);
                             break;
                     }
                     assert gameMode != null;
@@ -150,7 +163,7 @@ public class MenuScreen implements Screen {
 
         // init title label
         Label.LabelStyle titleLabelStyle = new Label.LabelStyle(font, Color.WHITE);
-        titleLabel = new Label("Welcome To " + CandidateCrush.TITLE, titleLabelStyle);
+        titleLabel = new Label(CandidateCrush.TITLE + " 2020", titleLabelStyle);
 
         // add items to table
         table.center();

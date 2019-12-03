@@ -12,10 +12,12 @@ import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
+import com.gmail.enzocampanella98.candidatecrush.sound.EqualMusicHandler;
+import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
@@ -30,22 +32,28 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
     private List<BlockType> blockTypes;
 
     private Table mainTable;
+    private MusicHandler musicHandler;
 
-    public VoteTargetGameMode(CandidateCrush game, Stage stage) {
-        this(game, stage, defaultGameLength, defaultTargetScore);
+    public VoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes) {
+        this(game, stage, blockTypes, defaultGameLength, defaultTargetScore);
     }
 
-    public VoteTargetGameMode(CandidateCrush game, Stage stage, double gameLength, int targetScore) {
+    public VoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes, double gameLength, int targetScore) {
         super(game, stage, gameLength);
 
         this.targetScore = targetScore;
 
-        this.blockTypes = new ArrayList<BlockType>(Arrays.asList(BlockType.values()));
+        this.blockTypes = blockTypes;
         this.blockTypes.remove(BlockType.BLANK);
 
         this.blockTextures = BlockType.getBlockTextures(this.blockTypes);
 
-        this.board = new Board(boardWidth, this.blockTypes, this.blockTextures);
+        Set<String> blockTypeSet = new HashSet<>();
+        for (BlockType bt : blockTypes) blockTypeSet.add(bt.getLname());
+        musicHandler = new EqualMusicHandler(blockTypeSet);
+        musicHandler.start();
+
+        this.board = new Board(boardWidth, this.blockTypes, this.blockTextures, musicHandler);
 
         int score3 = 100, score4 = 1000, score5 = 3000, scoreT = 2000;
         double nonUserInvokedCrushScale = 1.0 / 5.0;
@@ -84,12 +92,18 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         this.board.pauseInput();
 
 
-        ((HeadsUpDisplay)hud).showEndGameMessage(win());
+        ((HeadsUpDisplay) hud).showEndGameMessage(win());
         messageTimer = 5;
     }
 
     public boolean win() {
         return isGameOver && !super.isGameTimeUp();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        musicHandler.dispose();
     }
 
     @Override

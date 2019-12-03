@@ -114,7 +114,7 @@ public abstract class HUD implements Disposable {
         btnExit.addListener(new InputListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                gameMode.getGame().getScreen().dispose();
+                gameMode.dispose();
                 gameMode.getGame().setScreen(new MenuScreen(gameMode.getGame()));
                 return true;
             }
