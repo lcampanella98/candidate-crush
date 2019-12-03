@@ -11,13 +11,13 @@ import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
+import com.gmail.enzocampanella98.candidatecrush.board.FrequencyRandomBlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.Candidate;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceToWhitehouseScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
-import com.gmail.enzocampanella98.candidatecrush.sound.EqualMusicHandler;
-import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
+import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +39,6 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
     private Table mainTable;
     private int numMovesLeft;
-    MusicHandler musicHandler;
 
     public RaceToWhitehouseGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes) {
         this(game, stage, blockTypes, defaultNumMoves);
@@ -56,23 +55,18 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
         Set<String> blockTypeSet = new HashSet<>();
         for (BlockType bt : blockTypes) blockTypeSet.add(bt.getLname());
-        musicHandler = new EqualMusicHandler(blockTypeSet);
+        musicHandler = new NoLevelMusicHandler(blockTypeSet);
         musicHandler.start();
 
-        this.blockTextures = BlockType.getBlockTextures(blockTypes);
-
-        this.board = new Board(boardWidth, this.blockTypes, this.blockTextures, musicHandler);
         Map<BlockType, Double> blockFrequencies = new HashMap<BlockType, Double>();
         double userBlockFrequency = 1.0 / this.blockTypes.size() + defaultUserBlockFrequencyAdvantage;
         double otherBlockFrequency = (1.0 - userBlockFrequency) / (this.blockTypes.size() - 1);
         for (BlockType type : this.blockTypes) {
-            if (type == userBlockType) {
-                blockFrequencies.put(type, userBlockFrequency);
-            } else {
-                blockFrequencies.put(type, otherBlockFrequency);
-            }
+            blockFrequencies.put(type, type == userBlockType ? userBlockFrequency : otherBlockFrequency);
         }
-        this.board.setBlockTypeFrequencies(blockFrequencies);
+        blockProvider = new FrequencyRandomBlockProvider(blockFrequencies);
+
+        this.board = new Board(boardWidth, this.blockTypes, musicHandler, blockProvider);
 
         int score3 = 100, score4 = 1000, score5 = 3000, scoreT = 2000;
         this.scoringSystem = new RaceToWhitehouseScoringSystem(
@@ -120,18 +114,11 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
     }
 
     @Override
-    public void dispose() {
-        super.dispose();
-        game.getScreen().dispose();
-        musicHandler.dispose();
-    }
-
-    @Override
     public void update(float dt) {
         if (isGameOver) {
             messageTimer -= dt;
             if (messageTimer <= 0) {
-                dispose();
+                game.disposeCurrentScreen();
                 game.setScreen(new MenuScreen(game));
             }
             return;
@@ -194,8 +181,7 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
             table.add(infoBox).padBottom(20).center();
             table.row();
 
-            Texture userTexture = ((RaceToWhitehouseGameMode) this.gameMode).blockTextures.get(
-                    ((RaceToWhitehouseGameMode) this.gameMode).userBlockType);
+            Texture userTexture = blockProvider.getBlockTexture(((RaceToWhitehouseGameMode) this.gameMode).userBlockType);
             Image userImg = new Image(userTexture);
             userImg.scaleBy(2.1f);
             userImg.setOrigin(Align.center);
@@ -256,14 +242,18 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
             // update scores labels
             List<Candidate> scores = ((RaceToWhitehouseGameMode) gameMode).scoringSystem.getScores();
             Candidate topCandidate = scores.get(0);
-            topScoreTable.getNameLabel().setText(topCandidate.type.getFriendlyName());
+            topScoreTable.getNameLabel().setText(firstToUpper(topCandidate.type.getLname()));
             topScoreTable.getScoreLabel().setText(String.valueOf(topCandidate.score));
 
             for (int i = 0; i < scores.size() - 1 && i < otherScoreTables.length; ++i) {
-                otherScoreTables[i].getNameLabel().setText(scores.get(i + 1).type.getFriendlyName());
+                otherScoreTables[i].getNameLabel().setText(firstToUpper(scores.get(i + 1).type.getLname()));
                 otherScoreTables[i].getScoreLabel().setText(String.valueOf(scores.get(i + 1).score));
             }
 
+        }
+
+        private String firstToUpper(String s) {
+            return s.substring(0, 1).toUpperCase() + s.substring(1);
         }
 
         @Override

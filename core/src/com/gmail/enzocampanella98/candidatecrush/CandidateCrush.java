@@ -11,12 +11,14 @@ public class CandidateCrush extends Game {
 
     public SpriteBatch batch;
 
-
     @Override
     public void create() {
         batch = new SpriteBatch();
         setScreen(new MenuScreen(this));
+    }
 
+    public void disposeCurrentScreen() {
+        getScreen().dispose();
     }
 
     @Override

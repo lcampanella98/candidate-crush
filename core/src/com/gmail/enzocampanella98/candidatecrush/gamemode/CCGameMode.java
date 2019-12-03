@@ -5,17 +5,17 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
+import com.gmail.enzocampanella98.candidatecrush.board.BlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
+import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 
 public abstract class CCGameMode implements Disposable {
 
     public enum GameModeType {
-        VOTE_TARGET, RACE_TO_WHITEHOUSE
+        VOTE_TARGET, RACE_TO_WHITEHOUSE,
     }
 
     protected Stage stage;
@@ -26,8 +26,9 @@ public abstract class CCGameMode implements Disposable {
 
     protected boolean isGameOver;
 
-    protected ObjectMap<BlockType, Texture> blockTextures;
     protected Texture backgroundTexture;
+    protected MusicHandler musicHandler;
+    protected BlockProvider blockProvider;
 
 
     protected CCGameMode(CandidateCrush game, Stage stage) {
@@ -67,13 +68,7 @@ public abstract class CCGameMode implements Disposable {
         if (backgroundTexture != null) backgroundTexture.dispose();
         if (board != null) board.dispose();
         if (hud != null) hud.dispose();
-        if (blockTextures != null) {
-            for (ObjectMap.Entry<BlockType, Texture> e : blockTextures) {
-                e.value.dispose(); // dispose of block textures
-            }
-            blockTextures.clear();
-        }
+        if (musicHandler != null) musicHandler.dispose();
+        if (blockProvider != null) blockProvider.dispose();
     }
-
-
 }

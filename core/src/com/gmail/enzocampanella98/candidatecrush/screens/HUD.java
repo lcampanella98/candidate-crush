@@ -119,10 +119,8 @@ public abstract class HUD implements Disposable {
                 return true;
             }
         });
-        if (table != null) {
-            table.add(btnExit).left();
-            table.row();
-        }
+        table.add(btnExit).left();
+        table.row();
     }
 
     public void addMessage(String msg, BitmapFont font) {

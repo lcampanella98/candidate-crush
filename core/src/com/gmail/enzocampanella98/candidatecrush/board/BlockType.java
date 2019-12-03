@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.ObjectMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -80,7 +81,7 @@ public enum BlockType {
         return getBlockTextures(new ArrayList<BlockType>(Arrays.asList(BlockType.values())));
     }
 
-    public static ObjectMap<BlockType, Texture> getBlockTextures(List<BlockType> blockTypes) {
+    public static ObjectMap<BlockType, Texture> getBlockTextures(Collection<BlockType> blockTypes) {
         ObjectMap<BlockType, Texture> blockTextures = new ObjectMap<BlockType, Texture>();
         Texture t;
         for (BlockType b : blockTypes) {

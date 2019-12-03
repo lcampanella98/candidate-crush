@@ -15,11 +15,12 @@ import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.actions.VisibleAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
+import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.sound.IMusicHandler;
+import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,15 +32,13 @@ import java.util.Stack;
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
 
-public class Board extends Group {
+public class Board extends Group implements Disposable {
 
-    private static final float SINGLE_BLOCK_DROP_TIME = .2f;
+    private static final float SINGLE_BLOCK_DROP_TIME = .4f;
+
 
     private Block[][] blocks;
 
-    private Random random;
-
-    private ObjectMap<BlockType, Texture> blockTextures;
     private List<BlockType> blockTypes;
 
     private Texture boardTexture;
@@ -47,31 +46,22 @@ public class Board extends Group {
 
     private int numBlocksAcross;
 
-    private IMusicHandler _musicHandler;
-
+    private IMusicHandler musicHandler;
+    private IBlockProvider blockProvider;
 
     private float blockSpacing;
 
     private Array<SimpleBlockGroup> blockGroups; // not set to null because we need it to animate
-
     private Stack<Array<SimpleBlockGroup>> blockGroupsProcessStack; // push every crush
 
     private int numTotalCrushes;
     private float boardPad;
 
-    private Map<BlockType, Double> blockTypeFrequencies;
-
-
-    public Board(
-            int numBlocksAcross,
-            List<BlockType> blockTypes,
-            ObjectMap<BlockType, Texture> blockTextures,
-            IMusicHandler musicHandler
-            ) {
+    public Board(int numBlocksAcross, List<BlockType> blockTypes, IMusicHandler musicHandler, IBlockProvider blockProvider) {
         this.numBlocksAcross = numBlocksAcross;
         this.blockTypes = blockTypes;
-        this.blockTextures = blockTextures;
-        _musicHandler = musicHandler;
+        this.musicHandler = musicHandler;
+        this.blockProvider = blockProvider;
 
         initBoard();
     }
@@ -79,7 +69,6 @@ public class Board extends Group {
     private void initBoard() {
 
         blocks = new Block[numBlocksAcross][numBlocksAcross];
-        random = new Random();
 
         this.numTotalCrushes = 0; // track number of user-invoked crushes
 
@@ -141,49 +130,16 @@ public class Board extends Group {
     }
 
     private void populateRandomly() {
-        for (int i = 0; i < blocks.length; i++) {
-            blocks[i] = new Block[blocks.length];
-            for (int j = 0; j < blocks[i].length; j++) {
-                blocks[i][j] = getNewRandomBlock(i, j);
+        for (int row = 0; row < blocks.length; row++) {
+            blocks[row] = new Block[blocks.length];
+            for (int col = 0; col < blocks[row].length; col++) {
+                blocks[row][col] = getNewBlock(row, col);
             }
         }
-    }
-
-    public void setBlockTypeFrequencies(Map<BlockType, Double> frequencies) {
-        this.blockTypeFrequencies = frequencies;
-    }
-
-    private BlockType getRandomBlockType() {
-        if (blockTypeFrequencies != null) {
-            double rand = random.nextDouble();
-
-            for (Map.Entry<BlockType, Double> freq : blockTypeFrequencies.entrySet()) {
-                if (rand <= freq.getValue()) return freq.getKey();
-                rand -= freq.getValue();
-            }
-        }
-        return blockTypes.get(random.nextInt(blockTypes.size()));
-    }
-
-    private Block getNewRandomBlock(int row, int col) {
-        return getNewBlock(row, col, getRandomBlockType());
-    }
-
-    private Block getNewBlock(int row, int col, BlockType blockType) {
-        return new Block(blockType, blockTextures.get(blockType), getBlockPosition(row, col),
-                blockSpacing, blockSpacing, row, col);
     }
 
     private Vector2 getBlockPosition(int row, int col) {
         return new Vector2(boardPad + col * blockSpacing, boardPad + row * blockSpacing);
-    }
-
-    private Block[][] getBlocks() {
-        return blocks;
-    }
-
-    private Array<Block> getRowArray(int row) {
-        return new Array<Block>(blocks[row]);
     }
 
     private Array<Block> getColArray(int col) {
@@ -296,10 +252,10 @@ public class Board extends Group {
             }
             if (userInvoked) {
                 assert largestGroup != null;
-                _musicHandler.queueSoundByte(largestGroup.getType(),
+                musicHandler.queueSoundByte(largestGroup.getType(),
                         ScoringSystem.getCrushType(largestGroup));
             } else {
-                _musicHandler.playPopIfNoMusicPlaying();
+                musicHandler.playPopIfNoMusicPlaying();
             }
             return true;
         } else { // there was no match
@@ -362,12 +318,18 @@ public class Board extends Group {
         for (int col = 0; col < numCols; col++) {
             int crushedBlocksInCol = totalCrushedBlocksInCols[col];
             for (int row = numRows - crushedBlocksInCol; row < numRows; row++) {
-                Block fillBlock = getNewRandomBlock(row, col);
+                Block fillBlock = getNewBlock(row, col);
                 fillBlock.setVisible(false);
                 insertBlock(fillBlock);
             }
             animateFillDown(col, crushedBlocksInCol);
         }
+    }
+
+    private Block getNewBlock(int row, int col) {
+        return blockProvider.provideBlock(
+                getBlockPosition(row, col),
+                blockSpacing, blockSpacing, row, col);
     }
 
     private static Array<SimpleBlockGroup> analyzeBoard2(Board board) {
@@ -652,6 +614,7 @@ public class Board extends Group {
         return this.blockTypes;
     }
 
+    @Override
     public void dispose() {
         boardTexture.dispose();
     }
