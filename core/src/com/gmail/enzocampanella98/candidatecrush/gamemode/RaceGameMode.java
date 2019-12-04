@@ -2,6 +2,7 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -13,65 +14,70 @@ import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.FrequencyRandomBlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
-import com.gmail.enzocampanella98.candidatecrush.scoringsystem.Candidate;
-import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceToWhitehouseScoringSystem;
+import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
-public class RaceToWhitehouseGameMode extends CCGameMode {
+public class RaceGameMode extends CCGameMode {
     private static int boardWidth = 8;
     private static int defaultNumMoves = 20;
-    private static double defaultUserBlockFrequencyAdvantage = 0.1;
+    private final List<NamedCandidateGroup> groups;
+    private final NamedCandidateGroup playerGroup;
+    private final Map<BlockType, Double> blockFrequencies;
 
     private int numMoves;
-    private BlockType userBlockType;
     private List<BlockType> blockTypes;
 
-    private RaceToWhitehouseScoringSystem scoringSystem;
-
     private Table mainTable;
-    private int numMovesLeft;
 
-    public RaceToWhitehouseGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes) {
-        this(game, stage, blockTypes, defaultNumMoves);
+    private int numMovesLeft;
+    private float messageTimer;
+
+
+    public RaceGameMode(CandidateCrush game,
+                        Stage stage,
+                        final List<BlockType> blockTypes,
+                        List<NamedCandidateGroup> groups,
+                        NamedCandidateGroup playerGroup,
+                        Map<BlockType, Double> blockFrequencies) {
+        this(game, stage, blockTypes, groups, playerGroup, blockFrequencies, defaultNumMoves);
     }
 
-    public RaceToWhitehouseGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes, int numMoves) {
+    public RaceGameMode(CandidateCrush game,
+                        Stage stage,
+                        List<BlockType> blockTypes,
+                        List<NamedCandidateGroup> groups,
+                        NamedCandidateGroup playerGroup,
+                        Map<BlockType, Double> blockFrequencies,
+                        int numMoves) {
         super(game, stage);
 
         this.numMoves = numMoves;
-
         this.blockTypes = blockTypes;
-
-        this.userBlockType = this.blockTypes.get(new Random().nextInt(blockTypes.size()));
+        this.groups = groups;
+        this.playerGroup = playerGroup;
+        this.blockFrequencies = blockFrequencies;
 
         Set<String> blockTypeSet = new HashSet<>();
         for (BlockType bt : blockTypes) blockTypeSet.add(bt.getLname());
         musicHandler = new NoLevelMusicHandler(blockTypeSet);
         musicHandler.start();
 
-        Map<BlockType, Double> blockFrequencies = new HashMap<BlockType, Double>();
-        double userBlockFrequency = 1.0 / this.blockTypes.size() + defaultUserBlockFrequencyAdvantage;
-        double otherBlockFrequency = (1.0 - userBlockFrequency) / (this.blockTypes.size() - 1);
-        for (BlockType type : this.blockTypes) {
-            blockFrequencies.put(type, type == userBlockType ? userBlockFrequency : otherBlockFrequency);
-        }
-        blockProvider = new FrequencyRandomBlockProvider(blockFrequencies);
+        blockProvider = new FrequencyRandomBlockProvider(this.blockFrequencies);
 
         this.board = new Board(boardWidth, this.blockTypes, musicHandler, blockProvider);
 
         int score3 = 100, score4 = 1000, score5 = 3000, scoreT = 2000;
-        this.scoringSystem = new RaceToWhitehouseScoringSystem(
-                userBlockType, this.blockTypes,
-                score3, score4, score5, scoreT);
+        this.scoringSystem = new RaceScoringSystem(
+                groups, playerGroup, score3, score4, score5, scoreT);
 
         // set background texture
         String bg1 = "data/img/general/screen_bg_race.png";
@@ -97,8 +103,6 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
     }
 
-    private float messageTimer;
-
     @Override
     public void onGameEnd() {
         isGameOver = true;
@@ -110,7 +114,7 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
     }
 
     protected boolean win() {
-        return isGameOver && scoringSystem.getScores().get(0).type == userBlockType;
+        return isGameOver && ((RaceScoringSystem)scoringSystem).getGroups().get(0) == playerGroup;
     }
 
     @Override
@@ -136,24 +140,22 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
     protected class HeadsUpDisplay extends HUD implements Disposable {
 
-        private int largeFontSize = 100, medFontSize = 60, smallFontSize = 40;
+        private static final int FONT_LG = 100, FONT_MD = 60, FONT_SM = 40;
 
         private Label labelNumMovesLeft;
 
         private ScoreTable topScoreTable;
         private ScoreTable[] otherScoreTables;
 
+        private BitmapFont endFont;
 
-        public HeadsUpDisplay(RaceToWhitehouseGameMode gameMode) {
+        public HeadsUpDisplay(RaceGameMode gameMode) {
             super(gameMode);
 
-            // init font
-            addFontSizes(new int[]{largeFontSize, medFontSize, smallFontSize});
-
             // init table elements
-            Label.LabelStyle topScoreLabelStyle = new Label.LabelStyle(getFont(medFontSize), Color.BLACK);
-            Label.LabelStyle numMovesLeftLabelStyle = new Label.LabelStyle(getFont(largeFontSize), Color.BLACK);
-            Label.LabelStyle otherScoreLabelStyle = new Label.LabelStyle(getFont(smallFontSize), Color.BLACK);
+            Label.LabelStyle topScoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
+            Label.LabelStyle numMovesLeftLabelStyle = new Label.LabelStyle(fontCache.get(FONT_LG), Color.BLACK);
+            Label.LabelStyle otherScoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_SM), Color.BLACK);
 
             labelNumMovesLeft = new Label(null, numMovesLeftLabelStyle);
 
@@ -181,12 +183,17 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
             table.add(infoBox).padBottom(20).center();
             table.row();
 
-            Texture userTexture = blockProvider.getBlockTexture(((RaceToWhitehouseGameMode) this.gameMode).userBlockType);
-            Image userImg = new Image(userTexture);
-            userImg.scaleBy(2.1f);
-            userImg.setOrigin(Align.center);
+            table.add(new Label("You play", otherScoreLabelStyle)).padTop(50f);
+            table.row();
 
-            table.add(userImg).padTop(50).center();
+            for (BlockType bt : gameMode.playerGroup.getCandidates()) {
+                Texture userTexture = blockProvider.getBlockTexture(bt);
+                Image userImg = new Image(userTexture);
+                userImg.scaleBy(2.3f - (0.2f * gameMode.playerGroup.getCandidates().size()));
+                userImg.setOrigin(Align.center);
+                table.add(userImg).padTop(10f).center();
+            }
+
             table.row();
 
             infoBox = new GameInfoBox();
@@ -205,6 +212,7 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
                     curScoresInRow = 0;
                 }
                 otherScoresTable.add(scoreTable).expandX().padLeft(30).padRight(30);
+                //curScoresInRow++;
             }
 
             infoBox = new GameInfoBox();
@@ -228,32 +236,25 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
             if (win) msg = "You win!";
             else msg = "You lose!";
 
-            String endFont = "end-font";
-            if (!hasNamedFont(endFont))
-                addNewFont(largeFontSize, win ? Color.GREEN : Color.RED, endFont);
-
-            addMessage(msg, getFont(endFont));
+            endFont = new FontGenerator(win ? Color.GREEN : Color.RED).generateFont(FONT_LG);
+            addMessage(msg, endFont);
         }
 
         private void updateLabels() {
             // update num moves label
-            labelNumMovesLeft.setText(String.valueOf(((RaceToWhitehouseGameMode) gameMode).getNumMovesLeft()));
+            labelNumMovesLeft.setText(String.valueOf(((RaceGameMode) gameMode).getNumMovesLeft()));
 
             // update scores labels
-            List<Candidate> scores = ((RaceToWhitehouseGameMode) gameMode).scoringSystem.getScores();
-            Candidate topCandidate = scores.get(0);
-            topScoreTable.getNameLabel().setText(firstToUpper(topCandidate.type.getLname()));
-            topScoreTable.getScoreLabel().setText(String.valueOf(topCandidate.score));
+            List<NamedCandidateGroup> scores = ((RaceScoringSystem)((RaceGameMode) gameMode).scoringSystem).getGroups();
+            NamedCandidateGroup topGroup = scores.get(0);
+            topScoreTable.getNameLabel().setText(topGroup.getName());
+            topScoreTable.getScoreLabel().setText(String.valueOf(topGroup.score));
 
             for (int i = 0; i < scores.size() - 1 && i < otherScoreTables.length; ++i) {
-                otherScoreTables[i].getNameLabel().setText(firstToUpper(scores.get(i + 1).type.getLname()));
+                otherScoreTables[i].getNameLabel().setText(scores.get(i + 1).getName());
                 otherScoreTables[i].getScoreLabel().setText(String.valueOf(scores.get(i + 1).score));
             }
 
-        }
-
-        private String firstToUpper(String s) {
-            return s.substring(0, 1).toUpperCase() + s.substring(1);
         }
 
         @Override
@@ -270,6 +271,12 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
 
             hudStage.act(dt);
             hudStage.draw();
+        }
+
+        @Override
+        public void dispose() {
+            super.dispose();
+            if (endFont != null) endFont.dispose();
         }
 
         private class ScoreTable extends Table {
@@ -296,6 +303,5 @@ public class RaceToWhitehouseGameMode extends CCGameMode {
             }
         }
     }
-
 
 }

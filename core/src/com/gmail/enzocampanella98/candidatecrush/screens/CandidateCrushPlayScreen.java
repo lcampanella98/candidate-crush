@@ -23,7 +23,7 @@ public class CandidateCrushPlayScreen implements Screen {
     private Viewport gameViewport;
     private OrthographicCamera cam;
 
-    public Stage playStage;
+    public final Stage playStage;
 
     public CandidateCrushPlayScreen(CandidateCrush game) {
         this.game = game;
@@ -92,8 +92,8 @@ public class CandidateCrushPlayScreen implements Screen {
 
     @Override
     public void dispose() {
-        gameMode.dispose();
-        playStage.dispose();
+        if (gameMode != null) gameMode.dispose();
+        if (playStage != null) playStage.dispose();
     }
 
 }

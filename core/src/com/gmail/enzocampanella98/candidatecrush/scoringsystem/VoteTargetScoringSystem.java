@@ -39,11 +39,12 @@ public class VoteTargetScoringSystem extends ScoringSystem {
         this.userScore += curScore;
     }
 
-    public void setUserScore(int score) {
+    public void setPlayerScore(int score) {
         this.userScore = score;
     }
 
-    public int getUserScore() {
+    @Override
+    public int getPlayerScore() {
         return userScore;
     }
 }

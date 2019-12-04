@@ -14,7 +14,6 @@ public class EqualMusicHandler extends MusicHandler {
     private Random rand = new Random();
 
     public EqualMusicHandler(Set<String> candidates) {
-        super(candidates);
         soundsLeft = new ObjectMap<>();
         for (BlockSound sound : allBlockSounds) {
             String name = sound.getLastname();

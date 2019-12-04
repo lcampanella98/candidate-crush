@@ -31,4 +31,8 @@ public final class Methods {
         if (portion < 10) sb.deleteCharAt(sb.length() - 1);
         return sb.reverse().toString();
     }
+
+    public static String firstToUpper(String s) {
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
 }

@@ -1,70 +1,37 @@
 package com.gmail.enzocampanella98.candidatecrush.customui;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.utils.Disposable;
-import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
-import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
+import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 
 
-public class GameModeButton extends ImageTextButton implements Disposable{
-    private static ImageTextButtonStyle style = getButtonStyle();
+public class GameModeButton extends CCButton {
 
-    private static Skin voteButtonSkin;
-    private static BitmapFont font;
+    private MenuScreen.GameMode gameModeType;
+    private boolean requiresParty = false;
+    private boolean requiresCandidate = false;
 
-    private static ImageTextButtonStyle getButtonStyle() {
-        if (voteButtonSkin == null) {
-            voteButtonSkin = new Skin(new TextureAtlas("data/img/button_skin/vote_button.atlas"));
-        }
-        if (font == null) {
-            // init font
-            FreeTypeFontGenerator fontGen = new FreeTypeFontGenerator(Gdx.files.internal(HUD.FONT_FILE));
-            FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-            param.size = 50;
-            param.borderWidth = 2;
-            param.color = Color.WHITE;
-            font = fontGen.generateFont(param);
-            fontGen.dispose();
-        }
-
-        ImageTextButton.ImageTextButtonStyle voteButtonStyle = new ImageTextButton.ImageTextButtonStyle();
-        voteButtonStyle.checked = voteButtonSkin.getDrawable("btn-checked");
-        voteButtonStyle.down = voteButtonSkin.getDrawable("btn-down");
-        voteButtonStyle.up = voteButtonSkin.getDrawable("btn-up");
-        voteButtonStyle.font = font;
-        return voteButtonStyle;
-    }
-
-    private CCGameMode.GameModeType gameModeType;
-
-    public GameModeButton(String text, CCGameMode.GameModeType gameModeType) {
-        super(text, GameModeButton.style);
+    public GameModeButton(String text, ImageTextButtonStyle style, MenuScreen.GameMode gameModeType) {
+        super(text, style);
         this.gameModeType = gameModeType;
     }
 
-    public CCGameMode.GameModeType getGameModeType() {
+    public MenuScreen.GameMode getGameModeType() {
         return this.gameModeType;
     }
 
-    public float getHeightToWidthRatio() {
-        return voteButtonSkin.getDrawable("btn-checked").getMinHeight() / voteButtonSkin.getDrawable("btn-checked").getMinWidth();
+    public boolean isRequiresParty() {
+        return requiresParty;
     }
 
-    @Override
-    public void dispose() {
-        if (voteButtonSkin != null) {
-            voteButtonSkin.dispose();
-            voteButtonSkin = null;
-        }
-        if (font != null) {
-            font.dispose();
-            font = null;
-        }
+    public void setRequiresParty(boolean requiresParty) {
+        this.requiresParty = requiresParty;
     }
+
+    public boolean isRequiresCandidate() {
+        return requiresCandidate;
+    }
+
+    public void setRequiresCandidate(boolean requiresCandidate) {
+        this.requiresCandidate = requiresCandidate;
+    }
+
 }

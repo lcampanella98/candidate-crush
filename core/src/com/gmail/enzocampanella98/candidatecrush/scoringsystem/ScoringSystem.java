@@ -5,6 +5,7 @@ import com.badlogic.gdx.utils.Array;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public abstract class ScoringSystem {
     /*
@@ -24,10 +25,10 @@ public abstract class ScoringSystem {
     public static final Character CRUSHTYPE_FIVE = '5';
     public static final Character CRUSHTYPE_T_SHAPE = 't';
 
-    private HashMap<Character, Integer> crushValues;
+    private Map<Character, Integer> crushValues;
 
     public ScoringSystem(int crushVal3, int crushVal4, int crushVal5, int crushValTShape) {
-        crushValues = new HashMap<Character, Integer>();
+        crushValues = new HashMap<>();
         crushValues.put(CRUSHTYPE_THREE, crushVal3);
         crushValues.put(CRUSHTYPE_FOUR, crushVal4);
         crushValues.put(CRUSHTYPE_FIVE, crushVal5);
@@ -51,5 +52,7 @@ public abstract class ScoringSystem {
         if (nBlocks == 4) return CRUSHTYPE_FOUR;
         return CRUSHTYPE_THREE;
     }
+
+    public abstract int getPlayerScore();
 
 }

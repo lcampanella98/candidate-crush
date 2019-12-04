@@ -8,7 +8,6 @@ import com.badlogic.gdx.utils.ObjectMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Created by Lorenzo Campanella on 6/2/2016.
@@ -78,7 +77,7 @@ public enum BlockType {
 
     // BE SURE TO DISPOSE WHEN DONE!
     public static ObjectMap<BlockType, Texture> getAllBlockTextures() {
-        return getBlockTextures(new ArrayList<BlockType>(Arrays.asList(BlockType.values())));
+        return getBlockTextures(new ArrayList<>(Arrays.asList(BlockType.values())));
     }
 
     public static ObjectMap<BlockType, Texture> getBlockTextures(Collection<BlockType> blockTypes) {

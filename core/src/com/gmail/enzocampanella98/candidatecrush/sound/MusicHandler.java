@@ -4,12 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.ObjectMap;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class MusicHandler extends Thread implements IMusicHandler, Runnable, Disposable, Music.OnCompletionListener {
@@ -22,11 +18,10 @@ public abstract class MusicHandler extends Thread implements IMusicHandler, Runn
     private boolean shouldRun;
     private Music lastMusic;
 
-    public MusicHandler(Set<String> candidates) {
+    public MusicHandler() {
         queue = new ConcurrentLinkedQueue<>();
         allBlockSounds = BlockSoundBank.getInstance().getAllBlockSounds();
         popSound = Gdx.audio.newSound(Gdx.files.internal(POP_SOUND_LOCATION));
-
     }
 
     @Override

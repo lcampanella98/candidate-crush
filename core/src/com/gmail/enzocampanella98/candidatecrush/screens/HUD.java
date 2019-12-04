@@ -1,7 +1,6 @@
 package com.gmail.enzocampanella98.candidatecrush.screens;
 
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -10,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -22,9 +20,9 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
+import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
+import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
-
-import java.util.HashMap;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
@@ -32,15 +30,13 @@ import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 public abstract class HUD implements Disposable {
 
     public static final String FONT_FILE = "data/fonts/LibreFranklin-Bold.ttf";
+    protected final FontCache fontCache;
 
     protected Camera hudCam;
     protected Viewport hudViewport;
     protected SpriteBatch batch;
     protected Table table;
     protected CCGameMode gameMode;
-
-    private HashMap<Integer, BitmapFont> fonts;
-    private HashMap<String, BitmapFont> namedFonts;
 
     public Stage hudStage;
 
@@ -59,46 +55,7 @@ public abstract class HUD implements Disposable {
         batch = new SpriteBatch();
         hudStage = new Stage(hudViewport, batch);
 
-        fonts = new HashMap<Integer, BitmapFont>();
-        namedFonts = new HashMap<String, BitmapFont>();
-    }
-
-    protected void addFontSize(int fontSize) {
-        FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal(FONT_FILE));
-        FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        param.color = Color.BLACK;
-        param.size = fontSize;
-        fonts.put(fontSize, gen.generateFont(param));
-        gen.dispose();
-    }
-
-    protected void addFontSizes(int[] sizes) {
-        FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal(FONT_FILE));
-        FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        param.color = Color.BLACK;
-        for (int fontSize : sizes) {
-            param.size = fontSize;
-            fonts.put(fontSize, gen.generateFont(param));
-        }
-        gen.dispose();
-    }
-
-    protected void addNewFont(int fontSize, Color color, String name) {
-        if (namedFonts.containsKey(name)) return;
-        FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal(FONT_FILE));
-        FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        param.color = color;
-        param.size = fontSize;
-        namedFonts.put(name, gen.generateFont(param));
-        gen.dispose();
-    }
-
-    public boolean hasNamedFont(String name) {return namedFonts.containsKey(name);}
-
-    public BitmapFont getFont(String name) {return namedFonts.get(name);}
-
-    public BitmapFont getFont(int fontSize) {
-        return fonts.get(fontSize);
+        fontCache = new FontCache(new FontGenerator(Color.BLACK));
     }
 
     protected void addExitButton() {
@@ -114,7 +71,7 @@ public abstract class HUD implements Disposable {
         btnExit.addListener(new InputListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                gameMode.dispose();
+                gameMode.getGame().disposeCurrentScreen();
                 gameMode.getGame().setScreen(new MenuScreen(gameMode.getGame()));
                 return true;
             }
@@ -140,9 +97,9 @@ public abstract class HUD implements Disposable {
     public void drawCenteredMessage() {
         GlyphLayout layout = new GlyphLayout(messageFont, messageText);
         Texture tex = GameInfoBox.getTexture();
-        float pad=60, w = layout.width + pad, h = layout.height + pad;
-        batch.draw(tex, V_WIDTH / 2 - w / 2, V_HEIGHT / 2 - h/2, w, h);
-        messageFont.draw(batch, messageText, V_WIDTH / 2 - layout.width / 2, V_HEIGHT / 2 +layout.height/2);
+        float pad = 60, w = layout.width + pad, h = layout.height + pad;
+        batch.draw(tex, V_WIDTH / 2 - w / 2, V_HEIGHT / 2 - h / 2, w, h);
+        messageFont.draw(batch, messageText, V_WIDTH / 2 - layout.width / 2, V_HEIGHT / 2 + layout.height / 2);
 
     }
 
@@ -150,8 +107,7 @@ public abstract class HUD implements Disposable {
 
     public void dispose() {
         if (btnExitAtlas != null) btnExitAtlas.dispose();
-        for (BitmapFont font : fonts.values()) font.dispose();
-        for (BitmapFont font : namedFonts.values()) font.dispose();
+        fontCache.dispose();
     }
 
 }

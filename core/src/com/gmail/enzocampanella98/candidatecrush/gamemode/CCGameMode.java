@@ -8,15 +8,13 @@ import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 
 public abstract class CCGameMode implements Disposable {
-
-    public enum GameModeType {
-        VOTE_TARGET, RACE_TO_WHITEHOUSE,
-    }
+    static final String BG_PATH = "data/img/general/screen_bg_votetarget.png";
 
     protected Stage stage;
     protected Board board;
@@ -29,12 +27,19 @@ public abstract class CCGameMode implements Disposable {
     protected Texture backgroundTexture;
     protected MusicHandler musicHandler;
     protected BlockProvider blockProvider;
+    protected ScoringSystem scoringSystem;
 
 
     protected CCGameMode(CandidateCrush game, Stage stage) {
         this.stage = stage;
         this.game = game;
         isGameOver = false;
+        this.backgroundTexture = new Texture(getBackgroundTexturePath());
+    }
+
+    // override to set custom background texture
+    protected String getBackgroundTexturePath() {
+        return BG_PATH;
     }
 
     public abstract void onGameStart();
@@ -46,8 +51,8 @@ public abstract class CCGameMode implements Disposable {
     protected void setupInputMultiplexer() {
         inputMultiplexer = new InputMultiplexer();
         Gdx.input.setInputProcessor(inputMultiplexer);
-        inputMultiplexer.addProcessor(this.hud.hudStage);
-        inputMultiplexer.addProcessor(this.stage);
+        inputMultiplexer.addProcessor(hud.hudStage);
+        inputMultiplexer.addProcessor(stage);
     }
 
     public CandidateCrush getGame() {

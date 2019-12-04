@@ -1,7 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -11,10 +11,10 @@ import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.EquallyRandomBlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
+import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
-import com.gmail.enzocampanella98.candidatecrush.sound.EqualMusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
@@ -24,12 +24,12 @@ import java.util.Set;
 
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
-public class VoteTargetGameMode extends CCTimeBasedGameMode {
+public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
+    private static double nonUserInvokedCrushScale = 2.0 / 5.0;
     private static int boardWidth = 8;
     private static int defaultGameLength = 60; // 60 seconds
     private static int defaultTargetScore = 20000;
 
-    private VoteTargetScoringSystem scoringSystem;
     private int targetScore;
 
     private List<BlockType> blockTypes;
@@ -38,11 +38,11 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
     private MusicHandler musicHandler;
     private BlockProvider blockProvider;
 
-    public VoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes) {
+    public TimedVoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes) {
         this(game, stage, blockTypes, defaultGameLength, defaultTargetScore);
     }
 
-    public VoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes, double gameLength, int targetScore) {
+    public TimedVoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes, double gameLength, int targetScore) {
         super(game, stage, gameLength);
 
         this.targetScore = targetScore;
@@ -60,12 +60,7 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         this.board = new Board(boardWidth, this.blockTypes, musicHandler, blockProvider);
 
         int score3 = 800, score4 = 1000, score5 = 3000, scoreT = 2000;
-        double nonUserInvokedCrushScale = 1.0 / 5.0;
         this.scoringSystem = new VoteTargetScoringSystem(score3, score4, score5, scoreT, nonUserInvokedCrushScale);
-
-        // set background texture
-        String bg1 = "data/img/general/screen_bg_votetarget.png";
-        this.backgroundTexture = new Texture(bg1);
 
         this.mainTable = new Table();
         this.mainTable.setFillParent(true);
@@ -123,31 +118,29 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
         super.advanceGameTime(dt);
 
         while (board.getCrushStack().size() > 0) {
-            this.scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
+            scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
         }
-        if (this.scoringSystem.getUserScore() >= targetScore) { // WIN
+        if (scoringSystem.getPlayerScore() >= targetScore) { // WIN
             onGameEnd();
         }
     }
 
     private class HeadsUpDisplay extends HUD {
 
-        private int largeFontSize = 100, medFontSize = 70, smallFontSize = 50;
+        private int FONT_LG = 100, FONT_MD = 70, FONT_SM = 50;
 
         private Label labelScore;
         private Label labelTimeLeft;
         private Label labelTargetScore;
+        private BitmapFont endFont;
 
-        public HeadsUpDisplay(VoteTargetGameMode gameMode) {
+        public HeadsUpDisplay(TimedVoteTargetGameMode gameMode) {
             super(gameMode);
 
-            // init font
-            addFontSizes(new int[]{smallFontSize, medFontSize, largeFontSize});
-
             // init table elements
-            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(getFont(medFontSize), Color.BLACK);
-            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(getFont(largeFontSize), Color.BLACK);
-            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(getFont(medFontSize), Color.BLACK);
+            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
+            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(fontCache.get(FONT_LG), Color.BLACK);
+            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
 
             labelScore = new Label(null, scoreLabelStyle);
             labelTimeLeft = new Label(null, timeLabelStyle);
@@ -196,20 +189,22 @@ public class VoteTargetGameMode extends CCTimeBasedGameMode {
             if (win) msg = "You win!";
             else msg = "You lose!";
 
-            String endFont = "end-font";
-            if (!hasNamedFont(endFont))
-                addNewFont(largeFontSize, win ? Color.GREEN : Color.RED, endFont);
-
-            addMessage(msg, getFont(endFont));
+            endFont = new FontGenerator(win ? Color.GREEN : Color.RED).generateFont(FONT_LG);
+            addMessage(msg, endFont);
         }
 
         private void updateLabels() {
-            VoteTargetGameMode gameMode = (VoteTargetGameMode) this.gameMode;
-            labelScore.setText("Votes: " + getCommaSeparatedNumber(gameMode.scoringSystem.getUserScore()));
+            TimedVoteTargetGameMode gameMode = (TimedVoteTargetGameMode) this.gameMode;
+            labelScore.setText("Votes: " + getCommaSeparatedNumber(gameMode.scoringSystem.getPlayerScore()));
             labelTargetScore.setText("Target: " + getCommaSeparatedNumber(gameMode.targetScore));
             labelTimeLeft.setText("" + ((int) Math.ceil(gameMode.getTimeLeft())));
         }
 
+        @Override
+        public void dispose() {
+            super.dispose();
+            if (endFont != null) endFont.dispose();
+        }
 
         @Override
         public void render(float dt) {
