@@ -25,7 +25,7 @@ public enum BlockType {
     BLANK();
 
     private boolean isEmpty;
-    private static final String SPRITE_ROOT = "./data/img/block_sprites/";
+    private static final String SPRITE_ROOT = "data/img/block_sprites/";
     private String friendlyName, internalPath, lname;
 
     BlockType(String lname, String friendlyName) {
