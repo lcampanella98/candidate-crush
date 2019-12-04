@@ -53,10 +53,10 @@ public class RaceScoringSystem extends ScoringSystem {
                     if (playerGroup.score == 0) {
                         c.score += val;
                     } else {
-                        int diff = playerGroup.score - c.score;
+                        int diff = Math.abs(playerGroup.score - c.score);
                         double diffProportion = ((double)diff) / playerGroup.score;
-                        double newVal = (1+diffProportion) * val;
-                        newVal = (((int)newVal) / 10) * 10.0;
+                        double newVal = (1 + diffProportion) * val;
+                        newVal = 10.0 * Math.floor(newVal / 10.0);
                         c.score += (int)newVal;
                     }
                 }

@@ -66,7 +66,6 @@ public class CandidateCrushPlayScreen implements Screen {
         playStage.act(delta);
         playStage.draw();
 
-
         gameMode.drawHUD(delta);
     }
 

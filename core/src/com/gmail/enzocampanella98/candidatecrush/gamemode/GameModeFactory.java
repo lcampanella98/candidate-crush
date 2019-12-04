@@ -60,7 +60,7 @@ public class GameModeFactory {
 
     public RaceGameMode getElection2020GameMode(Character playerParty) {
         assert stage != null;
-        double trumpBlockFreq = 0.25;
+        double trumpBlockFreq = 0.35;
         List<NamedCandidateGroup> groups = new ArrayList<>();
         NamedCandidateGroup playerGroup = null;
         List<BlockType> repCands = new ArrayList<>();

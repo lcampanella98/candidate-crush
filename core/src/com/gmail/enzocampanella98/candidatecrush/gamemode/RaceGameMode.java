@@ -21,6 +21,7 @@ import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +146,7 @@ public class RaceGameMode extends CCGameMode {
         private Label labelNumMovesLeft;
 
         private ScoreTable topScoreTable;
-        private ScoreTable[] otherScoreTables;
+        private List<ScoreTable> otherScoreTables;
 
         private BitmapFont endFont;
 
@@ -160,11 +161,10 @@ public class RaceGameMode extends CCGameMode {
             labelNumMovesLeft = new Label(null, numMovesLeftLabelStyle);
 
             topScoreTable = new ScoreTable(topScoreLabelStyle);
-            otherScoreTables = new ScoreTable[blockTypes.size() - 1];
-            for (int i = 0; i < otherScoreTables.length; ++i) {
-                otherScoreTables[i] = new ScoreTable(otherScoreLabelStyle);
+            otherScoreTables = new ArrayList<ScoreTable>();
+            for (int i = 0; i < groups.size()-1; i++) {
+                otherScoreTables.add(new ScoreTable(otherScoreLabelStyle));
             }
-
 
             table = new Table();
 
@@ -177,22 +177,23 @@ public class RaceGameMode extends CCGameMode {
             GameInfoBox infoBox;
 
             infoBox = new GameInfoBox();
-            infoBox.add(labelNumMovesLeft).pad(10f);
+            infoBox.add(labelNumMovesLeft).pad(10f).center();
             infoBox.pack();
 
-            table.add(infoBox).padBottom(20).center();
+            table.add(infoBox).center();
             table.row();
 
-            table.add(new Label("You play", otherScoreLabelStyle)).padTop(50f);
+            table.add(new Label("You play", otherScoreLabelStyle)).padTop(10f).center();
             table.row();
-
+            Table playerViewTable = new Table();
             for (BlockType bt : gameMode.playerGroup.getCandidates()) {
                 Texture userTexture = blockProvider.getBlockTexture(bt);
                 Image userImg = new Image(userTexture);
-                userImg.scaleBy(2.3f - (0.2f * gameMode.playerGroup.getCandidates().size()));
+                userImg.scaleBy(1.4f - (0.2f * gameMode.playerGroup.getCandidates().size()));
                 userImg.setOrigin(Align.center);
-                table.add(userImg).padTop(10f).center();
+                playerViewTable.add(userImg).padRight(10f).padLeft(10f);
             }
+            table.add(playerViewTable).padTop(40f).center();
 
             table.row();
 
@@ -216,7 +217,7 @@ public class RaceGameMode extends CCGameMode {
             }
 
             infoBox = new GameInfoBox();
-            infoBox.add(otherScoresTable).pad(20f);
+            infoBox.add(otherScoresTable).center().pad(20f);
             infoBox.pack();
 
             table.add(infoBox).center().padTop(30f);
@@ -250,9 +251,9 @@ public class RaceGameMode extends CCGameMode {
             topScoreTable.getNameLabel().setText(topGroup.getName());
             topScoreTable.getScoreLabel().setText(String.valueOf(topGroup.score));
 
-            for (int i = 0; i < scores.size() - 1 && i < otherScoreTables.length; ++i) {
-                otherScoreTables[i].getNameLabel().setText(scores.get(i + 1).getName());
-                otherScoreTables[i].getScoreLabel().setText(String.valueOf(scores.get(i + 1).score));
+            for (int i = 0; i < scores.size() - 1 && i < otherScoreTables.size(); ++i) {
+                otherScoreTables.get(i).getNameLabel().setText(scores.get(i + 1).getName());
+                otherScoreTables.get(i).getScoreLabel().setText(String.valueOf(scores.get(i + 1).score));
             }
 
         }
@@ -289,9 +290,9 @@ public class RaceGameMode extends CCGameMode {
 
                 setFillParent(false);
 
-                add(nameLabel);
+                add(nameLabel).center();
                 row();
-                add(scoreLabel);
+                add(scoreLabel).center();
             }
 
             public Label getNameLabel() {
