@@ -13,6 +13,7 @@ import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.FrequencyRandomBlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
@@ -48,8 +49,9 @@ public class RaceGameMode extends CCGameMode {
                         final List<BlockType> blockTypes,
                         List<NamedCandidateGroup> groups,
                         NamedCandidateGroup playerGroup,
-                        Map<BlockType, Double> blockFrequencies) {
-        this(game, stage, blockTypes, groups, playerGroup, blockFrequencies, defaultNumMoves);
+                        Map<BlockType, Double> blockFrequencies,
+                        IBlockColorProvider blockColorProvider) {
+        this(game, stage, blockTypes, groups, playerGroup, blockColorProvider, blockFrequencies, defaultNumMoves);
     }
 
     public RaceGameMode(CandidateCrush game,
@@ -57,9 +59,10 @@ public class RaceGameMode extends CCGameMode {
                         List<BlockType> blockTypes,
                         List<NamedCandidateGroup> groups,
                         NamedCandidateGroup playerGroup,
+                        IBlockColorProvider blockColorProvider,
                         Map<BlockType, Double> blockFrequencies,
                         int numMoves) {
-        super(game, stage);
+        super(game, stage, blockColorProvider);
 
         this.numMoves = numMoves;
         this.blockTypes = blockTypes;
@@ -72,7 +75,7 @@ public class RaceGameMode extends CCGameMode {
         musicHandler = new NoLevelMusicHandler(blockTypeSet);
         musicHandler.start();
 
-        blockProvider = new FrequencyRandomBlockProvider(this.blockFrequencies);
+        blockProvider = new FrequencyRandomBlockProvider(this.blockFrequencies, this.blockColorProvider);
 
         this.board = new Board(boardWidth, this.blockTypes, musicHandler, blockProvider);
 

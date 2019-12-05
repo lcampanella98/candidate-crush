@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EquallyRandomBlockProvider extends FrequencyRandomBlockProvider {
-    public EquallyRandomBlockProvider(Collection<BlockType> blockTypes) {
-        super(equalFreqs(blockTypes));
+    public EquallyRandomBlockProvider(Collection<BlockType> blockTypes, IBlockColorProvider blockColorProvider) {
+        super(equalFreqs(blockTypes), blockColorProvider);
     }
 
     private static Map<BlockType, Double> equalFreqs(Collection<BlockType> blockTypes) {

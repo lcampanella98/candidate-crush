@@ -1,5 +1,6 @@
 package com.gmail.enzocampanella98.candidatecrush.board;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
@@ -21,7 +22,6 @@ public class Block extends Image {
 
     boolean visited; // used for traversing the board
     SimpleBlockGroup blockGroup; // used for traversing the board
-
 
     public Block(BlockType blockType, Texture texture, Vector2 initialPosition,
                  float width, float height,

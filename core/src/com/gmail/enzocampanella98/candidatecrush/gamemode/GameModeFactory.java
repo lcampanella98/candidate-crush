@@ -1,11 +1,15 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
+import com.gmail.enzocampanella98.candidatecrush.board.BlockColorProviderFactory;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
+import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,12 +20,18 @@ import static com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen.DEM_C
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.firstToUpper;
 
 public class GameModeFactory {
+    private static final List<Color> BLOCK_BG_COLORS = new ArrayList<>(Arrays.asList(
+            Color.MAGENTA, Color.CYAN, Color.FIREBRICK, Color.GREEN, Color.ORANGE
+    ));
 
     private final CandidateCrush game;
     private Stage stage;
+    private BlockColorProviderFactory blockColorProviderFactory;
+    private boolean isHardMode;
 
     public GameModeFactory(CandidateCrush game) {
         this.game = game;
+        blockColorProviderFactory = new BlockColorProviderFactory();
     }
 
     public RaceGameMode getDemocratPrimary2020GameMode(BlockType player) {
@@ -45,17 +55,20 @@ public class GameModeFactory {
             }
         }
         assert playerGroup != null;
-        return new RaceGameMode(game, stage, DEM_CANDIDATES_2020, groups, playerGroup, freqs);
+        return new RaceGameMode(game, stage, DEM_CANDIDATES_2020, groups, playerGroup,
+                freqs, getBlockColorProvider(DEM_CANDIDATES_2020));
     }
 
     public TimedVoteTargetGameMode getTimedVoteTargetGameMode() {
         assert stage != null;
-        return new TimedVoteTargetGameMode(game, stage, CANDIDATES_2020, 60, 20000);
+        return new TimedVoteTargetGameMode(game, stage,
+                getBlockColorProvider(DEM_CANDIDATES_2020), CANDIDATES_2020, 60, 20000);
     }
 
     public MoveLimitVoteTargetGameMode getMoveLimitVoteTargetGameMode() {
         assert stage != null;
-        return new MoveLimitVoteTargetGameMode(game, stage, CANDIDATES_2020, 30, 20000);
+        return new MoveLimitVoteTargetGameMode(game, stage,
+                getBlockColorProvider(DEM_CANDIDATES_2020), CANDIDATES_2020, 30, 20000);
     }
 
     public RaceGameMode getElection2020GameMode(Character playerParty) {
@@ -83,10 +96,25 @@ public class GameModeFactory {
         groups.add(demGroup);
         groups.add(repGroup);
         playerGroup = playerParty == 'D' ? demGroup : repGroup;
-        return new RaceGameMode(game, stage, CANDIDATES_2020, groups, playerGroup, freqs, 50);
+        return new RaceGameMode(game, stage, CANDIDATES_2020, groups, playerGroup, freqs, getBlockColorProvider(CANDIDATES_2020));
+    }
+
+    private IBlockColorProvider getBlockColorProvider(List<BlockType> blockTypes) {
+        return isHardMode
+                ? blockColorProviderFactory.getEmptyBlockColorProvider()
+                : blockColorProviderFactory.getRandomBlockColorProvider(blockTypes, BLOCK_BG_COLORS);
     }
 
     public void setStage(Stage stage) {
         this.stage = stage;
     }
+
+    public boolean isHardMode() {
+        return isHardMode;
+    }
+
+    public void setHardMode(boolean hardMode) {
+        isHardMode = hardMode;
+    }
+
 }

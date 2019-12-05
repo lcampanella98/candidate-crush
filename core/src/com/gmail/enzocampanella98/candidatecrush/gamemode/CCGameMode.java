@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
+import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
@@ -28,11 +29,13 @@ public abstract class CCGameMode implements Disposable {
     protected MusicHandler musicHandler;
     protected BlockProvider blockProvider;
     protected ScoringSystem scoringSystem;
+    protected IBlockColorProvider blockColorProvider;
 
 
-    protected CCGameMode(CandidateCrush game, Stage stage) {
+    protected CCGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider) {
         this.stage = stage;
         this.game = game;
+        this.blockColorProvider = blockColorProvider;
         isGameOver = false;
         this.backgroundTexture = new Texture(getBackgroundTexturePath());
     }

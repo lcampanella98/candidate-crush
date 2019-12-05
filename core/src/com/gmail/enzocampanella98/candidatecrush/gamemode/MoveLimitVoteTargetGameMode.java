@@ -10,6 +10,7 @@ import com.gmail.enzocampanella98.candidatecrush.board.BlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.EquallyRandomBlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
@@ -39,12 +40,12 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
     private MusicHandler musicHandler;
     private BlockProvider blockProvider;
 
-    public MoveLimitVoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes) {
-        this(game, stage, blockTypes, defaultNumMoves, defaultTargetScore);
+    public MoveLimitVoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes, IBlockColorProvider blockColorProvider) {
+        this(game, stage, blockColorProvider, blockTypes, defaultNumMoves, defaultTargetScore);
     }
 
-    public MoveLimitVoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes, int numMoves, int targetScore) {
-        super(game, stage);
+    public MoveLimitVoteTargetGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider, List<BlockType> blockTypes, int numMoves, int targetScore) {
+        super(game, stage, blockColorProvider);
 
         this.targetScore = targetScore;
         this.numMovesLeft = numMoves;
@@ -57,7 +58,7 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
         musicHandler = new NoLevelMusicHandler(blockTypeSet);
         musicHandler.start();
 
-        blockProvider = new EquallyRandomBlockProvider(blockTypes);
+        blockProvider = new EquallyRandomBlockProvider(blockTypes, this.blockColorProvider);
 
         this.board = new Board(boardWidth, this.blockTypes, musicHandler, blockProvider);
 

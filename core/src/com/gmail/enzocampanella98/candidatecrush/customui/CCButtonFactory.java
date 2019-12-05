@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.gmail.enzocampanella98.candidatecrush.tools.ImgTools.texRegionToPixmap;
+import static com.gmail.enzocampanella98.candidatecrush.tools.ImgTools.texToPixmap;
+
 public class CCButtonFactory implements Disposable {
     private FontCache fontCache;
     private ObjectMap<BlockType, Texture> candTextures;
@@ -99,27 +102,6 @@ public class CCButtonFactory implements Disposable {
 
         voteButtonStyle.font = font;
         return voteButtonStyle;
-    }
-
-
-    private static Pixmap texRegionToPixmap(Pixmap texPixmap, TextureRegion region) {
-        Pixmap pixmap = new Pixmap(region.getRegionWidth(), region.getRegionHeight(), Pixmap.Format.RGBA8888);
-
-        for (int x = 0; x < region.getRegionWidth(); x++) {
-            for (int y = 0; y < region.getRegionHeight(); y++) {
-                int colorInt = texPixmap.getPixel(region.getRegionX() + x, region.getRegionY() + y);
-                // you could now draw that color at (x, y) of another pixmap of the size (regionWidth, regionHeight)
-                pixmap.drawPixel(x, y, colorInt);
-            }
-        }
-        return pixmap;
-    }
-
-    private static Pixmap texToPixmap(Texture texture) {
-        if (!texture.getTextureData().isPrepared()) {
-            texture.getTextureData().prepare();
-        }
-        return texture.getTextureData().consumePixmap();
     }
 
     @Override

@@ -11,8 +11,9 @@ public class FrequencyRandomBlockProvider extends BlockProvider {
     private Map<BlockType, Double> blockTypeFrequencies;
 
     public FrequencyRandomBlockProvider(
-            Map<BlockType, Double> blockTypeFrequencies) {
-        super(blockTypeFrequencies.keySet());
+            Map<BlockType, Double> blockTypeFrequencies,
+            IBlockColorProvider blockColorProvider) {
+        super(blockTypeFrequencies.keySet(), blockColorProvider);
         this.blockTypeFrequencies = blockTypeFrequencies;
     }
 

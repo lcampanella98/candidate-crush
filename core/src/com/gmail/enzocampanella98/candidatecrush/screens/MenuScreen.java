@@ -40,6 +40,7 @@ import java.util.List;
  * Created by lorenzo on 9/5/2016.
  */
 public class MenuScreen implements Screen {
+
     public enum GameMode {
         MOVE_LIMIT_VOTE_TARGET, TIMED_VOTE_TARGET, PRIMARIES, ELECTION
     }
@@ -68,6 +69,7 @@ public class MenuScreen implements Screen {
     private Table gameModeTable;
     private Table partyBtnTable;
     private Table candidateSelectBtnTable;
+    private CCButton btnHardMode;
 
     private CandidateCrush game;
     private Stage menuStage;
@@ -135,9 +137,13 @@ public class MenuScreen implements Screen {
         // init other buttons
         initCandidateSelection();
         initPartySelection();
+        initHardModeButton();
 
         // add items to table
         table.center();
+        table.add(btnHardMode).top().right().width(400f).height(btnHardMode.getHeightToWidthRatio()*400f).padBottom(100f);
+        table.row();
+
         table.add(titleLabel).padBottom(CandidateCrush.V_HEIGHT / 4.0f);
         table.row();
 
@@ -191,6 +197,7 @@ public class MenuScreen implements Screen {
                 if (checkedButton != null) {
                     CandidateCrushPlayScreen playScreen = new CandidateCrushPlayScreen(game);
                     gameModeFactory.setStage(playScreen.playStage);
+                    gameModeFactory.setHardMode(btnHardMode.isChecked());
                     CCGameMode gameMode = null;
                     switch (checkedButton.getGameModeType()) {
                         case PRIMARIES:
@@ -346,6 +353,10 @@ public class MenuScreen implements Screen {
             candidateSelectBtnTable.add(button).width(500f).height(500f * button.getHeightToWidthRatio()).padTop(10f);
             candidateSelectBtnTable.row();
         }
+    }
+
+    private void initHardModeButton() {
+        btnHardMode = buttonFactory.getVoteButton("Hard Mode", FONT_MD);
     }
 
     private BlockType getSelectedCandidate() {
