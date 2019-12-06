@@ -1,24 +1,20 @@
 package com.gmail.enzocampanella98.candidatecrush.board;
 
-import com.badlogic.gdx.math.Vector2;
-
 import java.util.Map;
 import java.util.Random;
 
-public class FrequencyRandomBlockProvider extends BlockProvider {
+public class FrequencyRandomBlockTypeProvider implements IBlockTypeProvider {
 
     private Random rand = new Random();
     private Map<BlockType, Double> blockTypeFrequencies;
 
-    public FrequencyRandomBlockProvider(
-            Map<BlockType, Double> blockTypeFrequencies,
-            IBlockColorProvider blockColorProvider) {
-        super(blockTypeFrequencies.keySet(), blockColorProvider);
+    public FrequencyRandomBlockTypeProvider(
+            Map<BlockType, Double> blockTypeFrequencies) {
         this.blockTypeFrequencies = blockTypeFrequencies;
     }
 
     @Override
-    public Block provideBlock(Vector2 initialPosition, float width, float height, int row, int col) {
+    public BlockType provideBlockType() {
         BlockType blockType = null;
 
         double num = rand.nextDouble();
@@ -30,7 +26,6 @@ public class FrequencyRandomBlockProvider extends BlockProvider {
             num -= freq.getValue();
         }
         assert blockType != null;
-        return new Block(blockType, getBlockTexture(blockType), initialPosition,
-                width, height, row, col);
+        return blockType;
     }
 }

@@ -6,10 +6,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
-import com.gmail.enzocampanella98.candidatecrush.board.EquallyRandomBlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.EquallyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
@@ -38,14 +37,13 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
 
     private Table mainTable;
     private MusicHandler musicHandler;
-    private BlockProvider blockProvider;
 
     public MoveLimitVoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes, IBlockColorProvider blockColorProvider) {
         this(game, stage, blockColorProvider, blockTypes, defaultNumMoves, defaultTargetScore);
     }
 
     public MoveLimitVoteTargetGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider, List<BlockType> blockTypes, int numMoves, int targetScore) {
-        super(game, stage, blockColorProvider);
+        super(game, stage, blockColorProvider, blockTypes);
 
         this.targetScore = targetScore;
         this.numMovesLeft = numMoves;
@@ -58,9 +56,9 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
         musicHandler = new NoLevelMusicHandler(blockTypeSet);
         musicHandler.start();
 
-        blockProvider = new EquallyRandomBlockProvider(blockTypes, this.blockColorProvider);
+        newBlockTypeProvider = new EquallyRandomBlockTypeProvider(blockTypes);
 
-        this.board = new Board(boardWidth, this.blockTypes, musicHandler, blockProvider);
+        this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
 
         int score3 = 800, score4 = 1000, score5 = 3000, scoreT = 2000;
         this.scoringSystem = new VoteTargetScoringSystem(score3, score4, score5, scoreT, nonUserInvokedCrushScale);

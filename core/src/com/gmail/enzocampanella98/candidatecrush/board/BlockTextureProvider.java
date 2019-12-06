@@ -9,14 +9,14 @@ import com.gmail.enzocampanella98.candidatecrush.tools.ImgTools;
 
 import java.util.Collection;
 
-public abstract class BlockProvider implements IBlockProvider, Disposable {
+public class BlockTextureProvider implements Disposable, IBlockTextureProvider {
 
     private ObjectMap<BlockType, Texture> blockTextures;
     private ObjectMap<BlockType, Texture> oldBlockTextures;
     protected Collection<BlockType> blockTypes;
     private IBlockColorProvider blockColorProvider;
 
-    public BlockProvider(Collection<BlockType> blockTypes, IBlockColorProvider blockColorProvider) {
+    public BlockTextureProvider(Collection<BlockType> blockTypes, IBlockColorProvider blockColorProvider) {
         this.blockTextures = BlockType.getBlockTextures(blockTypes);
         this.blockTypes = blockTypes;
         this.blockColorProvider = blockColorProvider;
@@ -53,7 +53,8 @@ public abstract class BlockProvider implements IBlockProvider, Disposable {
 
     }
 
-    public Texture getBlockTexture(BlockType blockType) {
+    @Override
+    public Texture provideBlockTexture(BlockType blockType) {
         return blockTextures.get(blockType);
     }
 
@@ -66,5 +67,6 @@ public abstract class BlockProvider implements IBlockProvider, Disposable {
             if (ent.value != null) ent.value.dispose();
         }
     }
+
 
 }

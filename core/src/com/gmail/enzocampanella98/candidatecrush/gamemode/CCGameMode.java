@@ -6,12 +6,20 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.BlockTextureProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
+import com.gmail.enzocampanella98.candidatecrush.board.GoodBoardAnalyzer;
+import com.gmail.enzocampanella98.candidatecrush.board.BadBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.IBoardAnalyzer;
+import com.gmail.enzocampanella98.candidatecrush.board.IBlockTypeProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.IBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
+
+import java.util.Collection;
 
 
 public abstract class CCGameMode implements Disposable {
@@ -27,15 +35,20 @@ public abstract class CCGameMode implements Disposable {
 
     protected Texture backgroundTexture;
     protected MusicHandler musicHandler;
-    protected BlockProvider blockProvider;
-    protected ScoringSystem scoringSystem;
+    protected IBlockTypeProvider newBlockTypeProvider;
+    protected BlockTextureProvider blockTextureProvider;
     protected IBlockColorProvider blockColorProvider;
+    protected ScoringSystem scoringSystem;
+    protected IBoardAnalyzer boardAnalyzer;
+    protected IBoardInitializer boardInitializer;
 
-
-    protected CCGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider) {
+    protected CCGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider, Collection<BlockType> blockTypes) {
         this.stage = stage;
         this.game = game;
+        this.boardInitializer = new BadBoardInitializer();
         this.blockColorProvider = blockColorProvider;
+        this.boardAnalyzer = new GoodBoardAnalyzer();
+        blockTextureProvider = new BlockTextureProvider(blockTypes, blockColorProvider);
         isGameOver = false;
         this.backgroundTexture = new Texture(getBackgroundTexturePath());
     }
@@ -77,6 +90,6 @@ public abstract class CCGameMode implements Disposable {
         if (board != null) board.dispose();
         if (hud != null) hud.dispose();
         if (musicHandler != null) musicHandler.dispose();
-        if (blockProvider != null) blockProvider.dispose();
+        if (blockTextureProvider != null) blockTextureProvider.dispose();
     }
 }

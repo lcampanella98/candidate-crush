@@ -12,7 +12,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
-import com.gmail.enzocampanella98.candidatecrush.board.FrequencyRandomBlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.FrequencyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
@@ -62,7 +62,7 @@ public class RaceGameMode extends CCGameMode {
                         IBlockColorProvider blockColorProvider,
                         Map<BlockType, Double> blockFrequencies,
                         int numMoves) {
-        super(game, stage, blockColorProvider);
+        super(game, stage, blockColorProvider, blockTypes);
 
         this.numMoves = numMoves;
         this.blockTypes = blockTypes;
@@ -75,9 +75,9 @@ public class RaceGameMode extends CCGameMode {
         musicHandler = new NoLevelMusicHandler(blockTypeSet);
         musicHandler.start();
 
-        blockProvider = new FrequencyRandomBlockProvider(this.blockFrequencies, this.blockColorProvider);
+        newBlockTypeProvider = new FrequencyRandomBlockTypeProvider(this.blockFrequencies);
 
-        this.board = new Board(boardWidth, this.blockTypes, musicHandler, blockProvider);
+        this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
 
         int score3 = 100, score4 = 1000, score5 = 3000, scoreT = 2000;
         this.scoringSystem = new RaceScoringSystem(
@@ -190,7 +190,7 @@ public class RaceGameMode extends CCGameMode {
             table.row();
             Table playerViewTable = new Table();
             for (BlockType bt : gameMode.playerGroup.getCandidates()) {
-                Texture userTexture = blockProvider.getBlockTexture(bt);
+                Texture userTexture = blockTextureProvider.provideBlockTexture(bt);
                 Image userImg = new Image(userTexture);
                 userImg.scaleBy(1.4f - (0.2f * gameMode.playerGroup.getCandidates().size()));
                 userImg.setOrigin(Align.center);

@@ -1,5 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush.tools;
 
+import com.badlogic.gdx.graphics.Color;
+
 /**
  * Created by enzoc on 5/22/2018.
  */
@@ -34,5 +36,9 @@ public final class Methods {
 
     public static String firstToUpper(String s) {
         return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
+
+    public static Color colorFromRGB(int r, int g, int b) {
+        return new Color(r/255f, g/255f, b/255f, 1f);
     }
 }

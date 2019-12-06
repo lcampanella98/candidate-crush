@@ -20,13 +20,8 @@ import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.sound.IMusicHandler;
-import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 import java.util.Stack;
 
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
@@ -34,8 +29,8 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
 public class Board extends Group implements Disposable {
 
-    private static final float SINGLE_BLOCK_DROP_TIME = .4f;
-
+    private static final float SINGLE_BLOCK_DROP_TIME = .3f;
+    private final IBoardInitializer boardInitializer;
 
     private Block[][] blocks;
 
@@ -47,7 +42,9 @@ public class Board extends Group implements Disposable {
     private int numBlocksAcross;
 
     private IMusicHandler musicHandler;
-    private IBlockProvider blockProvider;
+    private IBlockTypeProvider blockTypeProvider;
+    private IBlockTextureProvider blockTextureProvider;
+    private IBoardAnalyzer boardAnalyzer;
 
     private float blockSpacing;
 
@@ -57,18 +54,35 @@ public class Board extends Group implements Disposable {
     private int numTotalCrushes;
     private float boardPad;
 
-    public Board(int numBlocksAcross, List<BlockType> blockTypes, IMusicHandler musicHandler, IBlockProvider blockProvider) {
+    public Board(int numBlocksAcross,
+                 IMusicHandler musicHandler,
+                 IBlockTypeProvider blockTypeProvider,
+                 IBlockTextureProvider blockTextureProvider,
+                 IBoardAnalyzer boardAnalyzer,
+                 IBoardInitializer boardInitializer) {
         this.numBlocksAcross = numBlocksAcross;
-        this.blockTypes = blockTypes;
         this.musicHandler = musicHandler;
-        this.blockProvider = blockProvider;
+        this.blockTypeProvider = blockTypeProvider;
+        this.blockTextureProvider = blockTextureProvider;
+        this.boardAnalyzer = boardAnalyzer;
+        this.boardInitializer = boardInitializer;
 
         initBoard();
     }
 
-    private void initBoard() {
+    public IBoardAnalyzer getBoardAnalyzer() {
+        return boardAnalyzer;
+    }
 
-        blocks = new Block[numBlocksAcross][numBlocksAcross];
+    public int getNumBlocksAcross() {
+        return numBlocksAcross;
+    }
+
+    public IBlockTypeProvider getBlockTypeProvider() {
+        return blockTypeProvider;
+    }
+
+    private void initBoard() {
 
         this.numTotalCrushes = 0; // track number of user-invoked crushes
 
@@ -103,15 +117,16 @@ public class Board extends Group implements Disposable {
         boardBounds = new Rectangle(0, 0,
                 boardWidth, boardHeight);
 
+        shouldAnalyze = true;
+        isInputPaused = false;
 
-        populateRandomly();
+        blocks = boardInitializer.getInitializedBlocks(this);
+
         for (Block[] row : blocks) {
             for (Block b : row) {
                 addActor(b);
             }
         }
-        shouldAnalyze = true;
-        isInputPaused = false;
     }
 
     @Override
@@ -127,15 +142,6 @@ public class Board extends Group implements Disposable {
 
     public Rectangle getBoardBounds() {
         return boardBounds;
-    }
-
-    private void populateRandomly() {
-        for (int row = 0; row < blocks.length; row++) {
-            blocks[row] = new Block[blocks.length];
-            for (int col = 0; col < blocks[row].length; col++) {
-                blocks[row][col] = getNewBlock(row, col);
-            }
-        }
     }
 
     private Vector2 getBlockPosition(int row, int col) {
@@ -230,7 +236,7 @@ public class Board extends Group implements Disposable {
 
     private boolean analyzeAndAnimateBoard(final boolean userInvoked) {
 
-        Array<SimpleBlockGroup> analysis = analyzeBoard2(this);
+        Array<SimpleBlockGroup> analysis = boardAnalyzer.analyzeBoard(this);
         if (analysis.size > 0) { // there was a match
             blockGroups = analysis;
             int largestGroupNumBlocks = 0;
@@ -326,144 +332,18 @@ public class Board extends Group implements Disposable {
         }
     }
 
-    private Block getNewBlock(int row, int col) {
-        return blockProvider.provideBlock(
-                getBlockPosition(row, col),
-                blockSpacing, blockSpacing, row, col);
+    public Block getNewBlock(int row, int col) {
+        return getBlockWithTypeRowAndCol(
+                row, col, blockTypeProvider.provideBlockType()
+        );
     }
 
-    private static Array<SimpleBlockGroup> analyzeBoard2(Board board) {
-        int minCrushLen = 3;
-        Array<SimpleBlockGroup> groups = new Array<SimpleBlockGroup>();
-        Block[][] blocks = board.blocks;
-
-        for (Block[] row : blocks) {
-            for (Block b : row) { // clear
-                b.visited = false;
-                b.blockGroup = null;
-            }
-        }
-
-        Block b;
-        SimpleBlockGroup curGroup;
-        for (int r = 0; r < blocks.length; ++r) {
-            curGroup = new SimpleBlockGroup();
-            for (int c = 0; c < blocks[r].length; ++c) {
-                b = blocks[r][c];
-                boolean typeMatch = curGroup.typeMatch(b);
-                if (typeMatch) curGroup.addBlock(b);
-
-                if (!typeMatch || c == blocks[r].length - 1) {
-                    // terminate block group
-
-                    // 1. determine if it is a crush
-                    if (curGroup.size() >= minCrushLen) {
-                        // 2. determine whether to look for an l-shape
-                        if (curGroup.size() < 5) { // we don't look for l-shape for horizontal sizes >= 5
-                            // 3. look for l-shape
-                            Block b1, b2;
-                            for (int curCol = curGroup.minCol; curCol <= curGroup.maxCol; ++curCol) {
-                                if ((r > 1
-                                        && curGroup.typeMatch((b1 = blocks[r - 1][curCol]))
-                                        && curGroup.typeMatch((b2 = blocks[r - 2][curCol])))
-                                        ||
-                                        (r < blocks.length - 2
-                                                && curGroup.typeMatch((b1 = blocks[r + 1][curCol]))
-                                                && curGroup.typeMatch((b2 = blocks[r + 2][curCol])))
-                                        ||
-                                        (r > 0 && r < blocks.length - 1
-                                                && curGroup.typeMatch((b1 = blocks[r + 1][curCol]))
-                                                && curGroup.typeMatch((b2 = blocks[r - 1][curCol])))) {
-                                    if (b1.blockGroup != null || b2.blockGroup != null) continue;
-                                    if (curGroup.size() == 4) {
-                                        if (curCol == curGroup.minCol || curCol == curGroup.minCol + 1) {
-                                            curGroup.remove(blocks[r][curGroup.maxCol]);
-                                        } else {
-                                            curGroup.remove(blocks[r][curGroup.minCol]);
-                                        }
-                                    }
-                                    curGroup.addBlock(b1);
-                                    curGroup.addBlock(b2);
-                                    break;
-                                }
-                            }
-                        }
-                        for (Block block : curGroup) block.blockGroup = curGroup;
-                        groups.add(curGroup);
-                    }
-                    curGroup = new SimpleBlockGroup();
-                    if (!typeMatch) curGroup.addBlock(b);
-                }
-            }
-        }
-        for (int c = 0; c < blocks[0].length; ++c) {
-            curGroup = new SimpleBlockGroup();
-            for (int r = 0; r < blocks.length; ++r) {
-                b = blocks[r][c];
-                boolean typeMatch = curGroup.typeMatch(b);
-                if (typeMatch) {
-                    curGroup.addBlock(b);
-                }
-
-                if (!typeMatch || r == blocks.length - 1) {
-                    // terminate current group
-
-                    // 1. determine if it is a crush
-                    if (curGroup.size() >= minCrushLen) {
-                        // 2. determine if there are any horizontal groups attached
-                        Set<SimpleBlockGroup> attachedGroups = new HashSet<SimpleBlockGroup>();
-                        for (Block b1 : curGroup) {
-                            if (b1.blockGroup != null) {
-                                attachedGroups.add(b1.blockGroup);
-                            }
-                        }
-                        boolean shouldAddVerticalGroup = true;
-                        if (attachedGroups.size() > 0) {
-                            int fiveHorizontalCount = 0, lShapeCount = 0;
-                            for (SimpleBlockGroup g : attachedGroups) {
-                                if (g.isLShape()) ++lShapeCount;
-                                else ++fiveHorizontalCount;
-                            }
-                            if (fiveHorizontalCount > 0) {
-                                // keep all horizontal fives and remove all l-shapes
-                                for (SimpleBlockGroup g : attachedGroups) {
-                                    if (g.isLShape()) {
-                                        groups.removeValue(g, true);
-                                        for (Block block : g) block.blockGroup = null;
-                                    }
-                                }
-                                shouldAddVerticalGroup = false;
-                            } else if (curGroup.size() < 5) {
-                                // keep first l-shape we see and remove everything else
-                                SimpleBlockGroup toKeep = null;
-                                for (SimpleBlockGroup g : attachedGroups) {
-                                    if (toKeep == null) toKeep = g;
-                                    else {
-                                        groups.removeValue(g, true);
-                                        for (Block block : g) block.blockGroup = null;
-                                    }
-                                }
-                                shouldAddVerticalGroup = false;
-                            } else {
-                                shouldAddVerticalGroup = true;
-                                // remove all attached groups
-                                for (SimpleBlockGroup g : attachedGroups) {
-                                    groups.removeValue(g, true);
-                                    for (Block block : g) block.blockGroup = null;
-                                }
-                            }
-                        }
-                        if (shouldAddVerticalGroup) {
-                            groups.add(curGroup);
-                            for (Block block : curGroup) block.blockGroup = curGroup;
-                        }
-                    }
-                    curGroup = new SimpleBlockGroup();
-                    if (!typeMatch) curGroup.addBlock(b);
-                }
-            }
-        }
-        return groups;
+    public Block getBlockWithTypeRowAndCol(int row, int col, BlockType type) {
+        return new Block(
+                type,
+                blockTextureProvider.provideBlockTexture(type),
+                getBlockPosition(row, col),
+                blockSpacing, blockSpacing, row, col);
     }
 
     private boolean doChildrenHaveActions() {
@@ -610,10 +490,6 @@ public class Board extends Group implements Disposable {
         } else return null;
     }
 
-    public List<BlockType> getBlockTypes() {
-        return this.blockTypes;
-    }
-
     @Override
     public void dispose() {
         boardTexture.dispose();
@@ -627,5 +503,9 @@ public class Board extends Group implements Disposable {
 
     public void resumeInput() {
         isInputPaused = false;
+    }
+
+    public Block[][] getBlocks() {
+        return blocks;
     }
 }

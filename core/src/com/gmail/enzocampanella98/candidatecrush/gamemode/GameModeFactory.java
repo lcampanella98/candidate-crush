@@ -17,11 +17,18 @@ import java.util.Map;
 
 import static com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen.CANDIDATES_2020;
 import static com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen.DEM_CANDIDATES_2020;
+import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.colorFromRGB;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.firstToUpper;
 
 public class GameModeFactory {
-    private static final List<Color> BLOCK_BG_COLORS = new ArrayList<>(Arrays.asList(
-            Color.MAGENTA, Color.CYAN, Color.FIREBRICK, Color.GREEN, Color.ORANGE
+    public static List<Color> blockBgColors = new ArrayList<>(Arrays.asList(
+            colorFromRGB(245, 66, 66), // pink
+            colorFromRGB(245, 66, 66),  // red
+            colorFromRGB(188, 66, 245), // purple
+            colorFromRGB(66, 245, 239), // cyan
+            colorFromRGB(66, 245, 102), // green
+            colorFromRGB(224, 245, 66), // yellow
+            colorFromRGB(245, 179, 66) // orange
     ));
 
     private final CandidateCrush game;
@@ -102,7 +109,7 @@ public class GameModeFactory {
     private IBlockColorProvider getBlockColorProvider(List<BlockType> blockTypes) {
         return isHardMode
                 ? blockColorProviderFactory.getEmptyBlockColorProvider()
-                : blockColorProviderFactory.getRandomBlockColorProvider(blockTypes, BLOCK_BG_COLORS);
+                : blockColorProviderFactory.getRandomBlockColorProvider(blockTypes, blockBgColors);
     }
 
     public void setStage(Stage stage) {
