@@ -22,7 +22,6 @@ import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.firstToUpp
 
 public class GameModeFactory {
     public static List<Color> blockBgColors = new ArrayList<>(Arrays.asList(
-            colorFromRGB(245, 66, 66), // pink
             colorFromRGB(245, 66, 66),  // red
             colorFromRGB(188, 66, 245), // purple
             colorFromRGB(66, 245, 239), // cyan
@@ -69,13 +68,13 @@ public class GameModeFactory {
     public TimedVoteTargetGameMode getTimedVoteTargetGameMode() {
         assert stage != null;
         return new TimedVoteTargetGameMode(game, stage,
-                getBlockColorProvider(DEM_CANDIDATES_2020), CANDIDATES_2020, 60, 20000);
+                getBlockColorProvider(CANDIDATES_2020), CANDIDATES_2020, 60, 20000);
     }
 
     public MoveLimitVoteTargetGameMode getMoveLimitVoteTargetGameMode() {
         assert stage != null;
         return new MoveLimitVoteTargetGameMode(game, stage,
-                getBlockColorProvider(DEM_CANDIDATES_2020), CANDIDATES_2020, 30, 20000);
+                getBlockColorProvider(CANDIDATES_2020), CANDIDATES_2020, 30, 50000);
     }
 
     public RaceGameMode getElection2020GameMode(Character playerParty) {
