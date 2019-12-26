@@ -10,10 +10,26 @@ public class SimpleBlockGroup implements Iterable<Block>{
     private Set<Block> blocks;
     private BlockType type;
 
+    public int getMinRow() {
+        return minRow;
+    }
+
+    public int getMinCol() {
+        return minCol;
+    }
+
+    public int getMaxRow() {
+        return maxRow;
+    }
+
+    public int getMaxCol() {
+        return maxCol;
+    }
+
     int minRow, minCol, maxRow, maxCol;
 
     public SimpleBlockGroup() {
-        blocks = new HashSet<Block>();
+        blocks = new HashSet<>();
         initRanges();
     }
 

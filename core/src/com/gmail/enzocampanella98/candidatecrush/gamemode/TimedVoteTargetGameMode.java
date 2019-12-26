@@ -1,6 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -9,6 +10,7 @@ import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.EquallyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
@@ -53,7 +55,7 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
 
         this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
 
-        int score3 = 500, score4 = 1000, score5 = 3000, scoreT = 2000;
+        int score3 = 500, score4 = 1200, score5 = 3000, scoreT = 2000;
         this.scoringSystem = new VoteTargetScoringSystem(score3, score4, score5, scoreT, nonUserInvokedCrushScale);
 
         this.mainTable = new Table();
@@ -112,6 +114,11 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
         }
 
         @Override
+        public Vector2 getScoreInfoBoxPosition(SimpleBlockGroup group) {
+            return labelScore.localToStageCoordinates(new Vector2(labelScore.getWidth() / 2, labelScore.getHeight() / 2));
+        }
+
+        @Override
         protected void addActorsToTable() {
             // init table elements
             Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
@@ -131,14 +138,14 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
             mainTable.row();
 
             infoBox = new GameInfoBox();
-            infoBox.add(labelTargetScore).pad(20f);
+            infoBox.add(labelScore).pad(20f);
             infoBox.pack();
 
             mainTable.add(infoBox);
             mainTable.row();
 
             infoBox = new GameInfoBox();
-            infoBox.add(labelScore).pad(20f);
+            infoBox.add(labelTargetScore).pad(20f);
             infoBox.pack();
 
             mainTable.add(infoBox).padTop(45 + gameMode.board.getHeight()).expandX();

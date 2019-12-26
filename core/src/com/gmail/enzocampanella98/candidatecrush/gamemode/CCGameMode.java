@@ -2,33 +2,39 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
+import com.gmail.enzocampanella98.candidatecrush.board.BadBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockTextureProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.Crush;
 import com.gmail.enzocampanella98.candidatecrush.board.GoodBoardAnalyzer;
-import com.gmail.enzocampanella98.candidatecrush.board.BadBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
-import com.gmail.enzocampanella98.candidatecrush.board.IBoardAnalyzer;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockTypeProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.IBoardAnalyzer;
 import com.gmail.enzocampanella98.candidatecrush.board.IBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
+import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
+import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
+import com.gmail.enzocampanella98.candidatecrush.tools.Methods;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Queue;
-import java.util.Stack;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
@@ -43,6 +49,7 @@ public abstract class CCGameMode implements Disposable {
     protected Stage stage;
     protected Board board;
     protected HUD hud;
+    protected FontCache fontCache;
     protected CandidateCrush game;
     protected InputMultiplexer inputMultiplexer;
     protected Queue<Crush> latestCrushes;
@@ -70,6 +77,7 @@ public abstract class CCGameMode implements Disposable {
         this.blockTextureProvider = new BlockTextureProvider(blockTypes, blockColorProvider);
         this.backgroundTexture = new Texture(getBackgroundTexturePath());
         this.latestCrushes = new LinkedList<>();
+        this.fontCache = new FontCache(new FontGenerator(Color.WHITE));
     }
 
     // override to set custom background texture
@@ -122,8 +130,16 @@ public abstract class CCGameMode implements Disposable {
             Crush crush = board.latestCrushes().poll();
             latestCrushes.add(crush);
             scoringSystem.updateScore(crush);
+            addCrushVotesAndAnimations(Objects.requireNonNull(crush));
         }
+
         hud.update(dt);
+    }
+
+    private void addCrushVotesAndAnimations(Crush crush) {
+        for (SimpleBlockGroup bg : crush.crushedBlocks) {
+            stage.addActor(getCrushVoteLabelWithAnimation(bg));
+        }
     }
 
     protected abstract boolean isGameOver();
@@ -139,6 +155,26 @@ public abstract class CCGameMode implements Disposable {
         return game;
     }
 
+    private Label getCrushVoteLabelWithAnimation(SimpleBlockGroup group) {
+        Vector2 start = Methods.avg(Arrays.asList(
+                board.getPositionOfRowAndCol(group.getMinRow(), group.getMinCol()),
+                board.getPositionOfRowAndCol(group.getMaxRow(), group.getMaxCol())
+        ));
+        Vector2 end = hud.getScoreInfoBoxPosition(group);
+
+        Label.LabelStyle style = new Label.LabelStyle(fontCache.get(50), Color.WHITE);
+
+        String labText = scoringSystem.getCrushValue(ScoringSystem.getCrushType(group)) + "";
+        final Label l = new Label(labText, style);
+        l.setPosition(start.x, start.y);
+
+        l.addAction(Actions.sequence(
+                Actions.moveTo(end.x, end.y, 2.0f),
+                Actions.removeActor()
+        ));
+        return l;
+    }
+
     public void draw() {
         Batch sb = stage.getBatch();
 
@@ -146,11 +182,8 @@ public abstract class CCGameMode implements Disposable {
         // draw background
         sb.draw(getBackgroundTexture(), 0, 0, V_WIDTH, V_HEIGHT);
 
-        //
-
         sb.end();
         stage.draw();
-
 
         if (hud != null) {
             hud.draw();

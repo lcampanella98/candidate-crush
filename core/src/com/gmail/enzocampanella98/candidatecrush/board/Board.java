@@ -486,6 +486,10 @@ public class Board extends Group implements Disposable {
         } else return null;
     }
 
+    public Vector2 getPositionOfRowAndCol(int row, int col) {
+        return localToStageCoordinates(getBlockPosition(row, col));
+    }
+
     @Override
     public void dispose() {
         boardTexture.dispose();

@@ -2,6 +2,7 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -12,6 +13,7 @@ import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.FrequencyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceScoringSystem;
@@ -72,7 +74,7 @@ public class RaceGameMode extends CCGameMode {
 
         this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
 
-        int score3 = 500, score4 = 1000, score5 = 3000, scoreT = 2000;
+        int score3 = 500, score4 = 1200, score5 = 3000, scoreT = 2000;
         this.scoringSystem = new RaceScoringSystem(
                 groups, playerGroup, score3, score4, score5, scoreT);
 
@@ -119,10 +121,21 @@ public class RaceGameMode extends CCGameMode {
         private ScoreTable topScoreTable;
         private List<ScoreTable> otherScoreTables;
         private RaceGameMode gameMode;
+        private Table playerViewTable;
 
         HeadsUpDisplay(CCGameMode gameMode) {
             super(gameMode);
             this.gameMode = (RaceGameMode) gameMode;
+        }
+
+        @Override
+        public Vector2 getScoreInfoBoxPosition(SimpleBlockGroup group) {
+            if (gameMode.playerGroup.getCandidates().contains(group.getType())) {
+                return playerViewTable.localToStageCoordinates(new Vector2(playerViewTable.getWidth() / 2, playerViewTable.getHeight() / 2));
+            } else {
+                ScoreTable scoreTable = firstCompetingScoreTableWithBlockType(group.getType());
+                return scoreTable.localToStageCoordinates(new Vector2(scoreTable.getWidth() / 2, scoreTable.getHeight() / 2));
+            }
         }
 
         @Override
@@ -135,7 +148,7 @@ public class RaceGameMode extends CCGameMode {
             labelNumMovesLeft = new Label(null, numMovesLeftLabelStyle);
 
             topScoreTable = new ScoreTable(topScoreLabelStyle);
-            otherScoreTables = new ArrayList<ScoreTable>();
+            otherScoreTables = new ArrayList<>();
             for (int i = 0; i < gameMode.groups.size() - 1; i++) {
                 otherScoreTables.add(new ScoreTable(otherScoreLabelStyle));
             }
@@ -151,7 +164,8 @@ public class RaceGameMode extends CCGameMode {
 
             mainTable.add(new Label("You play", otherScoreLabelStyle)).padTop(10f).center();
             mainTable.row();
-            Table playerViewTable = new Table();
+
+            playerViewTable = new Table();
             for (BlockType bt : gameMode.playerGroup.getCandidates()) {
                 Texture userTexture = gameMode.blockTextureProvider.provideBlockTexture(bt);
                 Image userImg = new Image(userTexture);
@@ -204,7 +218,24 @@ public class RaceGameMode extends CCGameMode {
                 otherScoreTables.get(i).getNameLabel().setText(scores.get(i + 1).getName());
                 otherScoreTables.get(i).getScoreLabel().setText(String.valueOf(scores.get(i + 1).score));
             }
+        }
 
+        private ScoreTable firstCompetingScoreTableWithBlockType(BlockType type) {
+            List<NamedCandidateGroup> groups = ((RaceScoringSystem) gameMode.scoringSystem).getGroups();
+            NamedCandidateGroup grp = null;
+            for (NamedCandidateGroup cur : groups) {
+                if (cur.getCandidates().contains(type)) {
+                    grp = cur;
+                    break;
+                }
+            }
+            if (grp == null) return null;
+            for (ScoreTable st : otherScoreTables) {
+                if (st.getNameLabel().getText().toString().equals(grp.getName())) {
+                    return st;
+                }
+            }
+            return null;
         }
 
         @Override

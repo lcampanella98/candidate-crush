@@ -1,6 +1,9 @@
 package com.gmail.enzocampanella98.candidatecrush.tools;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
+
+import java.util.Collection;
 
 /**
  * Created by enzoc on 5/22/2018.
@@ -42,6 +45,19 @@ public final class Methods {
             sb.append(w.substring(1));
         }
         return sb.toString();
+    }
+
+    public static Vector2 avg(Collection<Vector2> vects) {
+        Vector2 avg = new Vector2(0, 0);
+        int ct = 0;
+        for (Vector2 v : vects) {
+            avg.x += v.x;
+            avg.y += v.y;
+            ct++;
+        }
+        avg.x /= ct;
+        avg.y /= ct;
+        return avg;
     }
 
     public static Color colorFromRGB(int r, int g, int b) {
