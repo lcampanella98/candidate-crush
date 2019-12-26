@@ -30,9 +30,11 @@ import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.tools.Methods;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 
@@ -126,19 +128,23 @@ public abstract class CCGameMode implements Disposable {
                 returnToMenu(); // done!
             }
         }
+
+        List<Crush> latestCrushes = new ArrayList<>();
         while (board.latestCrushes().size() > 0 && !isGameOver()) {
             Crush crush = board.latestCrushes().poll();
             latestCrushes.add(crush);
             scoringSystem.updateScore(crush);
-            addCrushVotesAndAnimations(Objects.requireNonNull(crush));
         }
-
         hud.update(dt);
+
+        for (Crush c : latestCrushes) {
+            addCrushVotesAndAnimations(Objects.requireNonNull(c));
+        }
     }
 
     private void addCrushVotesAndAnimations(Crush crush) {
         for (SimpleBlockGroup bg : crush.crushedBlocks) {
-            stage.addActor(getCrushVoteLabelWithAnimation(bg));
+            stage.addActor(getCrushVoteLabelWithAnimation(bg, crush.wasUserInvoked));
         }
     }
 
@@ -155,7 +161,7 @@ public abstract class CCGameMode implements Disposable {
         return game;
     }
 
-    private Label getCrushVoteLabelWithAnimation(SimpleBlockGroup group) {
+    private Label getCrushVoteLabelWithAnimation(SimpleBlockGroup group, boolean wasUserInvoked) {
         Vector2 start = Methods.avg(Arrays.asList(
                 board.getPositionOfRowAndCol(group.getMinRow(), group.getMinCol()),
                 board.getPositionOfRowAndCol(group.getMaxRow(), group.getMaxCol())
@@ -164,7 +170,7 @@ public abstract class CCGameMode implements Disposable {
 
         Label.LabelStyle style = new Label.LabelStyle(fontCache.get(50), Color.WHITE);
 
-        String labText = scoringSystem.getCrushValue(ScoringSystem.getCrushType(group)) + "";
+        String labText = scoringSystem.getBlockGroupValue(group, wasUserInvoked) + "";
         final Label l = new Label(labText, style);
         l.setPosition(start.x, start.y);
 

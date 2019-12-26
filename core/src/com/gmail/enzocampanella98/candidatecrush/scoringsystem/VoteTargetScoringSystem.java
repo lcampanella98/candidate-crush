@@ -6,37 +6,27 @@ import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 
 public class VoteTargetScoringSystem extends ScoringSystem {
 
-    private int userScore;
-    private double nonUserInvokedScale;
+    private float nonUserInvokedScale;
 
-    public VoteTargetScoringSystem(int crushVal3, int crushVal4, int crushVal5, int crushValTShape, double nonUserInvokedScale) {
+    public VoteTargetScoringSystem(int crushVal3, int crushVal4, int crushVal5, int crushValTShape, float nonUserInvokedScale) {
         super(crushVal3, crushVal4, crushVal5, crushValTShape);
-
-        this.userScore = 0;
         this.nonUserInvokedScale = nonUserInvokedScale;
     }
 
     public VoteTargetScoringSystem(int crushVal3, int crushVal4, int crushVal5, int crushValTShape) {
-        this(crushVal3, crushVal4, crushVal5, crushValTShape, 1.0);
+        this(crushVal3, crushVal4, crushVal5, crushValTShape, 1.0f);
+    }
+
+    public int getBlockGroupValue(SimpleBlockGroup bg, boolean userInvoked) {
+        return Math.round(crushValues.get(getCrushType(bg)) * (userInvoked ? 1f : nonUserInvokedScale));
     }
 
     @Override
     public void updateScore(Crush crush) {
-        if (crush.crushedBlocks == null) return;
-        int curScore = 0;
+        assert crush != null && crush.crushedBlocks != null;
         for (SimpleBlockGroup bg : crush.crushedBlocks) {
-            int numBlocks = bg.size();
-
-            if (bg.isLShape()) curScore += getCrushValue(CRUSHTYPE_T_SHAPE);
-            else if (numBlocks >= 5) curScore += getCrushValue(CRUSHTYPE_FIVE);
-            else if (numBlocks == 4) curScore += getCrushValue(CRUSHTYPE_FOUR);
-            else if (numBlocks == 3) curScore += getCrushValue(CRUSHTYPE_THREE);
+            userScore += getBlockGroupValue(bg, crush.wasUserInvoked);
         }
-        if (!crush.wasUserInvoked) {
-            curScore = (int) Math.round(curScore * nonUserInvokedScale);
-        }
-
-        this.userScore += curScore;
     }
 
     public void setPlayerScore(int score) {

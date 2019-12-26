@@ -19,6 +19,14 @@ public class NamedCandidateGroup implements Comparable<NamedCandidateGroup> {
         score = 0;
     }
 
+    public static NamedCandidateGroup firstGroupWithType(BlockType type, Collection<NamedCandidateGroup> groups) {
+        for (NamedCandidateGroup grp :
+                groups) {
+            if (grp.getCandidates().contains(type)) return grp;
+        }
+        return null;
+    }
+
     public String getLongName() {
         return longName;
     }

@@ -229,13 +229,19 @@ public class RaceGameMode extends CCGameMode {
                     break;
                 }
             }
-            if (grp == null) return null;
+            assert grp != null;
+            if (topScoreTable.getNameLabel().getText().toString().equals(grp.getName())) {
+                return topScoreTable;
+            }
+            ScoreTable ret = null;
             for (ScoreTable st : otherScoreTables) {
                 if (st.getNameLabel().getText().toString().equals(grp.getName())) {
-                    return st;
+                    ret = st;
+                    break;
                 }
             }
-            return null;
+            assert ret != null;
+            return ret;
         }
 
         @Override

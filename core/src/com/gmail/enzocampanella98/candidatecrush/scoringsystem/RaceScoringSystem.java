@@ -7,6 +7,8 @@ import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import java.util.Collections;
 import java.util.List;
 
+import static com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup.firstGroupWithType;
+
 /**
  * Created by enzoc on 5/22/2018.
  */
@@ -41,29 +43,38 @@ public class RaceScoringSystem extends ScoringSystem {
 
     @Override
     public void updateScore(Crush crush) {
-        for (SimpleBlockGroup crushedGroup : crush.crushedBlocks) {
-            BlockType blockType = crushedGroup.getType();
-            char crushType = getCrushType(crushedGroup);
-            int val = getCrushValue(crushType);
-            if (playerGroup.containsCandidate(blockType) && !crush.wasUserInvoked) {
-                val *= 0.8;
-            }
-            for (NamedCandidateGroup c : groups) {
-                if (c.containsCandidate(blockType)) {
-                    if (playerGroup.score == 0) {
-                        c.score += val;
-                    } else {
-                        int diff = Math.abs(playerGroup.score - c.score);
-                        double diffProportion = ((double)diff) / playerGroup.score;
-                        double newVal = (1 + diffProportion) * val;
-                        newVal = 10.0 * Math.floor(newVal / 10.0);
-                        c.score += (int)newVal;
-                    }
-                }
-            }
+        assert crush != null && crush.crushedBlocks != null;
+        for (SimpleBlockGroup bg : crush.crushedBlocks) {
+            BlockType blockType = bg.getType();
+            NamedCandidateGroup to = firstGroupWithType(blockType, groups);
+            assert to != null;
+            to.score += getBlockGroupValue(bg, crush.wasUserInvoked);
         }
+
         Collections.sort(groups);
         Collections.reverse(groups);
+    }
+
+    @Override
+    public int getBlockGroupValue(SimpleBlockGroup bg, boolean userInvoked) {
+        BlockType blockType = bg.getType();
+        char crushType = getCrushType(bg);
+        NamedCandidateGroup toGroup = firstGroupWithType(blockType, groups);
+        assert toGroup != null;
+
+        int score = crushValues.get(crushType);
+        if (playerGroup.containsCandidate(blockType) && !userInvoked) {
+            score *= 0.8;
+        }
+
+        if (playerGroup.score == 0) {
+            return score;
+        }
+        int diff = Math.abs(playerGroup.score - toGroup.score);
+        double diffProportion = ((double)diff) / playerGroup.score;
+        double newScore = (1 + diffProportion) * score;
+        newScore = 10.0 * Math.floor(newScore / 10.0);
+        return (int) newScore;
     }
 
     @Override

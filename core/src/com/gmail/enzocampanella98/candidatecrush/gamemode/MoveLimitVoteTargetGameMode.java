@@ -24,7 +24,7 @@ import java.util.List;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
 public class MoveLimitVoteTargetGameMode extends CCGameMode {
-    private static double nonUserInvokedCrushScale = 2.0 / 5.0;
+    private static float nonUserInvokedCrushScale = 0.4f;
     private static int boardWidth = 8;
     private static int defaultNumMoves = 30;
     private static int defaultTargetScore = 20000;
@@ -86,7 +86,7 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
     @Override
     protected boolean isGameOver() {
         // game is over if the player surpassed the score or has no more moves (or both in which case the player WINS)
-        return scoringSystem.getPlayerScore() >= targetScore || numMovesLeft == 0;
+        return scoringSystem.getPlayerScore() >= targetScore || (numMovesLeft == 0 && board.isWaitingForInput());
     }
 
     @Override

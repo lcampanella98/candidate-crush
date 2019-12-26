@@ -24,7 +24,7 @@ import java.util.List;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
 public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
-    private static double nonUserInvokedCrushScale = 2.0 / 5.0;
+    private static float nonUserInvokedCrushScale = 0.4f;
     private static int boardWidth = 8;
     private static int defaultGameLength = 60; // 60 seconds
     private static int defaultTargetScore = 20000;
