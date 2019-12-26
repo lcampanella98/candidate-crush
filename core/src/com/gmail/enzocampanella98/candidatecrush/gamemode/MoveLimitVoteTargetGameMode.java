@@ -15,11 +15,9 @@ import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
@@ -30,6 +28,8 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
     private static int defaultTargetScore = 20000;
 
     private int targetScore;
+    private int numMoves;
+
     private int numMovesLeft;
 
     private List<BlockType> blockTypes;
@@ -45,6 +45,7 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
         super(game, stage, blockColorProvider, blockTypes);
 
         this.targetScore = targetScore;
+        this.numMoves = numMoves;
         this.numMovesLeft = numMoves;
 
         this.blockTypes = blockTypes;
@@ -89,10 +90,7 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
     @Override
     public void update(float dt) {
         super.update(dt);
-        while (board.getCrushStack().size() > 0) {
-            scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
-            if (board.userFlippedBlocks && --numMovesLeft == 0) break;
-        }
+        numMovesLeft = numMoves - board.getNumTotalUserCrushes();
     }
 
     private static class HeadsUpDisplay extends HUD {
@@ -151,8 +149,9 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
 
         @Override
         public Collection<String> getGameInfoDialogTextLines() {
-            return Collections.singletonList(
-                    "You have " + gameMode.numMovesLeft + " moves to reach " + gameMode.targetScore + " votes!"
+            return Arrays.asList(
+                    "You have " + gameMode.numMovesLeft + " moves",
+                    "to reach " + gameMode.targetScore + " votes!"
             );
         }
     }

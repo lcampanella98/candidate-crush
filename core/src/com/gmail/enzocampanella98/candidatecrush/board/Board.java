@@ -21,7 +21,8 @@ import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.sound.IMusicHandler;
 
-import java.util.Stack;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
@@ -46,7 +47,7 @@ public class Board extends Group implements Disposable {
     private float blockSpacing;
 
     private Array<SimpleBlockGroup> blockGroups; // not set to null because we need it to animate
-    private Stack<Array<SimpleBlockGroup>> blockGroupsProcessStack; // push every crush
+    private Queue<Crush> blockGroupsProcessQueue; // push every crush
 
     private int numTotalCrushes;
     private float boardPad;
@@ -96,7 +97,7 @@ public class Board extends Group implements Disposable {
         super.setHeight(boardHeight);
         super.setOrigin(0, 0);
 
-        blockGroupsProcessStack = new Stack<Array<SimpleBlockGroup>>();
+        blockGroupsProcessQueue = new LinkedList<>();
 
         Pixmap boardPixmap = new Pixmap(boardWidth, boardHeight, RGBA8888);
         boardPixmap.setColor(Color.BLUE);
@@ -266,7 +267,6 @@ public class Board extends Group implements Disposable {
         }
     }
 
-
     private void fadeBlockOut(Block b) {
         b.addAction(Actions.scaleTo(0f, 0f, SINGLE_BLOCK_DROP_TIME));
     }
@@ -373,7 +373,7 @@ public class Board extends Group implements Disposable {
             gotMatches = analyzeAndAnimateBoard(userFlippedBlocks); // crush
             shouldAnalyze = false;
             if (gotMatches) { // user crushed blocks
-                blockGroupsProcessStack.push(blockGroups); // enqueue block groups only directly after crush
+                blockGroupsProcessQueue.add(new Crush(blockGroups, userFlippedBlocks)); // enqueue block groups only directly after crush
                 if (userFlippedBlocks)
                     numTotalCrushes++; // increment
             }
@@ -438,8 +438,8 @@ public class Board extends Group implements Disposable {
 
     }
 
-    public Stack<Array<SimpleBlockGroup>> getCrushStack() {
-        return blockGroupsProcessStack;
+    public Queue<Crush> latestCrushes() {
+        return blockGroupsProcessQueue;
     }
 
     private Block firstSelectedBlock, secondSelectedBlock;

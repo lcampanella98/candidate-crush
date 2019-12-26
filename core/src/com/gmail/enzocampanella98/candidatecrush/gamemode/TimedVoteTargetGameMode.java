@@ -15,11 +15,9 @@ import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
@@ -89,10 +87,6 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
         if (isGameStarted() && !isGameOver()) {
             super.advanceGameTime(dt);
         }
-
-        while (board.getCrushStack().size() > 0) {
-            scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
-        }
     }
 
     private static class HeadsUpDisplay extends HUD {
@@ -152,8 +146,9 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
 
         @Override
         public Collection<String> getGameInfoDialogTextLines() {
-            return Collections.singletonList(
-                    "Reach " + gameMode.targetScore + " votes before time runs out!"
+            return Arrays.asList(
+                    "Reach " + gameMode.targetScore + " votes",
+                    "before time runs out!"
             );
         }
 

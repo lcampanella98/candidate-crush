@@ -1,6 +1,6 @@
 package com.gmail.enzocampanella98.candidatecrush.scoringsystem;
 
-import com.badlogic.gdx.utils.Array;
+import com.gmail.enzocampanella98.candidatecrush.board.Crush;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 
 
@@ -21,10 +21,10 @@ public class VoteTargetScoringSystem extends ScoringSystem {
     }
 
     @Override
-    public void updateScore(Array<SimpleBlockGroup> crushedBlocks, boolean wasUserInvoked) {
-        if (crushedBlocks == null) return;
+    public void updateScore(Crush crush) {
+        if (crush.crushedBlocks == null) return;
         int curScore = 0;
-        for (SimpleBlockGroup bg : crushedBlocks) {
+        for (SimpleBlockGroup bg : crush.crushedBlocks) {
             int numBlocks = bg.size();
 
             if (bg.isLShape()) curScore += getCrushValue(CRUSHTYPE_T_SHAPE);
@@ -32,7 +32,7 @@ public class VoteTargetScoringSystem extends ScoringSystem {
             else if (numBlocks == 4) curScore += getCrushValue(CRUSHTYPE_FOUR);
             else if (numBlocks == 3) curScore += getCrushValue(CRUSHTYPE_THREE);
         }
-        if (!wasUserInvoked) {
+        if (!crush.wasUserInvoked) {
             curScore = (int) Math.round(curScore * nonUserInvokedScale);
         }
 

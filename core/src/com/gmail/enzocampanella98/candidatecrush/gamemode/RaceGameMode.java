@@ -21,10 +21,8 @@ import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class RaceGameMode extends CCGameMode {
     private static int boardWidth = 8;
@@ -111,10 +109,6 @@ public class RaceGameMode extends CCGameMode {
     public void update(float dt) {
         super.update(dt);
         numMovesLeft = numMoves - board.getNumTotalUserCrushes();
-
-        while (board.getCrushStack().size() > 0) {
-            this.scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
-        }
     }
 
     private static class HeadsUpDisplay extends HUD {
@@ -217,11 +211,11 @@ public class RaceGameMode extends CCGameMode {
         public Collection<String> getGameInfoDialogTextLines() {
             return Arrays.asList(
                     "You play " + gameMode.playerGroup.getLongName() + ". ",
-                    "Be on top when your moves run out!"
+                    "Be on top after " + gameMode.numMoves + " moves!"
             );
         }
 
-        private class ScoreTable extends Table {
+        private static class ScoreTable extends Table {
             private Label nameLabel;
             private Label scoreLabel;
 

@@ -116,8 +116,9 @@ public abstract class HUD implements Disposable {
         // setup animations for info box
         gameInstructionsBox = new GameInfoBox();
 
-        Label.LabelStyle instructionsLabelStyle = new Label.LabelStyle(fontCache.get(50), Color.BLACK);
+        Label.LabelStyle instructionsLabelStyle = new Label.LabelStyle(fontCache.get(60), Color.BLACK);
         gameInstructionsBox.addLines(instructionsLabelStyle, getGameInfoDialogTextLines());
+        gameInstructionsBox.pad(20f);
 
         Table overlay = new Table();
         overlay.bottom();

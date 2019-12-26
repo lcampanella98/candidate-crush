@@ -3,24 +3,35 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockTextureProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
+import com.gmail.enzocampanella98.candidatecrush.board.Crush;
 import com.gmail.enzocampanella98.candidatecrush.board.GoodBoardAnalyzer;
 import com.gmail.enzocampanella98.candidatecrush.board.BadBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBoardAnalyzer;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBoardInitializer;
+import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Stack;
+
+import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
+import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 
 
 public abstract class CCGameMode implements Disposable {
@@ -34,6 +45,7 @@ public abstract class CCGameMode implements Disposable {
     protected HUD hud;
     protected CandidateCrush game;
     protected InputMultiplexer inputMultiplexer;
+    protected Queue<Crush> latestCrushes;
 
     private boolean isGameStarted;
     private boolean isInitialized;
@@ -57,6 +69,7 @@ public abstract class CCGameMode implements Disposable {
         this.boardAnalyzer = new GoodBoardAnalyzer();
         this.blockTextureProvider = new BlockTextureProvider(blockTypes, blockColorProvider);
         this.backgroundTexture = new Texture(getBackgroundTexturePath());
+        this.latestCrushes = new LinkedList<>();
     }
 
     // override to set custom background texture
@@ -83,6 +96,8 @@ public abstract class CCGameMode implements Disposable {
 
     public void update(float dt) {
         init();
+        stage.act(dt);
+
         if (!isGameStarted) {
             board.pauseInput();
             if (!showedGameInstructions) {
@@ -103,6 +118,11 @@ public abstract class CCGameMode implements Disposable {
                 returnToMenu(); // done!
             }
         }
+        while (board.latestCrushes().size() > 0 && !isGameOver()) {
+            Crush crush = board.latestCrushes().poll();
+            latestCrushes.add(crush);
+            scoringSystem.updateScore(crush);
+        }
         hud.update(dt);
     }
 
@@ -119,7 +139,19 @@ public abstract class CCGameMode implements Disposable {
         return game;
     }
 
-    public void drawHUD() {
+    public void draw() {
+        Batch sb = stage.getBatch();
+
+        sb.begin();
+        // draw background
+        sb.draw(getBackgroundTexture(), 0, 0, V_WIDTH, V_HEIGHT);
+
+        //
+
+        sb.end();
+        stage.draw();
+
+
         if (hud != null) {
             hud.draw();
         }
