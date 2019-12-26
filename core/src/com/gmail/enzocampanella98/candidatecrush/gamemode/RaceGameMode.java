@@ -2,27 +2,25 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.FrequencyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
-import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
-import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +39,6 @@ public class RaceGameMode extends CCGameMode {
     private Table mainTable;
 
     private int numMovesLeft;
-    private float messageTimer;
 
 
     public RaceGameMode(CandidateCrush game,
@@ -70,16 +67,14 @@ public class RaceGameMode extends CCGameMode {
         this.playerGroup = playerGroup;
         this.blockFrequencies = blockFrequencies;
 
-        Set<String> blockTypeSet = new HashSet<>();
-        for (BlockType bt : blockTypes) blockTypeSet.add(bt.getLname());
-        musicHandler = new NoLevelMusicHandler(blockTypeSet);
+        musicHandler = new NoLevelMusicHandler();
         musicHandler.start();
 
         newBlockTypeProvider = new FrequencyRandomBlockTypeProvider(this.blockFrequencies);
 
         this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
 
-        int score3 = 100, score4 = 1000, score5 = 3000, scoreT = 2000;
+        int score3 = 500, score4 = 1000, score5 = 3000, scoreT = 2000;
         this.scoringSystem = new RaceScoringSystem(
                 groups, playerGroup, score3, score4, score5, scoreT);
 
@@ -95,7 +90,7 @@ public class RaceGameMode extends CCGameMode {
         this.stage.addActor(this.mainTable);
 
         this.hud = new HeadsUpDisplay(this);
-        setupInputMultiplexer();
+        hud.initStage();
     }
 
     public int getNumMovesLeft() {
@@ -103,59 +98,41 @@ public class RaceGameMode extends CCGameMode {
     }
 
     @Override
-    public void onGameStart() {
-
+    protected boolean wonGame() {
+        return ((RaceScoringSystem) scoringSystem).getGroups().get(0) == playerGroup;
     }
 
     @Override
-    public void onGameEnd() {
-        isGameOver = true;
-        this.board.pauseInput();
-
-        ((HeadsUpDisplay) hud).showEndGameMessage(win());
-
-        messageTimer = 5;
-    }
-
-    protected boolean win() {
-        return isGameOver && ((RaceScoringSystem)scoringSystem).getGroups().get(0) == playerGroup;
+    protected boolean isGameOver() {
+        return numMovesLeft <= 0 && board.isWaitingForInput();
     }
 
     @Override
     public void update(float dt) {
-        if (isGameOver) {
-            messageTimer -= dt;
-            if (messageTimer <= 0) {
-                game.disposeCurrentScreen();
-                game.setScreen(new MenuScreen(game));
-            }
-            return;
-        }
+        super.update(dt);
         numMovesLeft = numMoves - board.getNumTotalUserCrushes();
 
-        if (numMovesLeft <= 0 && board.isWaitingForInput()) {
-            onGameEnd();
-            return;
-        }
         while (board.getCrushStack().size() > 0) {
             this.scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
         }
     }
 
-    protected class HeadsUpDisplay extends HUD implements Disposable {
-
+    private static class HeadsUpDisplay extends HUD {
         private static final int FONT_LG = 100, FONT_MD = 60, FONT_SM = 40;
 
         private Label labelNumMovesLeft;
 
         private ScoreTable topScoreTable;
         private List<ScoreTable> otherScoreTables;
+        private RaceGameMode gameMode;
 
-        private BitmapFont endFont;
-
-        public HeadsUpDisplay(RaceGameMode gameMode) {
+        HeadsUpDisplay(CCGameMode gameMode) {
             super(gameMode);
+            this.gameMode = (RaceGameMode) gameMode;
+        }
 
+        @Override
+        protected void addActorsToTable() {
             // init table elements
             Label.LabelStyle topScoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
             Label.LabelStyle numMovesLeftLabelStyle = new Label.LabelStyle(fontCache.get(FONT_LG), Color.BLACK);
@@ -165,17 +142,9 @@ public class RaceGameMode extends CCGameMode {
 
             topScoreTable = new ScoreTable(topScoreLabelStyle);
             otherScoreTables = new ArrayList<ScoreTable>();
-            for (int i = 0; i < groups.size()-1; i++) {
+            for (int i = 0; i < gameMode.groups.size() - 1; i++) {
                 otherScoreTables.add(new ScoreTable(otherScoreLabelStyle));
             }
-
-            table = new Table();
-
-//            table.setDebug(true);
-            table.setFillParent(true);
-            table.top();
-
-            addExitButton();
 
             GameInfoBox infoBox;
 
@@ -183,29 +152,29 @@ public class RaceGameMode extends CCGameMode {
             infoBox.add(labelNumMovesLeft).pad(10f).center();
             infoBox.pack();
 
-            table.add(infoBox).center();
-            table.row();
+            mainTable.add(infoBox).center();
+            mainTable.row();
 
-            table.add(new Label("You play", otherScoreLabelStyle)).padTop(10f).center();
-            table.row();
+            mainTable.add(new Label("You play", otherScoreLabelStyle)).padTop(10f).center();
+            mainTable.row();
             Table playerViewTable = new Table();
             for (BlockType bt : gameMode.playerGroup.getCandidates()) {
-                Texture userTexture = blockTextureProvider.provideBlockTexture(bt);
+                Texture userTexture = gameMode.blockTextureProvider.provideBlockTexture(bt);
                 Image userImg = new Image(userTexture);
                 userImg.scaleBy(1.4f - (0.2f * gameMode.playerGroup.getCandidates().size()));
                 userImg.setOrigin(Align.center);
                 playerViewTable.add(userImg).padRight(10f).padLeft(10f);
             }
-            table.add(playerViewTable).padTop(40f).center();
+            mainTable.add(playerViewTable).padTop(40f).center();
 
-            table.row();
+            mainTable.row();
 
             infoBox = new GameInfoBox();
             infoBox.add(topScoreTable).pad(20f);
             infoBox.pack();
 
-            table.add(infoBox).padTop(100 + board.getHeight()).center().expandX();
-            table.row();
+            mainTable.add(infoBox).padTop(100 + gameMode.board.getHeight()).center().expandX();
+            mainTable.row();
 
             int numScoresPerRow = 3;
             int curScoresInRow = 0;
@@ -223,33 +192,16 @@ public class RaceGameMode extends CCGameMode {
             infoBox.add(otherScoresTable).center().pad(20f);
             infoBox.pack();
 
-            table.add(infoBox).center().padTop(30f);
-
-            hudStage.addActor(table);
-
-            updateLabels();
-
+            mainTable.add(infoBox).center().padTop(30f);
         }
 
-        public void hideEndGameMessage() {
-            clearMessage();
-        }
-
-        public void showEndGameMessage(boolean win) {
-            String msg;
-            if (win) msg = "You win!";
-            else msg = "You lose!";
-
-            endFont = new FontGenerator(win ? Color.GREEN : Color.RED).generateFont(FONT_LG);
-            addMessage(msg, endFont);
-        }
-
-        private void updateLabels() {
+        @Override
+        public void updateLabels(float dt) {
             // update num moves label
-            labelNumMovesLeft.setText(String.valueOf(((RaceGameMode) gameMode).getNumMovesLeft()));
+            labelNumMovesLeft.setText(String.valueOf(gameMode.getNumMovesLeft()));
 
             // update scores labels
-            List<NamedCandidateGroup> scores = ((RaceScoringSystem)((RaceGameMode) gameMode).scoringSystem).getGroups();
+            List<NamedCandidateGroup> scores = ((RaceScoringSystem) gameMode.scoringSystem).getGroups();
             NamedCandidateGroup topGroup = scores.get(0);
             topScoreTable.getNameLabel().setText(topGroup.getName());
             topScoreTable.getScoreLabel().setText(String.valueOf(topGroup.score));
@@ -262,25 +214,11 @@ public class RaceGameMode extends CCGameMode {
         }
 
         @Override
-        public void render(float dt) {
-            hudCam.update();
-
-            updateLabels();
-
-            if (hasMessage()) {
-                batch.begin();
-                drawCenteredMessage();
-                batch.end();
-            }
-
-            hudStage.act(dt);
-            hudStage.draw();
-        }
-
-        @Override
-        public void dispose() {
-            super.dispose();
-            if (endFont != null) endFont.dispose();
+        public Collection<String> getGameInfoDialogTextLines() {
+            return Arrays.asList(
+                    "You play " + gameMode.playerGroup.getLongName() + ". ",
+                    "Be on top when your moves run out!"
+            );
         }
 
         private class ScoreTable extends Table {

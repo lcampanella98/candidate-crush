@@ -50,6 +50,8 @@ public class CandidateCrushPlayScreen implements Screen {
 
     @Override
     public void render(float delta) {
+
+
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         cam.update(); // update camera
@@ -66,7 +68,7 @@ public class CandidateCrushPlayScreen implements Screen {
         playStage.act(delta);
         playStage.draw();
 
-        gameMode.drawHUD(delta);
+        gameMode.drawHUD();
     }
 
     @Override

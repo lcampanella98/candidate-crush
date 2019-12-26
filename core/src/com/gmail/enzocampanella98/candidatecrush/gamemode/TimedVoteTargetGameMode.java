@@ -1,25 +1,22 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockTextureProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.EquallyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
-import com.gmail.enzocampanella98.candidatecrush.board.IBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
-import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
-import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,16 +48,14 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
         this.blockTypes = blockTypes;
         this.blockTypes.remove(BlockType.BLANK);
 
-        Set<String> blockTypeSet = new HashSet<>();
-        for (BlockType bt : blockTypes) blockTypeSet.add(bt.getLname());
-        musicHandler = new NoLevelMusicHandler(blockTypeSet);
+        musicHandler = new NoLevelMusicHandler();
         musicHandler.start();
 
         newBlockTypeProvider = new EquallyRandomBlockTypeProvider(blockTypes);
 
         this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
 
-        int score3 = 800, score4 = 1000, score5 = 3000, scoreT = 2000;
+        int score3 = 500, score4 = 1000, score5 = 3000, scoreT = 2000;
         this.scoringSystem = new VoteTargetScoringSystem(score3, score4, score5, scoreT, nonUserInvokedCrushScale);
 
         this.mainTable = new Table();
@@ -68,8 +63,7 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
 
         // instantiate hud
         this.hud = new HeadsUpDisplay(this);
-        setupInputMultiplexer();
-
+        hud.initStage();
 
         // add board to main table
         Table boardTable = new Table();
@@ -80,64 +74,51 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
     }
 
     @Override
-    public void onGameStart() {
-
+    protected boolean wonGame() {
+        return !super.isGameTimeUp();
     }
-
-    private float messageTimer;
 
     @Override
-    public void onGameEnd() {
-        this.isGameOver = true;
-        this.board.pauseInput();
-
-        ((HeadsUpDisplay) hud).showEndGameMessage(win());
-        messageTimer = 5;
-    }
-
-    public boolean win() {
-        return isGameOver && !super.isGameTimeUp();
+    protected boolean isGameOver() {
+        return super.isGameTimeUp() || scoringSystem.getPlayerScore() >= targetScore;
     }
 
     @Override
     public void update(float dt) {
-        if (isGameOver) {
-            messageTimer -= dt;
-            if (messageTimer <= 0) {
-                game.disposeCurrentScreen();
-                game.setScreen(new MenuScreen(game));
-            }
-            return;
+        super.update(dt);
+        if (isGameStarted() && !isGameOver()) {
+            super.advanceGameTime(dt);
         }
-
-        // call this after all acting of screen stage has been completed
-        if (super.isGameTimeUp()) { // LOSE
-            onGameEnd();
-            return;
-        }
-
-        super.advanceGameTime(dt);
 
         while (board.getCrushStack().size() > 0) {
             scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
         }
-        if (scoringSystem.getPlayerScore() >= targetScore) { // WIN
-            onGameEnd();
-        }
     }
 
-    private class HeadsUpDisplay extends HUD {
+    private static class HeadsUpDisplay extends HUD {
 
-        private int FONT_LG = 100, FONT_MD = 70, FONT_SM = 50;
+        private static int FONT_LG = 100, FONT_MD = 70, FONT_SM = 50;
 
         private Label labelScore;
         private Label labelTimeLeft;
         private Label labelTargetScore;
-        private BitmapFont endFont;
 
-        public HeadsUpDisplay(TimedVoteTargetGameMode gameMode) {
+        private TimedVoteTargetGameMode gameMode;
+
+        HeadsUpDisplay(TimedVoteTargetGameMode gameMode) {
             super(gameMode);
+            this.gameMode = gameMode;
+        }
 
+        @Override
+        public void updateLabels(float dt) {
+            labelScore.setText("Votes: " + getCommaSeparatedNumber(gameMode.scoringSystem.getPlayerScore()));
+            labelTargetScore.setText("Target: " + getCommaSeparatedNumber(gameMode.targetScore));
+            labelTimeLeft.setText("" + ((int) Math.ceil(gameMode.getTimeLeft())));
+        }
+
+        @Override
+        protected void addActorsToTable() {
             // init table elements
             Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
             Label.LabelStyle timeLabelStyle = new Label.LabelStyle(fontCache.get(FONT_LG), Color.BLACK);
@@ -147,80 +128,34 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
             labelTimeLeft = new Label(null, timeLabelStyle);
             labelTargetScore = new Label(null, targetLabelStyle);
 
-            updateLabels();
-
-            table = new Table();
-//            table.setDebug(true);
-            table.setFillParent(true);
-            table.top();
-
-            addExitButton();
-
             GameInfoBox infoBox;
-
             infoBox = new GameInfoBox();
             infoBox.add(labelTimeLeft).pad(20f);
             infoBox.pack();
 
-            table.add(infoBox).padBottom(35);
-            table.row();
+            mainTable.add(infoBox).padBottom(35);
+            mainTable.row();
 
             infoBox = new GameInfoBox();
             infoBox.add(labelTargetScore).pad(20f);
             infoBox.pack();
 
-            table.add(infoBox);
-            table.row();
+            mainTable.add(infoBox);
+            mainTable.row();
 
             infoBox = new GameInfoBox();
             infoBox.add(labelScore).pad(20f);
             infoBox.pack();
 
-            table.add(infoBox).padTop(45 + board.getHeight()).expandX();
-
-            hudStage.addActor(table);
-        }
-
-        public void hideEndGameMessage() {
-            clearMessage();
-        }
-
-        public void showEndGameMessage(boolean win) {
-            String msg;
-            if (win) msg = "You win!";
-            else msg = "You lose!";
-
-            endFont = new FontGenerator(win ? Color.GREEN : Color.RED).generateFont(FONT_LG);
-            addMessage(msg, endFont);
-        }
-
-        private void updateLabels() {
-            TimedVoteTargetGameMode gameMode = (TimedVoteTargetGameMode) this.gameMode;
-            labelScore.setText("Votes: " + getCommaSeparatedNumber(gameMode.scoringSystem.getPlayerScore()));
-            labelTargetScore.setText("Target: " + getCommaSeparatedNumber(gameMode.targetScore));
-            labelTimeLeft.setText("" + ((int) Math.ceil(gameMode.getTimeLeft())));
+            mainTable.add(infoBox).padTop(45 + gameMode.board.getHeight()).expandX();
         }
 
         @Override
-        public void dispose() {
-            super.dispose();
-            if (endFont != null) endFont.dispose();
+        public Collection<String> getGameInfoDialogTextLines() {
+            return Collections.singletonList(
+                    "Reach " + gameMode.targetScore + " votes before time runs out!"
+            );
         }
 
-        @Override
-        public void render(float dt) {
-            hudCam.update();
-
-            updateLabels();
-
-            if (hasMessage()) {
-                batch.begin();
-                drawCenteredMessage();
-                batch.end();
-            }
-
-            hudStage.act(dt);
-            hudStage.draw();
-        }
     }
 }

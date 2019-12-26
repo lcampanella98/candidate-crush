@@ -9,12 +9,18 @@ import java.util.Set;
 public class NamedCandidateGroup implements Comparable<NamedCandidateGroup> {
     private Set<BlockType> candidates;
     private String name;
+    private String longName;
     public int score;
 
-    public NamedCandidateGroup(Collection<BlockType> candidates, String name) {
+    public NamedCandidateGroup(Collection<BlockType> candidates, String name, String longName) {
         this.candidates = new HashSet<>(candidates);
         this.name = name;
+        this.longName = longName;
         score = 0;
+    }
+
+    public String getLongName() {
+        return longName;
     }
 
     public boolean containsCandidate(BlockType type) {

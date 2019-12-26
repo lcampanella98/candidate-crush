@@ -10,17 +10,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class MusicHandler extends Thread implements IMusicHandler, Runnable, Disposable, Music.OnCompletionListener {
     private static final String POP_SOUND_LOCATION = "data/sounds/effects/pop_sound.mp3";
+    protected static List<BlockSound> allBlockSounds = BlockSoundBank.getInstance().getAllBlockSounds();
+
     private Sound popSound;
 
-    protected List<BlockSound> allBlockSounds;
     protected ConcurrentLinkedQueue<BlockSound> queue;
     private boolean tryPlayPop = false;
+    private boolean playPop = false;
     private boolean shouldRun;
     private Music lastMusic;
 
     public MusicHandler() {
         queue = new ConcurrentLinkedQueue<>();
-        allBlockSounds = BlockSoundBank.getInstance().getAllBlockSounds();
         popSound = Gdx.audio.newSound(Gdx.files.internal(POP_SOUND_LOCATION));
     }
 
@@ -29,6 +30,10 @@ public abstract class MusicHandler extends Thread implements IMusicHandler, Runn
         tryPlayPop = true;
     }
 
+    @Override
+    public void playPop() {
+        playPop = true;
+    }
 
     @Override
     public void run() {
@@ -42,11 +47,11 @@ public abstract class MusicHandler extends Thread implements IMusicHandler, Runn
                         lastMusic.play();
                     }
                 }
-                if (tryPlayPop) {
-                    if (lastMusic == null || !lastMusic.isPlaying()) {
+                if (tryPlayPop || playPop) {
+                    if (playPop || lastMusic == null || !lastMusic.isPlaying()) {
                         popSound.play(1.0f);
                     }
-                    tryPlayPop = false;
+                    tryPlayPop = playPop = false;
                 }
                 Thread.sleep(50);
             } catch (InterruptedException e) {

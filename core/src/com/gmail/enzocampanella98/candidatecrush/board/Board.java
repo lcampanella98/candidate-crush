@@ -21,7 +21,6 @@ import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.sound.IMusicHandler;
 
-import java.util.List;
 import java.util.Stack;
 
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
@@ -30,17 +29,15 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 public class Board extends Group implements Disposable {
 
     private static final float SINGLE_BLOCK_DROP_TIME = .3f;
-    private final IBoardInitializer boardInitializer;
 
     private Block[][] blocks;
-
-    private List<BlockType> blockTypes;
 
     private Texture boardTexture;
     private Rectangle boardBounds;
 
     private int numBlocksAcross;
 
+    private final IBoardInitializer boardInitializer;
     private IMusicHandler musicHandler;
     private IBlockTypeProvider blockTypeProvider;
     private IBlockTextureProvider blockTextureProvider;
@@ -260,9 +257,8 @@ public class Board extends Group implements Disposable {
                 assert largestGroup != null;
                 musicHandler.queueSoundByte(largestGroup.getType(),
                         ScoringSystem.getCrushType(largestGroup));
-            } else {
-                musicHandler.playPopIfNoMusicPlaying();
             }
+            musicHandler.playPop();
             return true;
         } else { // there was no match
             blockGroups = null;

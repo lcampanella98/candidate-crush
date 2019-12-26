@@ -85,9 +85,9 @@ public class MenuScreen implements Screen {
     private Label titleLabel;
     private Container<Table> optionTableContainer;
 
-    private Array<GameModeButton> gameModeButtons;
-    private ArrayList<CCButton> partyButtons;
-    private ArrayList<CandidateButton> candidateButtons;
+    private List<GameModeButton> gameModeButtons;
+    private List<CCButton> partyButtons;
+    private List<CandidateButton> candidateButtons;
 
     private CCButtonFactory buttonFactory;
     private FontCache fontCache;
@@ -182,17 +182,12 @@ public class MenuScreen implements Screen {
         btnPlay = new ImageTextButton("Start the Crush", btnPlayStyle);
         btnPlay.pad(50, 80, 50, 80);
 
+        btnPlay.setVisible(false);
         btnPlay.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
 
-                GameModeButton checkedButton = null;
-                for (GameModeButton b : gameModeButtons) {
-                    if (b.isChecked()) {
-                        checkedButton = b;
-                        break;
-                    }
-                }
+                GameModeButton checkedButton = getCheckedGameModeButton();
 
                 if (checkedButton != null) {
                     CandidateCrushPlayScreen playScreen = new CandidateCrushPlayScreen(game);
@@ -231,6 +226,29 @@ public class MenuScreen implements Screen {
         });
     }
 
+    private GameModeButton getCheckedGameModeButton() {
+        for (GameModeButton b : gameModeButtons) {
+            if (b.isChecked()) {
+                return b;
+            }
+        }
+        return null;
+    }
+
+    private void updatePlayButtonVisibility() {
+        btnPlay.setVisible(shouldPlayButtonBeVisible());
+    }
+
+    private boolean shouldPlayButtonBeVisible() {
+        GameModeButton checkedButton = getCheckedGameModeButton();
+        if (checkedButton == null) return false;
+        MenuScreen.GameMode gm = checkedButton.getGameModeType();
+        if ((gm == GameMode.PRIMARIES && getSelectedCandidate() == null)
+            || (gm == GameMode.ELECTION && getSelectedParty() == null)) {
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public void show() {
@@ -238,7 +256,7 @@ public class MenuScreen implements Screen {
     }
 
     private void initGameModeButtons() {
-        gameModeButtons = new Array<>();
+        gameModeButtons = new ArrayList<>();
         gameModeTable = new Table();
         int buttonsPerRow = 2;
         int numButtonsInCurRow = 0;
@@ -281,6 +299,7 @@ public class MenuScreen implements Screen {
                     } else {
                         optionTableContainer.setActor(null);
                     }
+                    updatePlayButtonVisibility();
                 }
             });
         }
@@ -320,6 +339,7 @@ public class MenuScreen implements Screen {
                             if (cur != btn) cur.setChecked(false);
                         }
                     }
+                    updatePlayButtonVisibility();
                 }
             });
 
@@ -347,10 +367,11 @@ public class MenuScreen implements Screen {
                             if (cur != btn) cur.setChecked(false);
                         }
                     }
+                    updatePlayButtonVisibility();
                 }
             });
 
-            candidateSelectBtnTable.add(button).width(500f).height(500f * button.getHeightToWidthRatio()).padTop(10f);
+            candidateSelectBtnTable.add(button).width(400f).height(400f * button.getHeightToWidthRatio()).padTop(10f);
             candidateSelectBtnTable.row();
         }
     }

@@ -35,7 +35,13 @@ public final class Methods {
     }
 
     public static String firstToUpper(String s) {
-        return s.substring(0, 1).toUpperCase() + s.substring(1);
+        String[] spl = s.split(" ");
+        StringBuilder sb = new StringBuilder();
+        for (String w : spl) {
+            sb.append(w.substring(0, 1).toUpperCase());
+            sb.append(w.substring(1));
+        }
+        return sb.toString();
     }
 
     public static Color colorFromRGB(int r, int g, int b) {

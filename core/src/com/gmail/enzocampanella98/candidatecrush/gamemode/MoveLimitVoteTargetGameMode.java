@@ -1,7 +1,6 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -11,13 +10,13 @@ import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.EquallyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
-import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
-import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,24 +50,22 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
         this.blockTypes = blockTypes;
         this.blockTypes.remove(BlockType.BLANK);
 
-        Set<String> blockTypeSet = new HashSet<>();
-        for (BlockType bt : blockTypes) blockTypeSet.add(bt.getLname());
-        musicHandler = new NoLevelMusicHandler(blockTypeSet);
+        musicHandler = new NoLevelMusicHandler();
         musicHandler.start();
 
         newBlockTypeProvider = new EquallyRandomBlockTypeProvider(blockTypes);
 
         this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
 
-        int score3 = 800, score4 = 1000, score5 = 3000, scoreT = 2000;
+        int score3 = 500, score4 = 1000, score5 = 3000, scoreT = 2000;
         this.scoringSystem = new VoteTargetScoringSystem(score3, score4, score5, scoreT, nonUserInvokedCrushScale);
 
         this.mainTable = new Table();
         this.mainTable.setFillParent(true);
 
         // instantiate hud
-        this.hud = new MoveLimitVoteTargetGameMode.HeadsUpDisplay(this);
-        setupInputMultiplexer();
+        hud = new MoveLimitVoteTargetGameMode.HeadsUpDisplay(this);
+        hud.initStage();
 
         // add board to main table
         Table boardTable = new Table();
@@ -79,60 +76,47 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
     }
 
     @Override
-    public void onGameStart() {
-
+    protected boolean wonGame() {
+        return scoringSystem.getPlayerScore() >= targetScore;
     }
-
-    private float messageTimer;
 
     @Override
-    public void onGameEnd() {
-        this.isGameOver = true;
-        this.board.pauseInput();
-
-        ((MoveLimitVoteTargetGameMode.HeadsUpDisplay) hud).showEndGameMessage(win());
-        messageTimer = 5;
-    }
-
-    public boolean win() {
-        return isGameOver && scoringSystem.getPlayerScore() >= targetScore;
+    protected boolean isGameOver() {
+        // game is over if the player surpassed the score or has no more moves (or both in which case the player WINS)
+        return scoringSystem.getPlayerScore() >= targetScore || numMovesLeft == 0;
     }
 
     @Override
     public void update(float dt) {
-        if (isGameOver) {
-            messageTimer -= dt;
-            if (messageTimer <= 0) {
-                game.disposeCurrentScreen();
-                game.setScreen(new MenuScreen(game));
-            }
-            return;
-        }
-
+        super.update(dt);
         while (board.getCrushStack().size() > 0) {
             scoringSystem.updateScore(board.getCrushStack().pop(), board.userFlippedBlocks);
             if (board.userFlippedBlocks && --numMovesLeft == 0) break;
         }
-        // game is over if the player surpassed the score or has no more moves (or both in which case the player WINS)
-        if (scoringSystem.getPlayerScore() >= targetScore || numMovesLeft == 0) {
-            onGameEnd();
-        }
     }
 
-    private class HeadsUpDisplay extends HUD {
-
-        private int FONT_LG = 100, FONT_MD = 70, FONT_SM = 50;
+    private static class HeadsUpDisplay extends HUD {
+        private static int FONT_LG = 100, FONT_MD = 70, FONT_SM = 50;
 
         private Label labelScore;
         private Label labelMovesLeft;
         private Label labelTargetScore;
-        private BitmapFont endFont;
         private MoveLimitVoteTargetGameMode gameMode;
 
-        public HeadsUpDisplay(MoveLimitVoteTargetGameMode gameMode) {
+        HeadsUpDisplay(MoveLimitVoteTargetGameMode gameMode) {
             super(gameMode);
             this.gameMode = gameMode;
+        }
 
+        @Override
+        public void updateLabels(float dt) {
+            labelScore.setText("Votes: " + getCommaSeparatedNumber(gameMode.scoringSystem.getPlayerScore()));
+            labelTargetScore.setText("Target: " + getCommaSeparatedNumber(gameMode.targetScore));
+            labelMovesLeft.setText("" + ((int) Math.ceil(gameMode.numMovesLeft)));
+        }
+
+        @Override
+        protected void addActorsToTable() {
             // init table elements
             Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
             Label.LabelStyle timeLabelStyle = new Label.LabelStyle(fontCache.get(FONT_LG), Color.BLACK);
@@ -142,79 +126,34 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
             labelMovesLeft = new Label(null, timeLabelStyle);
             labelTargetScore = new Label(null, targetLabelStyle);
 
-            updateLabels();
-
-            table = new Table();
-//            table.setDebug(true);
-            table.setFillParent(true);
-            table.top();
-
-            addExitButton();
-
             GameInfoBox infoBox;
 
             infoBox = new GameInfoBox();
             infoBox.add(labelMovesLeft).pad(20f);
             infoBox.pack();
 
-            table.add(infoBox).padBottom(35);
-            table.row();
+            mainTable.add(infoBox).padBottom(35);
+            mainTable.row();
 
             infoBox = new GameInfoBox();
             infoBox.add(labelTargetScore).pad(20f);
             infoBox.pack();
 
-            table.add(infoBox);
-            table.row();
+            mainTable.add(infoBox);
+            mainTable.row();
 
             infoBox = new GameInfoBox();
             infoBox.add(labelScore).pad(20f);
             infoBox.pack();
 
-            table.add(infoBox).padTop(45 + board.getHeight()).expandX();
-
-            hudStage.addActor(table);
-        }
-
-        public void hideEndGameMessage() {
-            clearMessage();
-        }
-
-        public void showEndGameMessage(boolean win) {
-            String msg;
-            if (win) msg = "You win!";
-            else msg = "You lose!";
-
-            endFont = new FontGenerator(win ? Color.GREEN : Color.RED).generateFont(FONT_LG);
-            addMessage(msg, endFont);
-        }
-
-        private void updateLabels() {
-            labelScore.setText("Votes: " + getCommaSeparatedNumber(gameMode.scoringSystem.getPlayerScore()));
-            labelTargetScore.setText("Target: " + getCommaSeparatedNumber(gameMode.targetScore));
-            labelMovesLeft.setText("" + ((int) Math.ceil(gameMode.numMovesLeft)));
+            mainTable.add(infoBox).padTop(45 + gameMode.board.getHeight()).expandX();
         }
 
         @Override
-        public void dispose() {
-            super.dispose();
-            if (endFont != null) endFont.dispose();
-        }
-
-        @Override
-        public void render(float dt) {
-            hudCam.update();
-
-            updateLabels();
-
-            if (hasMessage()) {
-                batch.begin();
-                drawCenteredMessage();
-                batch.end();
-            }
-
-            hudStage.act(dt);
-            hudStage.draw();
+        public Collection<String> getGameInfoDialogTextLines() {
+            return Collections.singletonList(
+                    "You have " + gameMode.numMovesLeft + " moves to reach " + gameMode.targetScore + " votes!"
+            );
         }
     }
 }

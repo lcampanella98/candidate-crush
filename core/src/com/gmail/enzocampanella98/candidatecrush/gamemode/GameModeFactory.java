@@ -52,7 +52,9 @@ public class GameModeFactory {
 
         for (BlockType dem : DEM_CANDIDATES_2020) {
             NamedCandidateGroup grp = new NamedCandidateGroup(
-                    Collections.singletonList(dem), firstToUpper(dem.getLname())
+                    Collections.singletonList(dem),
+                    firstToUpper(dem.getLname()),
+                    dem.getFriendlyName()
             );
             groups.add(grp);
             freqs.put(dem, dem == player ? playerBlockFrequency : otherBlockFrequency);
@@ -97,8 +99,8 @@ public class GameModeFactory {
             }
             freqs.put(cand, f);
         }
-        NamedCandidateGroup demGroup = new NamedCandidateGroup(demCands, "Democrats");
-        NamedCandidateGroup repGroup = new NamedCandidateGroup(repCands, "Trump");
+        NamedCandidateGroup demGroup = new NamedCandidateGroup(demCands, "Democrats", "The Democrats");
+        NamedCandidateGroup repGroup = new NamedCandidateGroup(repCands, "Trump", "Donald Trump");
         groups.add(demGroup);
         groups.add(repGroup);
         playerGroup = playerParty == 'D' ? demGroup : repGroup;

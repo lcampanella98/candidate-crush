@@ -9,21 +9,21 @@ import java.util.Random;
 import java.util.Set;
 
 public class NoLevelMusicHandler extends MusicHandler {
-    private ObjectMap<String, List<BlockSound>> soundsLeft;
-    private Random rand = new Random();
+    private static ObjectMap<String, List<BlockSound>> soundsLeft = initSoundsLeft();
 
-    public NoLevelMusicHandler(Set<String> candidates) {
+    private static ObjectMap<String, List<BlockSound>> initSoundsLeft() {
         soundsLeft = new ObjectMap<>();
         for (BlockSound sound : allBlockSounds) {
             String name = sound.getLastname();
-            if (candidates.contains(name)) {
-                if (!soundsLeft.containsKey(name)) {
-                    soundsLeft.put(name, new ArrayList<BlockSound>());
-                }
-                soundsLeft.get(name).add(sound);
+            if (!soundsLeft.containsKey(name)) {
+                soundsLeft.put(name, new ArrayList<BlockSound>());
             }
+            soundsLeft.get(name).add(sound);
         }
+        return soundsLeft;
     }
+
+    private Random rand = new Random();
 
     private void repopulateCandidateIfNecessary(String name) {
         if (soundsLeft.get(name).size() > 0) return;

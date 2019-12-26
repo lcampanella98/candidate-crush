@@ -17,6 +17,7 @@ import com.gmail.enzocampanella98.candidatecrush.board.IBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
+import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 
 import java.util.Collection;
@@ -24,6 +25,9 @@ import java.util.Collection;
 
 public abstract class CCGameMode implements Disposable {
     static final String BG_PATH = "data/img/general/screen_bg_votetarget.png";
+    static final float DISPLAY_GAME_INFO_SEC = 4f;
+    static final float DISPLAY_GAME_END_SEC = 4f;
+
 
     protected Stage stage;
     protected Board board;
@@ -31,7 +35,10 @@ public abstract class CCGameMode implements Disposable {
     protected CandidateCrush game;
     protected InputMultiplexer inputMultiplexer;
 
-    protected boolean isGameOver;
+    private boolean isGameStarted;
+    private boolean isInitialized;
+    private boolean displayedGameEndMessage;
+    private boolean showedGameInstructions;
 
     protected Texture backgroundTexture;
     protected MusicHandler musicHandler;
@@ -45,11 +52,10 @@ public abstract class CCGameMode implements Disposable {
     protected CCGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider, Collection<BlockType> blockTypes) {
         this.stage = stage;
         this.game = game;
-        this.boardInitializer = new BadBoardInitializer();
         this.blockColorProvider = blockColorProvider;
+        this.boardInitializer = new BadBoardInitializer();
         this.boardAnalyzer = new GoodBoardAnalyzer();
-        blockTextureProvider = new BlockTextureProvider(blockTypes, blockColorProvider);
-        isGameOver = false;
+        this.blockTextureProvider = new BlockTextureProvider(blockTypes, blockColorProvider);
         this.backgroundTexture = new Texture(getBackgroundTexturePath());
     }
 
@@ -58,13 +64,51 @@ public abstract class CCGameMode implements Disposable {
         return BG_PATH;
     }
 
-    public abstract void onGameStart();
+    public boolean isGameStarted() {
+        return isGameStarted;
+    }
 
-    public abstract void onGameEnd();
+    private void init() {
+        if (isInitialized) return;
+        setupInputMultiplexer();
+        isInitialized = true;
+    }
 
-    public abstract void update(float dt);
+    public void returnToMenu() {
+        game.disposeCurrentScreen();
+        game.setScreen(new MenuScreen(game));
+    }
 
-    protected void setupInputMultiplexer() {
+    protected abstract boolean wonGame();
+
+    public void update(float dt) {
+        init();
+        if (!isGameStarted) {
+            board.pauseInput();
+            if (!showedGameInstructions) {
+                hud.showGameInfoDialog(DISPLAY_GAME_INFO_SEC);
+                showedGameInstructions = true;
+            } else if (!hud.isGameInstructionsShowing()) {
+                isGameStarted = true;
+            }
+        } else {
+            board.resumeInput();
+        }
+        if (isGameOver()) {
+            board.pauseInput();
+            if (!displayedGameEndMessage) {
+                hud.showGameEndMessage(wonGame(), DISPLAY_GAME_END_SEC);
+                displayedGameEndMessage = true;
+            } else if (!hud.isGameOverMessageShowing()) {
+                returnToMenu(); // done!
+            }
+        }
+        hud.update(dt);
+    }
+
+    protected abstract boolean isGameOver();
+
+    private void setupInputMultiplexer() {
         inputMultiplexer = new InputMultiplexer();
         Gdx.input.setInputProcessor(inputMultiplexer);
         inputMultiplexer.addProcessor(hud.hudStage);
@@ -75,14 +119,14 @@ public abstract class CCGameMode implements Disposable {
         return game;
     }
 
-    public void drawHUD(float delta) {
-        if (this.hud != null) {
-            this.hud.render(delta);
+    public void drawHUD() {
+        if (hud != null) {
+            hud.draw();
         }
     }
 
     public Texture getBackgroundTexture() {
-        return this.backgroundTexture;
+        return backgroundTexture;
     }
 
     public void dispose() {

@@ -1,6 +1,5 @@
 package com.gmail.enzocampanella98.candidatecrush.customui;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -73,16 +72,33 @@ public class CCButtonFactory implements Disposable {
 
         Pixmap skinPixmap = texToPixmap(regChecked.getTexture());
 
-        Pixmap pixmapChecked = texRegionToPixmap(skinPixmap, regChecked);
-        Pixmap pixmapDown = texRegionToPixmap(skinPixmap, regDown);
-        Pixmap pixmapUp = texRegionToPixmap(skinPixmap, regUp);
+        Pixmap skinPixmapChecked = texRegionToPixmap(skinPixmap, regChecked);
+        Pixmap skinPixmapDown = texRegionToPixmap(skinPixmap, regDown);
+        Pixmap skinPixmapUp = texRegionToPixmap(skinPixmap, regUp);
+
+        int height = pixmapCand.getHeight();
+        int width = skinPixmapChecked.getWidth() * height / skinPixmapChecked.getHeight();
+
+        Pixmap pixmapChecked = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+        Pixmap pixmapDown = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+        Pixmap pixmapUp = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+
+        pixmapChecked.drawPixmap(skinPixmapChecked,
+                0, 0, skinPixmapChecked.getWidth(), skinPixmapChecked.getHeight(),
+                0, 0, pixmapChecked.getWidth(), pixmapChecked.getHeight());
+        pixmapDown.drawPixmap(skinPixmapDown,
+                0, 0, skinPixmapDown.getWidth(), skinPixmapDown.getHeight(),
+                0, 0, pixmapDown.getWidth(), pixmapDown.getHeight());
+        pixmapUp.drawPixmap(skinPixmapUp,
+                0, 0, skinPixmapUp.getWidth(), skinPixmapUp.getHeight(),
+                0, 0, pixmapUp.getWidth(), pixmapUp.getHeight());
 
         pixmapChecked.drawPixmap(pixmapCand, 0, 0,
                 pixmapCand.getWidth(), pixmapCand.getHeight(), 0, 0, pixmapChecked.getHeight(), pixmapChecked.getHeight());
         pixmapDown.drawPixmap(pixmapCand, 0, 0,
-                pixmapCand.getWidth(), pixmapCand.getHeight(), 0, 0, pixmapChecked.getHeight(), pixmapChecked.getHeight());
+                pixmapCand.getWidth(), pixmapCand.getHeight(), 0, 0, pixmapDown.getHeight(), pixmapDown.getHeight());
         pixmapUp.drawPixmap(pixmapCand, 0, 0,
-                pixmapCand.getWidth(), pixmapCand.getHeight(), 0, 0, pixmapChecked.getHeight(), pixmapChecked.getHeight());
+                pixmapCand.getWidth(), pixmapCand.getHeight(), 0, 0, pixmapUp.getHeight(), pixmapUp.getHeight());
 
         Texture tChecked = new Texture(pixmapChecked);
         Texture tDown = new Texture(pixmapDown);
