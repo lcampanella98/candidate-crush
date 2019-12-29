@@ -22,6 +22,11 @@ import static com.gmail.enzocampanella98.candidatecrush.tools.ImgTools.texRegion
 import static com.gmail.enzocampanella98.candidatecrush.tools.ImgTools.texToPixmap;
 
 public class CCButtonFactory implements Disposable {
+    private static final String VOTE_BTN_PACK_PATH = "data/img/button_skin/vote_btn.pack";
+    private static final String VOTE_BTN_UP = "btn_skin_up";
+    private static final String VOTE_BTN_DOWN = "btn_skin_down";
+    private static final String VOTE_BTN_CHECKED = "btn_skin_checked";
+
     private FontCache fontCache;
     private ObjectMap<BlockType, Texture> candTextures;
     private List<Texture> extraTextures;
@@ -49,14 +54,14 @@ public class CCButtonFactory implements Disposable {
     }
 
     private Skin getVoteSkin() {
-        return new Skin(new TextureAtlas("data/img/button_skin/vote_button.atlas"));
+        return new Skin(new TextureAtlas(VOTE_BTN_PACK_PATH));
     }
 
     private ImageTextButton.ImageTextButtonStyle getVoteButtonStyle(BitmapFont font, Skin skin) {
         ImageTextButton.ImageTextButtonStyle voteButtonStyle = new ImageTextButton.ImageTextButtonStyle();
-        voteButtonStyle.checked = skin.getDrawable("btn-checked");
-        voteButtonStyle.down = skin.getDrawable("btn-down");
-        voteButtonStyle.up = skin.getDrawable("btn-up");
+        voteButtonStyle.checked = skin.getDrawable(VOTE_BTN_CHECKED);
+        voteButtonStyle.down = skin.getDrawable(VOTE_BTN_DOWN);
+        voteButtonStyle.up = skin.getDrawable(VOTE_BTN_UP);
         voteButtonStyle.font = font;
         return voteButtonStyle;
     }
@@ -66,39 +71,23 @@ public class CCButtonFactory implements Disposable {
         ImageTextButton.ImageTextButtonStyle voteButtonStyle = new ImageTextButton.ImageTextButtonStyle();
         Pixmap pixmapCand = texToPixmap(candidateTexture);
 
-        TextureRegion regChecked = skin.getRegion("btn-checked");
-        TextureRegion regDown = skin.getRegion("btn-down");
-        TextureRegion regUp = skin.getRegion("btn-up");
+        TextureRegion regChecked = skin.getRegion(VOTE_BTN_CHECKED);
+        TextureRegion regDown = skin.getRegion(VOTE_BTN_DOWN);
+        TextureRegion regUp = skin.getRegion(VOTE_BTN_UP);
 
         Pixmap skinPixmap = texToPixmap(regChecked.getTexture());
 
-        Pixmap skinPixmapChecked = texRegionToPixmap(skinPixmap, regChecked);
-        Pixmap skinPixmapDown = texRegionToPixmap(skinPixmap, regDown);
-        Pixmap skinPixmapUp = texRegionToPixmap(skinPixmap, regUp);
+        Pixmap pixmapChecked = texRegionToPixmap(skinPixmap, regChecked);
+        Pixmap pixmapDown    = texRegionToPixmap(skinPixmap, regDown);
+        Pixmap pixmapUp      = texRegionToPixmap(skinPixmap, regUp);
 
-        int height = pixmapCand.getHeight();
-        int width = skinPixmapChecked.getWidth() * height / skinPixmapChecked.getHeight();
-
-        Pixmap pixmapChecked = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-        Pixmap pixmapDown = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-        Pixmap pixmapUp = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-
-        pixmapChecked.drawPixmap(skinPixmapChecked,
-                0, 0, skinPixmapChecked.getWidth(), skinPixmapChecked.getHeight(),
-                0, 0, pixmapChecked.getWidth(), pixmapChecked.getHeight());
-        pixmapDown.drawPixmap(skinPixmapDown,
-                0, 0, skinPixmapDown.getWidth(), skinPixmapDown.getHeight(),
-                0, 0, pixmapDown.getWidth(), pixmapDown.getHeight());
-        pixmapUp.drawPixmap(skinPixmapUp,
-                0, 0, skinPixmapUp.getWidth(), skinPixmapUp.getHeight(),
-                0, 0, pixmapUp.getWidth(), pixmapUp.getHeight());
-
+        int xf = 4, yf = 0;
         pixmapChecked.drawPixmap(pixmapCand, 0, 0,
-                pixmapCand.getWidth(), pixmapCand.getHeight(), 0, 0, pixmapChecked.getHeight(), pixmapChecked.getHeight());
+                pixmapCand.getWidth(), pixmapCand.getHeight(), xf, yf, pixmapChecked.getHeight(), pixmapChecked.getHeight());
         pixmapDown.drawPixmap(pixmapCand, 0, 0,
-                pixmapCand.getWidth(), pixmapCand.getHeight(), 0, 0, pixmapDown.getHeight(), pixmapDown.getHeight());
+                pixmapCand.getWidth(), pixmapCand.getHeight(), xf, yf, pixmapDown.getHeight(), pixmapDown.getHeight());
         pixmapUp.drawPixmap(pixmapCand, 0, 0,
-                pixmapCand.getWidth(), pixmapCand.getHeight(), 0, 0, pixmapUp.getHeight(), pixmapUp.getHeight());
+                pixmapCand.getWidth(), pixmapCand.getHeight(), xf, yf, pixmapUp.getHeight(), pixmapUp.getHeight());
 
         Texture tChecked = new Texture(pixmapChecked);
         Texture tDown = new Texture(pixmapDown);

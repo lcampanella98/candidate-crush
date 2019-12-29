@@ -108,7 +108,7 @@ public abstract class CCGameMode implements Disposable {
 
     private void startBackgroundMusic() {
         soundBank.bgMusic1.setLooping(true);
-        soundBank.bgMusic1.setVolume(0.1f);
+        soundBank.bgMusic1.setVolume(0.2f);
         musicHandler.setBackgroundMusic(soundBank.bgMusic1);
         musicHandler.playBackgroundMusic();
     }

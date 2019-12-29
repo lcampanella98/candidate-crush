@@ -27,7 +27,7 @@ public class GameModeFactory {
             colorFromRGB(188, 66, 245), // purple
             colorFromRGB(66, 245, 239), // cyan
             colorFromRGB(66, 245, 102), // green
-            colorFromRGB(224, 245, 66), // yellow
+//            colorFromRGB(224, 245, 66), // yellow
             colorFromRGB(245, 179, 66) // orange
     ));
 

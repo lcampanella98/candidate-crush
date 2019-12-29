@@ -19,6 +19,7 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
     private Set<Sound> soundSet;
     private Set<Music> musicSet;
     private Music bgMusic;
+    private float bgMusicInitVolume;
 
     public MusicHandler() {
         soundByteQueue = new LinkedList<>();
@@ -51,6 +52,7 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
     @Override
     public void setBackgroundMusic(Music music) {
         this.bgMusic = music;
+        this.bgMusicInitVolume = bgMusic.getVolume();
         musicSet.add(music);
     }
 
@@ -73,7 +75,7 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
             next.getMusic().play();
         }
         if (bgMusic != null) {
-            bgMusic.pause();
+            bgMusic.setVolume(bgMusicInitVolume / 4f);
         }
     }
 
@@ -84,7 +86,7 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
             lastSoundByte.getMusic().play();
         } else {
             if (bgMusic != null) {
-                bgMusic.play();
+                bgMusic.setVolume(bgMusicInitVolume);
             }
         }
     }
