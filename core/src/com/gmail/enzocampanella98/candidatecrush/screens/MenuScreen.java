@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
@@ -31,6 +32,7 @@ import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeFactory;
+import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -188,6 +190,7 @@ public class MenuScreen implements Screen {
         btnPlay.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                playStampIfChecked(true);
 
                 GameModeButton checkedButton = getCheckedGameModeButton();
 
@@ -302,6 +305,7 @@ public class MenuScreen implements Screen {
                         optionTableContainer.setActor(null);
                     }
                     updatePlayButtonVisibility();
+                    playStampIfChecked(btn.isChecked());
                 }
             });
         }
@@ -342,6 +346,7 @@ public class MenuScreen implements Screen {
                         }
                     }
                     updatePlayButtonVisibility();
+                    playStampIfChecked(btn.isChecked());
                 }
             });
 
@@ -370,6 +375,7 @@ public class MenuScreen implements Screen {
                         }
                     }
                     updatePlayButtonVisibility();
+                    playStampIfChecked(btn.isChecked());
                 }
             });
 
@@ -380,6 +386,13 @@ public class MenuScreen implements Screen {
 
     private void initHardModeButton() {
         btnHardMode = buttonFactory.getVoteButton("Hard Mode", FONT_MD);
+        btnHardMode.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                Button btn = (Button)actor;
+                playStampIfChecked(btn.isChecked());
+            }
+        });
     }
 
     private BlockType getSelectedCandidate() {
@@ -389,6 +402,12 @@ public class MenuScreen implements Screen {
             }
         }
         return null;
+    }
+
+    private void playStampIfChecked(boolean checked) {
+        if (checked) {
+            CCSoundBank.getInstance().stampSound.play();
+        }
     }
 
     private Character getSelectedParty() {

@@ -156,6 +156,7 @@ public class CCSoundBank implements Disposable {
     public static final String BG_MUSIC_1_PATH = "data/sounds/music/star_spangled_banner.mp3";
     public static final String WIN_MUSIC_PATH = "data/sounds/music/marine_hymn.mp3";
     public static final String LOSE_MUSIC_PATH = "data/sounds/music/taps.mp3";
+    public static final String STAMP_SOUND_PATH = "data//sounds/effects/stamp.mp3";
 
 
     private static CCSoundBank instance;
@@ -163,6 +164,7 @@ public class CCSoundBank implements Disposable {
     // sound accessors
     public final List<SoundByte> allSoundBytes;
     public final Sound popSound;
+    public final Sound stampSound;
     public final Music bgMusic1;
     public final Music winMusic;
     public final Music loseMusic;
@@ -173,6 +175,7 @@ public class CCSoundBank implements Disposable {
             allSoundBytes.add(new SoundByte(SOUND_BYTE_DIR + name));
         }
         popSound = Gdx.audio.newSound(Gdx.files.internal(POP_SOUND_PATH));
+        stampSound = Gdx.audio.newSound(Gdx.files.internal(STAMP_SOUND_PATH));
         bgMusic1 = Gdx.audio.newMusic(Gdx.files.internal(BG_MUSIC_1_PATH));
         winMusic = Gdx.audio.newMusic(Gdx.files.internal(WIN_MUSIC_PATH));
         loseMusic = Gdx.audio.newMusic(Gdx.files.internal(LOSE_MUSIC_PATH));
@@ -189,7 +192,9 @@ public class CCSoundBank implements Disposable {
     public void dispose() {
         List<Disposable> toDispose = new ArrayList<>();
         toDispose.addAll(allSoundBytes);
-        toDispose.addAll(Arrays.asList(popSound, bgMusic1));
+        toDispose.addAll(Arrays.asList(
+                popSound, stampSound, bgMusic1, winMusic, loseMusic
+        ));
         for (Disposable sound : toDispose) {
             sound.dispose();
         }
