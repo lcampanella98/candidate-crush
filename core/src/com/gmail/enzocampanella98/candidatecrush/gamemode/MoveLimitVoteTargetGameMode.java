@@ -14,7 +14,6 @@ import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
-import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
 import java.util.Arrays;
@@ -24,10 +23,7 @@ import java.util.List;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
 public class MoveLimitVoteTargetGameMode extends CCGameMode {
-    private static float nonUserInvokedCrushScale = 0.4f;
-    private static int boardWidth = 8;
-    private static int defaultNumMoves = 30;
-    private static int defaultTargetScore = 20000;
+    private static final float nonUserInvokedCrushScale = 0.4f;
 
     private int targetScore;
     private int numMoves;
@@ -37,13 +33,12 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
     private List<BlockType> blockTypes;
 
     private Table mainTable;
-    private MusicHandler musicHandler;
 
-    public MoveLimitVoteTargetGameMode(CandidateCrush game, Stage stage, List<BlockType> blockTypes, IBlockColorProvider blockColorProvider) {
-        this(game, stage, blockColorProvider, blockTypes, defaultNumMoves, defaultTargetScore);
-    }
-
-    public MoveLimitVoteTargetGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider, List<BlockType> blockTypes, int numMoves, int targetScore) {
+    public MoveLimitVoteTargetGameMode(CandidateCrush game,
+                                       Stage stage,
+                                       IBlockColorProvider blockColorProvider,
+                                       List<BlockType> blockTypes,
+                                       int numMoves, int targetScore) {
         super(game, stage, blockColorProvider, blockTypes);
 
         this.targetScore = targetScore;
@@ -54,14 +49,12 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
         this.blockTypes.remove(BlockType.BLANK);
 
         musicHandler = new NoLevelMusicHandler();
-        musicHandler.start();
 
         newBlockTypeProvider = new EquallyRandomBlockTypeProvider(blockTypes);
 
         this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
-
-        int score3 = 500, score4 = 1200, score5 = 3000, scoreT = 2000;
-        this.scoringSystem = new VoteTargetScoringSystem(score3, score4, score5, scoreT, nonUserInvokedCrushScale);
+        this.scoringSystem = new VoteTargetScoringSystem(
+                score3, score4, score5, scoreT, nonUserInvokedCrushScale);
 
         this.mainTable = new Table();
         this.mainTable.setFillParent(true);
@@ -87,6 +80,12 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
     protected boolean isGameOver() {
         // game is over if the player surpassed the score or has no more moves (or both in which case the player WINS)
         return scoringSystem.getPlayerScore() >= targetScore || (numMovesLeft == 0 && board.isWaitingForInput());
+    }
+
+    @Override
+    public void restartGame() {
+        super.restartGame();
+        numMovesLeft = numMoves;
     }
 
     @Override
@@ -123,9 +122,9 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
         @Override
         protected void addActorsToTable() {
             // init table elements
-            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
-            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(fontCache.get(FONT_LG), Color.BLACK);
-            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
+            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_MD), Color.BLACK);
+            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_LG), Color.BLACK);
+            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_MD), Color.BLACK);
 
             labelScore = new Label(null, scoreLabelStyle);
             labelMovesLeft = new Label(null, timeLabelStyle);

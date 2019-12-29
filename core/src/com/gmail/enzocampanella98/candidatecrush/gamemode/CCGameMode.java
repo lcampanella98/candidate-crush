@@ -2,6 +2,7 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -27,6 +28,7 @@ import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
+import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
 import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.tools.Methods;
 
@@ -40,13 +42,17 @@ import java.util.Queue;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
+import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getGameVal;
 
 
 public abstract class CCGameMode implements Disposable {
+    static final int boardWidth = 8;
     static final String BG_PATH = "data/img/general/screen_bg_votetarget.png";
-    static final float DISPLAY_GAME_INFO_SEC = 4f;
-    static final float DISPLAY_GAME_END_SEC = 4f;
+    static final float DISPLAY_GAME_INFO_SEC = getGameVal(4f, 1f);
 
+    static final int score3 = 500, score4 = 1200, score5 = 3000, scoreT = 2000;
+
+    protected final CCSoundBank soundBank;
 
     protected Stage stage;
     protected Board board;
@@ -80,6 +86,8 @@ public abstract class CCGameMode implements Disposable {
         this.backgroundTexture = new Texture(getBackgroundTexturePath());
         this.latestCrushes = new LinkedList<>();
         this.fontCache = new FontCache(new FontGenerator(Color.WHITE));
+
+        this.soundBank = CCSoundBank.getInstance();
     }
 
     // override to set custom background texture
@@ -94,12 +102,31 @@ public abstract class CCGameMode implements Disposable {
     private void init() {
         if (isInitialized) return;
         setupInputMultiplexer();
+        startBackgroundMusic();
         isInitialized = true;
+    }
+
+    private void startBackgroundMusic() {
+        soundBank.bgMusic1.setLooping(true);
+        soundBank.bgMusic1.setVolume(0.1f);
+        musicHandler.setBackgroundMusic(soundBank.bgMusic1);
+        musicHandler.playBackgroundMusic();
     }
 
     public void returnToMenu() {
         game.disposeCurrentScreen();
         game.setScreen(new MenuScreen(game));
+    }
+
+    public Music getGameEndedMusic() {
+        Music music;
+        if (wonGame()) {
+            music = soundBank.winMusic;
+        } else {
+            music = soundBank.loseMusic;
+        }
+        music.setLooping(true);
+        return music;
     }
 
     protected abstract boolean wonGame();
@@ -122,11 +149,18 @@ public abstract class CCGameMode implements Disposable {
         if (isGameOver()) {
             board.pauseInput();
             if (!displayedGameEndMessage) {
-                hud.showGameEndMessage(wonGame(), DISPLAY_GAME_END_SEC);
+                hud.showGameEndMessage(wonGame());
                 displayedGameEndMessage = true;
-            } else if (!hud.isGameOverMessageShowing()) {
-                returnToMenu(); // done!
+
+                // play win/loss music
+                musicHandler.stopAll();
+                musicHandler.playMusic(getGameEndedMusic());
+
             }
+//            else if (!hud.isGameOverMessageShowing()) {
+//                musicHandler.stopAll();
+//                returnToMenu(); // done!
+//            }
         }
 
         List<Crush> latestCrushes = new ArrayList<>();
@@ -146,6 +180,19 @@ public abstract class CCGameMode implements Disposable {
         for (SimpleBlockGroup bg : crush.crushedBlocks) {
             stage.addActor(getCrushVoteLabelWithAnimation(bg, crush.wasUserInvoked));
         }
+    }
+
+    public void restartGame() {
+        isGameStarted
+                = showedGameInstructions
+                = displayedGameEndMessage
+                = false;
+
+        board.initBoard();
+        scoringSystem.reset();
+        hud.reset();
+        musicHandler.stopAll();
+        musicHandler.playBackgroundMusic();
     }
 
     protected abstract boolean isGameOver();

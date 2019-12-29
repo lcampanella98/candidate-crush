@@ -6,17 +6,16 @@ import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 public class NoLevelMusicHandler extends MusicHandler {
-    private static ObjectMap<String, List<BlockSound>> soundsLeft = initSoundsLeft();
+    private static ObjectMap<String, List<SoundByte>> soundsLeft = initSoundsLeft();
 
-    private static ObjectMap<String, List<BlockSound>> initSoundsLeft() {
+    private static ObjectMap<String, List<SoundByte>> initSoundsLeft() {
         soundsLeft = new ObjectMap<>();
-        for (BlockSound sound : allBlockSounds) {
+        for (SoundByte sound : allSoundBytes) {
             String name = sound.getLastname();
             if (!soundsLeft.containsKey(name)) {
-                soundsLeft.put(name, new ArrayList<BlockSound>());
+                soundsLeft.put(name, new ArrayList<SoundByte>());
             }
             soundsLeft.get(name).add(sound);
         }
@@ -28,7 +27,7 @@ public class NoLevelMusicHandler extends MusicHandler {
     private void repopulateCandidateIfNecessary(String name) {
         if (soundsLeft.get(name).size() > 0) return;
 
-        for (BlockSound sound : allBlockSounds) {
+        for (SoundByte sound : allSoundBytes) {
             if (sound.getLastname().equalsIgnoreCase(name)) {
                 soundsLeft.get(name).add(sound);
             }
@@ -36,14 +35,14 @@ public class NoLevelMusicHandler extends MusicHandler {
     }
 
     @Override
-    public void queueSoundByte(BlockType type, char level) {
+    public SoundByte getNextSoundByte(BlockType type, char level) {
         repopulateCandidateIfNecessary(type.getLname());
-        List<BlockSound> sounds = soundsLeft.get(type.getLname());
+        List<SoundByte> sounds = soundsLeft.get(type.getLname());
         int randIdx = rand.nextInt(sounds.size());
-        BlockSound sound = sounds.get(randIdx);
+        SoundByte sound = sounds.get(randIdx);
         sounds.remove(randIdx);
 
-        queue.add(sound);
+        return sound;
     }
 
 }

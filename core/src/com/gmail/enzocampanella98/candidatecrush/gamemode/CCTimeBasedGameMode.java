@@ -19,6 +19,12 @@ public abstract class CCTimeBasedGameMode extends CCGameMode {
         this.t = 0.0;
     }
 
+    @Override
+    public void restartGame() {
+        super.restartGame();
+        resetTime();
+    }
+
     public void resetTime() {
         this.t = 0.0;
     }

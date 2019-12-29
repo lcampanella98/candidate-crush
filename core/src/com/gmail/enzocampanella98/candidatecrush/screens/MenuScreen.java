@@ -41,6 +41,8 @@ import java.util.List;
  */
 public class MenuScreen implements Screen {
 
+    private static final String BG_IMAGE_PATH = "data/img/general/cc_bg.png";
+
     public enum GameMode {
         MOVE_LIMIT_VOTE_TARGET, TIMED_VOTE_TARGET, PRIMARIES, ELECTION
     }
@@ -115,7 +117,7 @@ public class MenuScreen implements Screen {
 //        table.setDebug(true);
 
         // init textures
-        texturebg = new Texture(Gdx.files.internal("data/img/general/menu_image_boxing.jpg"));
+        texturebg = new Texture(Gdx.files.internal(BG_IMAGE_PATH));
 
         // init label style
         smallLabelStyle = new Label.LabelStyle(fontCache.get(FONT_SM), Color.WHITE);
@@ -140,12 +142,12 @@ public class MenuScreen implements Screen {
         initHardModeButton();
 
         // add items to table
-        table.center();
-        table.add(btnHardMode).top().right().width(400f).height(btnHardMode.getHeightToWidthRatio()*400f).padBottom(100f);
+        table.padTop(560f).top();
+        table.add(btnHardMode).right().width(400f).height(btnHardMode.scaledHeight(400f)).padBottom(50f);
         table.row();
 
-        table.add(titleLabel).padBottom(CandidateCrush.V_HEIGHT / 4.0f);
-        table.row();
+//        table.add(titleLabel).padBottom(CandidateCrush.V_HEIGHT / 4.0f);
+//        table.row();
 
         // add game mode selection buttons
         table.add(gameModeTable);
@@ -309,7 +311,7 @@ public class MenuScreen implements Screen {
                 gameModeTable.row();
                 numButtonsInCurRow = 0;
             }
-            gameModeTable.add(b).width(500f).height(500f * b.getHeightToWidthRatio()).padLeft(10f).padRight(10f).padTop(10f);
+            gameModeTable.add(b).width(500f).height(b.scaledHeight(500f)).padLeft(10f).padRight(10f).padTop(10f);
             numButtonsInCurRow++;
         }
     }
@@ -343,7 +345,7 @@ public class MenuScreen implements Screen {
                 }
             });
 
-            partyBtnTable.add(b).width(500f).height(500f * b.getHeightToWidthRatio()).padTop(10f);
+            partyBtnTable.add(b).width(500f).height(b.scaledHeight(500f)).padTop(10f);
             partyBtnTable.row();
         }
     }
@@ -371,7 +373,7 @@ public class MenuScreen implements Screen {
                 }
             });
 
-            candidateSelectBtnTable.add(button).width(400f).height(400f * button.getHeightToWidthRatio()).padTop(10f);
+            candidateSelectBtnTable.add(button).width(400f).height(button.scaledHeight(400f)).padTop(10f);
             candidateSelectBtnTable.row();
         }
     }

@@ -14,7 +14,6 @@ import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
-import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
 import java.util.Arrays;
@@ -26,19 +25,12 @@ import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSe
 public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
     private static float nonUserInvokedCrushScale = 0.4f;
     private static int boardWidth = 8;
-    private static int defaultGameLength = 60; // 60 seconds
-    private static int defaultTargetScore = 20000;
 
     private int targetScore;
 
     private List<BlockType> blockTypes;
 
     private Table mainTable;
-    private MusicHandler musicHandler;
-
-    public TimedVoteTargetGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider, List<BlockType> blockTypes) {
-        this(game, stage, blockColorProvider, blockTypes, defaultGameLength, defaultTargetScore);
-    }
 
     public TimedVoteTargetGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider, List<BlockType> blockTypes, double gameLength, int targetScore) {
         super(game, stage, blockColorProvider, blockTypes, gameLength);
@@ -49,14 +41,12 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
         this.blockTypes.remove(BlockType.BLANK);
 
         musicHandler = new NoLevelMusicHandler();
-        musicHandler.start();
 
         newBlockTypeProvider = new EquallyRandomBlockTypeProvider(blockTypes);
 
         this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
-
-        int score3 = 500, score4 = 1200, score5 = 3000, scoreT = 2000;
-        this.scoringSystem = new VoteTargetScoringSystem(score3, score4, score5, scoreT, nonUserInvokedCrushScale);
+        this.scoringSystem = new VoteTargetScoringSystem(
+                score3, score4, score5, scoreT, nonUserInvokedCrushScale);
 
         this.mainTable = new Table();
         this.mainTable.setFillParent(true);
@@ -121,9 +111,9 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
         @Override
         protected void addActorsToTable() {
             // init table elements
-            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
-            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(fontCache.get(FONT_LG), Color.BLACK);
-            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
+            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_MD), Color.BLACK);
+            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_LG), Color.BLACK);
+            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_MD), Color.BLACK);
 
             labelScore = new Label(null, scoreLabelStyle);
             labelTimeLeft = new Label(null, timeLabelStyle);

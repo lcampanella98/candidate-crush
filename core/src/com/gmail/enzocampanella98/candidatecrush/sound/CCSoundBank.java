@@ -1,14 +1,19 @@
 package com.gmail.enzocampanella98.candidatecrush.sound;
 
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.utils.Disposable;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class BlockSoundBank {
+public class CCSoundBank implements Disposable {
     // singleton class to keep track of all sounds
 
-    private static BlockSoundBank instance;
-    private static final String[] FILENAMES = new String[]{
+    private static final String[] SOUNDBYTE_NAMES = new String[]{
             "biden_3_brought_people_together.ogg",
             "biden_3_change_culture_of_how_women_are_treated.ogg",
             "biden_3_defeat_donald_trump.ogg",
@@ -146,48 +151,47 @@ public class BlockSoundBank {
             "warren_t_president_felt_free_to_break_law.ogg",
             "warren_t_stop_manmade_crisis_at_border.ogg"
     };
+    public static final String SOUND_BYTE_DIR = "data/sounds/block_sounds/";
+    public static final String POP_SOUND_PATH = "data/sounds/effects/pop_sound.mp3";
+    public static final String BG_MUSIC_1_PATH = "data/sounds/music/star_spangled_banner.mp3";
+    public static final String WIN_MUSIC_PATH = "data/sounds/music/marine_hymn.mp3";
+    public static final String LOSE_MUSIC_PATH = "data/sounds/music/taps.mp3";
 
-    public static final String SOUND_ROOT = "data/sounds/block_sounds/";
-    private List<BlockSound> allBlockSounds;
 
-    private BlockSoundBank() {
-        initFilenames();
+    private static CCSoundBank instance;
+
+    // sound accessors
+    public final List<SoundByte> allSoundBytes;
+    public final Sound popSound;
+    public final Music bgMusic1;
+    public final Music winMusic;
+    public final Music loseMusic;
+
+    private CCSoundBank() {
+        allSoundBytes = new ArrayList<>();
+        for (String name : SOUNDBYTE_NAMES) {
+            allSoundBytes.add(new SoundByte(SOUND_BYTE_DIR + name));
+        }
+        popSound = Gdx.audio.newSound(Gdx.files.internal(POP_SOUND_PATH));
+        bgMusic1 = Gdx.audio.newMusic(Gdx.files.internal(BG_MUSIC_1_PATH));
+        winMusic = Gdx.audio.newMusic(Gdx.files.internal(WIN_MUSIC_PATH));
+        loseMusic = Gdx.audio.newMusic(Gdx.files.internal(LOSE_MUSIC_PATH));
     }
 
-    public static BlockSoundBank getInstance() {
+    public static CCSoundBank getInstance() {
         if (instance == null) {
-            instance = new BlockSoundBank();
+            instance = new CCSoundBank();
         }
         return instance;
     }
 
-    private void initFilenames() {
-        allBlockSounds = new ArrayList<>();
-        for (String fName : FILENAMES) {
-            allBlockSounds.add(new BlockSound(fName));
+    @Override
+    public void dispose() {
+        List<Disposable> toDispose = new ArrayList<>();
+        toDispose.addAll(allSoundBytes);
+        toDispose.addAll(Arrays.asList(popSound, bgMusic1));
+        for (Disposable sound : toDispose) {
+            sound.dispose();
         }
     }
-
-    public List<BlockSound> getAllBlockSounds() {
-        return new ArrayList<>(allBlockSounds);
-    }
-
-    public List<BlockSound> getBlockSounds(String lastname) {
-        List<BlockSound> sounds = new ArrayList<BlockSound>();
-        for (BlockSound bs : allBlockSounds)
-            if (lastname.equalsIgnoreCase(bs.getLastname()))
-                sounds.add(bs);
-        return sounds;
-    }
-
-    public List<BlockSound> getBlockSounds(String lastname, char level) {
-        List<BlockSound> sounds = new ArrayList<BlockSound>();
-        for (BlockSound bs : allBlockSounds) {
-            if (lastname.equalsIgnoreCase(bs.getLastname())
-                    && level == bs.getLevel())
-                sounds.add(bs);
-        }
-        return sounds;
-    }
-
 }

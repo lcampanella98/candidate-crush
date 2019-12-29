@@ -1,79 +1,112 @@
 package com.gmail.enzocampanella98.candidatecrush.sound;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.Disposable;
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Queue;
+import java.util.Set;
 
-public abstract class MusicHandler extends Thread implements IMusicHandler, Runnable, Disposable, Music.OnCompletionListener {
-    private static final String POP_SOUND_LOCATION = "data/sounds/effects/pop_sound.mp3";
-    protected static List<BlockSound> allBlockSounds = BlockSoundBank.getInstance().getAllBlockSounds();
+public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionListener, Disposable {
+    protected static List<SoundByte> allSoundBytes = CCSoundBank.getInstance().allSoundBytes;
 
-    private Sound popSound;
-
-    protected ConcurrentLinkedQueue<BlockSound> queue;
-    private boolean tryPlayPop = false;
-    private boolean playPop = false;
-    private boolean shouldRun;
-    private Music lastMusic;
+    protected Queue<SoundByte> soundByteQueue;
+    private SoundByte lastSoundByte;
+    private Set<Sound> soundSet;
+    private Set<Music> musicSet;
+    private Music bgMusic;
 
     public MusicHandler() {
-        queue = new ConcurrentLinkedQueue<>();
-        popSound = Gdx.audio.newSound(Gdx.files.internal(POP_SOUND_LOCATION));
+        soundByteQueue = new LinkedList<>();
+        soundSet = new HashSet<>();
+        musicSet = new HashSet<>();
     }
 
     @Override
-    public void playPopIfNoMusicPlaying() {
-        tryPlayPop = true;
+    public boolean isPlayingSoundByte() {
+        return lastSoundByte != null && lastSoundByte.getMusic().isPlaying();
     }
 
     @Override
-    public void playPop() {
-        playPop = true;
+    public void clearSoundByteQueue() {
+        soundByteQueue.clear();
     }
 
     @Override
-    public void run() {
-        while (shouldRun) {
-            try {
-                if (lastMusic == null || !lastMusic.isPlaying()) {
-                    BlockSound nextSound = queue.poll();
-                    if (nextSound != null) {
-                        lastMusic = Gdx.audio.newMusic(nextSound.getFileHandle());
-                        lastMusic.setOnCompletionListener(this);
-                        lastMusic.play();
-                    }
-                }
-                if (tryPlayPop || playPop) {
-                    if (playPop || lastMusic == null || !lastMusic.isPlaying()) {
-                        popSound.play(1.0f);
-                    }
-                    tryPlayPop = playPop = false;
-                }
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                System.out.println("Thread interrupted");
+    public void playSound(Sound sound) {
+        sound.play();
+        soundSet.add(sound);
+    }
+
+    @Override
+    public void playMusic(Music music) {
+        music.play();
+        musicSet.add(music);
+    }
+
+    @Override
+    public void setBackgroundMusic(Music music) {
+        this.bgMusic = music;
+        musicSet.add(music);
+    }
+
+    @Override
+    public void playBackgroundMusic() {
+        if (bgMusic != null && !bgMusic.isPlaying()) {
+            bgMusic.play();
+        }
+    }
+
+    @Override
+    public void queueSoundByte(BlockType type, char level) {
+        SoundByte next = getNextSoundByte(type, level);
+        next.getMusic().setOnCompletionListener(this);
+        next.getMusic().setLooping(false);
+        if (isPlayingSoundByte()) {
+            soundByteQueue.add(next);
+        } else {
+            lastSoundByte = next;
+            next.getMusic().play();
+        }
+        if (bgMusic != null) {
+            bgMusic.pause();
+        }
+    }
+
+    @Override
+    public void onCompletion(Music music) {
+        lastSoundByte = soundByteQueue.poll();
+        if (lastSoundByte != null) {
+            lastSoundByte.getMusic().play();
+        } else {
+            if (bgMusic != null) {
+                bgMusic.play();
             }
         }
     }
 
     @Override
-    public synchronized void start() {
-        shouldRun = true;
-        super.start();
+    public void stopAll() {
+        soundByteQueue.clear();
+        if (lastSoundByte != null) {
+            lastSoundByte.getMusic().stop();
+        }
+        for (Sound s : soundSet) {
+            s.stop();
+        }
+        for (Music m : musicSet) {
+            m.stop();
+        }
     }
 
-    @Override
-    public void onCompletion(Music music) {
-        music.dispose();
-    }
+    public abstract SoundByte getNextSoundByte(BlockType type, char level);
 
     @Override
     public void dispose() {
-        shouldRun = false;
-        popSound.dispose();
+        stopAll();
     }
 }

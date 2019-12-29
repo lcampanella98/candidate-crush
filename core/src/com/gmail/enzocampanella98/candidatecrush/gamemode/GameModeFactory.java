@@ -19,6 +19,7 @@ import static com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen.CANDI
 import static com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen.DEM_CANDIDATES_2020;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.colorFromRGB;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.firstToUpper;
+import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getGameVal;
 
 public class GameModeFactory {
     public static List<Color> blockBgColors = new ArrayList<>(Arrays.asList(
@@ -63,27 +64,33 @@ public class GameModeFactory {
             }
         }
         assert playerGroup != null;
+
+        int numMoves = getGameVal(20, 5);
         return new RaceGameMode(game, stage, DEM_CANDIDATES_2020, groups, playerGroup,
-                freqs, getBlockColorProvider(DEM_CANDIDATES_2020));
+                getBlockColorProvider(DEM_CANDIDATES_2020), freqs, numMoves);
     }
 
     public TimedVoteTargetGameMode getTimedVoteTargetGameMode() {
         assert stage != null;
+        int gameLength = getGameVal(60, 30);
+        int targetScore = getGameVal(20000, 2000);
         return new TimedVoteTargetGameMode(game, stage,
-                getBlockColorProvider(CANDIDATES_2020), CANDIDATES_2020, 60, 20000);
+                getBlockColorProvider(CANDIDATES_2020), CANDIDATES_2020, gameLength, targetScore);
     }
 
     public MoveLimitVoteTargetGameMode getMoveLimitVoteTargetGameMode() {
         assert stage != null;
+        int numMoves = getGameVal(30, 1);
+        int targetScore = getGameVal(50000, 100);
         return new MoveLimitVoteTargetGameMode(game, stage,
-                getBlockColorProvider(CANDIDATES_2020), CANDIDATES_2020, 30, 50000);
+                getBlockColorProvider(CANDIDATES_2020), CANDIDATES_2020, numMoves, targetScore);
     }
 
     public RaceGameMode getElection2020GameMode(Character playerParty) {
         assert stage != null;
         double trumpBlockFreq = 0.35;
         List<NamedCandidateGroup> groups = new ArrayList<>();
-        NamedCandidateGroup playerGroup = null;
+        NamedCandidateGroup playerGroup;
         List<BlockType> repCands = new ArrayList<>();
         List<BlockType> demCands = new ArrayList<>();
 
@@ -104,7 +111,9 @@ public class GameModeFactory {
         groups.add(demGroup);
         groups.add(repGroup);
         playerGroup = playerParty == 'D' ? demGroup : repGroup;
-        return new RaceGameMode(game, stage, CANDIDATES_2020, groups, playerGroup, freqs, getBlockColorProvider(CANDIDATES_2020));
+
+        int numMoves = getGameVal(20, 3);
+        return new RaceGameMode(game, stage, CANDIDATES_2020, groups, playerGroup, getBlockColorProvider(CANDIDATES_2020), freqs, numMoves);
     }
 
     private IBlockColorProvider getBlockColorProvider(List<BlockType> blockTypes) {

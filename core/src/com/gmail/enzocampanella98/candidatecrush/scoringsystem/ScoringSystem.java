@@ -39,6 +39,8 @@ public abstract class ScoringSystem {
 
     public abstract void updateScore(Crush crush);
 
+    public abstract void reset();
+
     public void setCrushValue(char crushType, int value) {
         crushValues.put(crushType, value);
     }

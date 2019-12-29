@@ -4,12 +4,11 @@ package com.gmail.enzocampanella98.candidatecrush.screens;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -21,11 +20,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
+import com.gmail.enzocampanella98.candidatecrush.customui.CCButton;
+import com.gmail.enzocampanella98.candidatecrush.customui.CCButtonFactory;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
@@ -33,13 +36,15 @@ import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 
 import java.util.Collection;
 
+import javax.swing.GroupLayout;
+
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
-import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 
 public abstract class HUD implements Disposable {
 
     public static final String FONT_FILE = "data/fonts/LibreFranklin-Bold.ttf";
-    protected final FontCache fontCache;
+    protected final FontCache defaultFontCache;
+    protected final FontCache whiteFontCache;
 
     protected Camera hudCam;
     protected Viewport hudViewport;
@@ -54,12 +59,10 @@ public abstract class HUD implements Disposable {
     protected ImageButton btnExit;
 
     private float gameInfoMessageTimeLeft = 0f;
-    private float gameOverMessageTimeLeft = 0f;
 
-    private String messageText;
-    private BitmapFont messageFont;
     private BitmapFont endFont;
     private GameInfoBox gameInstructionsBox;
+    private GameInfoBox gameOverBox;
 
     protected HUD(CCGameMode gameMode) {
         this.gameMode = gameMode;
@@ -70,7 +73,8 @@ public abstract class HUD implements Disposable {
         batch = new SpriteBatch();
         hudStage = new Stage(hudViewport, batch);
 
-        fontCache = new FontCache(new FontGenerator(Color.BLACK));
+        defaultFontCache = new FontCache(new FontGenerator(Color.BLACK));
+        whiteFontCache = new FontCache(new FontGenerator(Color.WHITE));
     }
 
     public void initStage() {
@@ -78,6 +82,7 @@ public abstract class HUD implements Disposable {
         stack.setFillParent(true);
         initTable();
         initInfoOverlay();
+        initGameoverOverlay();
 
         hudStage.addActor(stack);
     }
@@ -94,7 +99,7 @@ public abstract class HUD implements Disposable {
         stack.add(mainTable);
     }
 
-    protected void addExitButton() {
+    private void addExitButton() {
         // init exit button
         btnExitAtlas = new TextureAtlas("data/img/button_skin/btn-exit.atlas");
         Skin exitBtnSkin = new Skin(btnExitAtlas);
@@ -119,7 +124,7 @@ public abstract class HUD implements Disposable {
         // setup animations for info box
         gameInstructionsBox = new GameInfoBox();
 
-        Label.LabelStyle instructionsLabelStyle = new Label.LabelStyle(fontCache.get(60), Color.BLACK);
+        Label.LabelStyle instructionsLabelStyle = new Label.LabelStyle(defaultFontCache.get(60), Color.BLACK);
         gameInstructionsBox.addLines(instructionsLabelStyle, getGameInfoDialogTextLines());
         gameInstructionsBox.pad(20f);
 
@@ -129,9 +134,22 @@ public abstract class HUD implements Disposable {
         stack.add(overlay);
     }
 
+    private void initGameoverOverlay() {
+        Table overlay = new Table();
+        gameOverBox = new GameInfoBox();
+        gameOverBox.center();
+        gameOverBox.setVisible(false);
+
+        overlay.center().add(gameOverBox);
+        stack.add(overlay);
+    }
+
     public void showGameInfoDialog(float totalTimeSec) {
         // initialize wait time
         gameInfoMessageTimeLeft = totalTimeSec;
+
+        float yFinal = -gameInstructionsBox.getPrefHeight() - 50;
+        gameInstructionsBox.setY(0);
 
         DelayAction delay1 = new DelayAction(totalTimeSec / 6f);
 
@@ -142,7 +160,7 @@ public abstract class HUD implements Disposable {
         DelayAction delay2 = new DelayAction(totalTimeSec * 3f / 6f);
 
         MoveByAction moveDown = new MoveByAction();
-        moveDown.setAmountY(-V_HEIGHT / 2f - gameInstructionsBox.getPrefHeight() - 50);
+        moveDown.setAmountY(-V_HEIGHT / 2f + yFinal);
         moveDown.setDuration(totalTimeSec / 6f);
         SequenceAction seq = new SequenceAction(
                 delay1, moveUp, delay2, moveDown
@@ -151,22 +169,49 @@ public abstract class HUD implements Disposable {
         gameInstructionsBox.addAction(seq);
     }
 
-    public void showGameEndMessage(boolean win, float totalTime) {
-        String msg;
-        if (win) msg = "You win!";
-        else msg = "You lose!";
+    public void showGameEndMessage(boolean win) {
+        gameOverBox.clearChildren();
 
+        String msg = win ? "You win!" : "You lose.";
         endFont = new FontGenerator(win ? Color.GREEN : Color.RED).generateFont(100);
-        addMessage(msg, endFont);
-        gameOverMessageTimeLeft = totalTime;
+        Label.LabelStyle lblStyle = new Label.LabelStyle(endFont, endFont.getColor());
+        Label lblMessage = new Label(msg, lblStyle);
+        int nCols = win ? 1 : 2;
+        gameOverBox.center().pad(20f).add(lblMessage).colspan(nCols).padBottom(10f);
+        gameOverBox.row();
+
+        CCButtonFactory fact = new CCButtonFactory(whiteFontCache);
+        CCButton btnBack = fact.getVoteButton("Back", 50);
+        btnBack.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                gameMode.returnToMenu();
+            }
+        });
+        float btnHt = 80f;
+        gameOverBox.add(btnBack)
+                .height(btnHt).width(btnBack.scaledWidth(btnHt)).center();
+        if (!win) {
+            CCButton btnPlayAgain = fact.getVoteButton("Play again", 50);
+            btnPlayAgain.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    gameMode.restartGame();
+                }
+            });
+            gameOverBox.add(btnPlayAgain)
+                    .height(btnHt).width(btnPlayAgain.scaledWidth(btnHt)).center();
+        }
+        gameOverBox.setVisible(true);
+    }
+
+    public void hideGameOver() {
+        gameOverBox.setVisible(false);
     }
 
     public void update(float dt) {
         if (gameInfoMessageTimeLeft > 0) {
             gameInfoMessageTimeLeft -= dt;
-        }
-        if (gameOverMessageTimeLeft > 0) {
-            gameOverMessageTimeLeft -= dt;
         }
         updateLabels(dt);
         hudStage.act(dt);
@@ -178,53 +223,23 @@ public abstract class HUD implements Disposable {
         return gameInfoMessageTimeLeft > 0;
     }
 
-    public boolean isGameOverMessageShowing() {
-        return gameOverMessageTimeLeft > 0;
-    }
-
     public abstract Collection<String> getGameInfoDialogTextLines();
 
     public abstract void updateLabels(float dt);
 
-    public void addMessage(String msg, BitmapFont font) {
-        this.messageText = msg;
-        this.messageFont = font;
-    }
-
-    public void clearMessage() {
-        this.messageText = null;
-        this.messageFont = null;
-    }
-
-    public boolean hasMessage() {
-        return messageFont != null && messageText != null;
-    }
-
-    public void drawCenteredMessage() {
-        GlyphLayout layout = new GlyphLayout(messageFont, messageText);
-        Texture tex = GameInfoBox.getTexture();
-        float pad = 60, w = layout.width + pad, h = layout.height + pad;
-        batch.draw(tex, V_WIDTH / 2 - w / 2, V_HEIGHT / 2 - h / 2, w, h);
-        messageFont.draw(batch, messageText, V_WIDTH / 2 - layout.width / 2, V_HEIGHT / 2 + layout.height / 2);
-
-    }
-
     public void draw() {
         hudCam.update();
-
-        if (hasMessage()) {
-            batch.begin();
-            drawCenteredMessage();
-            batch.end();
-        }
-
         hudStage.draw();
+    }
+
+    public void reset() {
+        hideGameOver();
     }
 
     @Override
     public void dispose() {
         if (btnExitAtlas != null) btnExitAtlas.dispose();
-        fontCache.dispose();
+        defaultFontCache.dispose();
         if (endFont != null) endFont.dispose();
     }
 

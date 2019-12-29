@@ -10,20 +10,20 @@ import java.util.Set;
 
 public class EqualMusicHandler extends MusicHandler {
 
-    private ObjectMap<String, ObjectMap<Character, List<BlockSound>>> soundsLeft;
+    private ObjectMap<String, ObjectMap<Character, List<SoundByte>>> soundsLeft;
     private Random rand = new Random();
 
     public EqualMusicHandler(Set<String> candidates) {
         soundsLeft = new ObjectMap<>();
-        for (BlockSound sound : allBlockSounds) {
+        for (SoundByte sound : allSoundBytes) {
             String name = sound.getLastname();
             if (candidates.contains(name)) {
                 if (!soundsLeft.containsKey(name)) {
-                    soundsLeft.put(name, new ObjectMap<Character, List<BlockSound>>());
-                    soundsLeft.get(name).put('3', new ArrayList<BlockSound>());
-                    soundsLeft.get(name).put('4', new ArrayList<BlockSound>());
-                    soundsLeft.get(name).put('5', new ArrayList<BlockSound>());
-                    soundsLeft.get(name).put('t', new ArrayList<BlockSound>());
+                    soundsLeft.put(name, new ObjectMap<Character, List<SoundByte>>());
+                    soundsLeft.get(name).put('3', new ArrayList<SoundByte>());
+                    soundsLeft.get(name).put('4', new ArrayList<SoundByte>());
+                    soundsLeft.get(name).put('5', new ArrayList<SoundByte>());
+                    soundsLeft.get(name).put('t', new ArrayList<SoundByte>());
                 }
                 soundsLeft.get(name).get(sound.getLevel()).add(sound);
             }
@@ -33,7 +33,7 @@ public class EqualMusicHandler extends MusicHandler {
     private void repopulateLevelIfNecessary(String name, char level) {
         if (soundsLeft.get(name).get(level).size() > 0) return;
 
-        for (BlockSound sound : allBlockSounds) {
+        for (SoundByte sound : allSoundBytes) {
             if (sound.getLastname().equalsIgnoreCase(name) && sound.getLevel() == level) {
                 soundsLeft.get(name).get(level).add(sound);
             }
@@ -41,14 +41,14 @@ public class EqualMusicHandler extends MusicHandler {
     }
 
     @Override
-    public void queueSoundByte(BlockType type, char level) {
+    public SoundByte getNextSoundByte(BlockType type, char level) {
         repopulateLevelIfNecessary(type.getLname(), level);
-        List<BlockSound> sounds = soundsLeft.get(type.getLname()).get(level);
+        List<SoundByte> sounds = soundsLeft.get(type.getLname()).get(level);
         int randIdx = rand.nextInt(sounds.size());
-        BlockSound sound = sounds.get(randIdx);
+        SoundByte sound = sounds.get(randIdx);
         sounds.remove(randIdx);
 
-        queue.add(sound);
+        return sound;
     }
 
 }

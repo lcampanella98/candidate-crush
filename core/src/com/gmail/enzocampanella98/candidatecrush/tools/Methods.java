@@ -2,6 +2,7 @@ package com.gmail.enzocampanella98.candidatecrush.tools;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
+import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 
 import java.util.Collection;
 
@@ -62,5 +63,25 @@ public final class Methods {
 
     public static Color colorFromRGB(int r, int g, int b) {
         return new Color(r/255f, g/255f, b/255f, 1f);
+    }
+
+    public static int getGameVal(int prodVal, int testVal) {
+        return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
+    }
+
+    public static double getGameVal(double prodVal, double testVal) {
+        return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
+    }
+
+    public static float getGameVal(float prodVal, float testVal) {
+        return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
+    }
+
+    public static boolean getGameVal(boolean prodVal, boolean testVal) {
+        return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
+    }
+
+    public static Object getGameVal(Object prodVal, Object testVal) {
+        return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
     }
 }

@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 public class RaceGameMode extends CCGameMode {
-    private static int boardWidth = 8;
-    private static int defaultNumMoves = 20;
     private final List<NamedCandidateGroup> groups;
     private final NamedCandidateGroup playerGroup;
     private final Map<BlockType, Double> blockFrequencies;
@@ -39,17 +37,6 @@ public class RaceGameMode extends CCGameMode {
     private Table mainTable;
 
     private int numMovesLeft;
-
-
-    public RaceGameMode(CandidateCrush game,
-                        Stage stage,
-                        final List<BlockType> blockTypes,
-                        List<NamedCandidateGroup> groups,
-                        NamedCandidateGroup playerGroup,
-                        Map<BlockType, Double> blockFrequencies,
-                        IBlockColorProvider blockColorProvider) {
-        this(game, stage, blockTypes, groups, playerGroup, blockColorProvider, blockFrequencies, defaultNumMoves);
-    }
 
     public RaceGameMode(CandidateCrush game,
                         Stage stage,
@@ -68,13 +55,10 @@ public class RaceGameMode extends CCGameMode {
         this.blockFrequencies = blockFrequencies;
 
         musicHandler = new NoLevelMusicHandler();
-        musicHandler.start();
 
         newBlockTypeProvider = new FrequencyRandomBlockTypeProvider(this.blockFrequencies);
 
         this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
-
-        int score3 = 500, score4 = 1200, score5 = 3000, scoreT = 2000;
         this.scoringSystem = new RaceScoringSystem(
                 groups, playerGroup, score3, score4, score5, scoreT);
 
@@ -91,6 +75,7 @@ public class RaceGameMode extends CCGameMode {
 
         this.hud = new HeadsUpDisplay(this);
         hud.initStage();
+
     }
 
     public int getNumMovesLeft() {
@@ -141,9 +126,9 @@ public class RaceGameMode extends CCGameMode {
         @Override
         protected void addActorsToTable() {
             // init table elements
-            Label.LabelStyle topScoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.BLACK);
-            Label.LabelStyle numMovesLeftLabelStyle = new Label.LabelStyle(fontCache.get(FONT_LG), Color.BLACK);
-            Label.LabelStyle otherScoreLabelStyle = new Label.LabelStyle(fontCache.get(FONT_SM), Color.BLACK);
+            Label.LabelStyle topScoreLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_MD), Color.BLACK);
+            Label.LabelStyle numMovesLeftLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_LG), Color.BLACK);
+            Label.LabelStyle otherScoreLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_SM), Color.BLACK);
 
             labelNumMovesLeft = new Label(null, numMovesLeftLabelStyle);
 

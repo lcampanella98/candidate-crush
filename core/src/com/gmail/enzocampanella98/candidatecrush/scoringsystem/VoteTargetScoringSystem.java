@@ -29,6 +29,11 @@ public class VoteTargetScoringSystem extends ScoringSystem {
         }
     }
 
+    @Override
+    public void reset() {
+        setPlayerScore(0);
+    }
+
     public void setPlayerScore(int score) {
         this.userScore = score;
     }

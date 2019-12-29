@@ -27,12 +27,6 @@ public class RaceScoringSystem extends ScoringSystem {
         this.playerGroup = playerGroup;
     }
 
-    public void resetScores() {
-        for (NamedCandidateGroup c : groups) {
-            c.score = 0;
-        }
-    }
-
     public NamedCandidateGroup getPlayerCandidateGroup() {
         return playerGroup;
     }
@@ -53,6 +47,13 @@ public class RaceScoringSystem extends ScoringSystem {
 
         Collections.sort(groups);
         Collections.reverse(groups);
+    }
+
+    @Override
+    public void reset() {
+        for (NamedCandidateGroup c : groups) {
+            c.score = 0;
+        }
     }
 
     @Override

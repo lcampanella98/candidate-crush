@@ -8,8 +8,20 @@ public class CCButton extends ImageTextButton {
         super(text, style);
     }
 
-    public float getHeightToWidthRatio() {
+    private float getHeightToWidthRatio() {
         return getStyle().checked.getMinHeight() / getStyle().checked.getMinWidth();
+    }
+
+    private float getWidthToHeightRadio() {
+        return 1.0f / getHeightToWidthRatio();
+    }
+
+    public float scaledWidth(float h) {
+        return h * getWidthToHeightRadio();
+    }
+
+    public float scaledHeight(float w) {
+        return w * getHeightToWidthRatio();
     }
 
 }

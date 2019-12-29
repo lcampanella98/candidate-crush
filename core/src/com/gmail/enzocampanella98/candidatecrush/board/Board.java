@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
+import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
 import com.gmail.enzocampanella98.candidatecrush.sound.IMusicHandler;
 
 import java.util.LinkedList;
@@ -80,7 +81,8 @@ public class Board extends Group implements Disposable {
         return blockTypeProvider;
     }
 
-    private void initBoard() {
+    public void initBoard() {
+        clearChildren();
 
         this.numTotalCrushes = 0; // track number of user-invoked crushes
 
@@ -259,7 +261,7 @@ public class Board extends Group implements Disposable {
                 musicHandler.queueSoundByte(largestGroup.getType(),
                         ScoringSystem.getCrushType(largestGroup));
             }
-            musicHandler.playPop();
+            musicHandler.playSound(CCSoundBank.getInstance().popSound);
             return true;
         } else { // there was no match
             blockGroups = null;
