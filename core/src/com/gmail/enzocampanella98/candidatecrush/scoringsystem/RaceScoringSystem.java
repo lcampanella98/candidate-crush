@@ -64,18 +64,19 @@ public class RaceScoringSystem extends ScoringSystem {
         assert toGroup != null;
 
         int score = crushValues.get(crushType);
-        if (playerGroup.containsCandidate(blockType) && !userInvoked) {
-            score *= 0.8;
+        if (!playerGroup.containsCandidate(blockType)) {
+            score *= 1.1;
         }
+        return score;
 
-        if (playerGroup.score == 0) {
-            return score;
-        }
-        int diff = Math.abs(playerGroup.score - toGroup.score);
-        double diffProportion = ((double)diff) / playerGroup.score;
-        double newScore = (1 + diffProportion) * score;
-        newScore = 10.0 * Math.floor(newScore / 10.0);
-        return (int) newScore;
+//        if (playerGroup.score == 0) {
+//            return score;
+//        }
+//        int diff = Math.abs(playerGroup.score - toGroup.score);
+//        double diffProportion = ((double)diff) / playerGroup.score;
+//        double newScore = (1 + diffProportion) * score;
+//        newScore = 10.0 * Math.floor(newScore / 10.0);
+//        return (int) newScore;
     }
 
     @Override

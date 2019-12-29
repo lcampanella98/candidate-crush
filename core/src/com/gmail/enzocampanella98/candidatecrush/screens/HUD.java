@@ -34,7 +34,9 @@ import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 
+import java.text.NumberFormat;
 import java.util.Collection;
+import java.util.Locale;
 
 import javax.swing.GroupLayout;
 
@@ -63,6 +65,10 @@ public abstract class HUD implements Disposable {
     private BitmapFont endFont;
     private GameInfoBox gameInstructionsBox;
     private GameInfoBox gameOverBox;
+
+    protected static String scoreText(int votes) {
+        return NumberFormat.getNumberInstance(Locale.US).format(votes);
+    }
 
     protected HUD(CCGameMode gameMode) {
         this.gameMode = gameMode;

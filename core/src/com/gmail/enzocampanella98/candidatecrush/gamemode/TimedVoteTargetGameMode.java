@@ -23,7 +23,7 @@ import java.util.List;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
 public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
-    private static float nonUserInvokedCrushScale = 0.4f;
+    private static float nonUserInvokedCrushScale = 0.8f;
     private static int boardWidth = 8;
 
     private int targetScore;
@@ -98,8 +98,8 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
 
         @Override
         public void updateLabels(float dt) {
-            labelScore.setText("Votes: " + getCommaSeparatedNumber(gameMode.scoringSystem.getPlayerScore()));
-            labelTargetScore.setText("Target: " + getCommaSeparatedNumber(gameMode.targetScore));
+            labelScore.setText("Votes: " + scoreText(gameMode.scoringSystem.getPlayerScore()));
+            labelTargetScore.setText("Target: " + scoreText(gameMode.targetScore));
             labelTimeLeft.setText("" + ((int) Math.ceil(gameMode.getTimeLeft())));
         }
 
@@ -144,7 +144,7 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
         @Override
         public Collection<String> getGameInfoDialogTextLines() {
             return Arrays.asList(
-                    "Reach " + gameMode.targetScore + " votes",
+                    "Reach " + scoreText(gameMode.targetScore) + " votes",
                     "before time runs out!"
             );
         }

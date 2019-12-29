@@ -23,7 +23,7 @@ import java.util.List;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
 public class MoveLimitVoteTargetGameMode extends CCGameMode {
-    private static final float nonUserInvokedCrushScale = 0.4f;
+    private static final float nonUserInvokedCrushScale = 0.8f;
 
     private int targetScore;
     private int numMoves;
@@ -109,8 +109,8 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
 
         @Override
         public void updateLabels(float dt) {
-            labelScore.setText("Votes: " + getCommaSeparatedNumber(gameMode.scoringSystem.getPlayerScore()));
-            labelTargetScore.setText("Target: " + getCommaSeparatedNumber(gameMode.targetScore));
+            labelScore.setText("Votes: " + scoreText(gameMode.scoringSystem.getPlayerScore()));
+            labelTargetScore.setText("Target: " + scoreText(gameMode.targetScore));
             labelMovesLeft.setText("" + ((int) Math.ceil(gameMode.numMovesLeft)));
         }
 
@@ -157,7 +157,7 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
         public Collection<String> getGameInfoDialogTextLines() {
             return Arrays.asList(
                     "You have " + gameMode.numMovesLeft + " moves",
-                    "to reach " + gameMode.targetScore + " votes!"
+                    "to reach " + scoreText(gameMode.targetScore) + " votes!"
             );
         }
     }

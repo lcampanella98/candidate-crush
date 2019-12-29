@@ -59,6 +59,8 @@ public class RaceGameMode extends CCGameMode {
         newBlockTypeProvider = new FrequencyRandomBlockTypeProvider(this.blockFrequencies);
 
         this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
+
+        int score5 = 5000;
         this.scoringSystem = new RaceScoringSystem(
                 groups, playerGroup, score3, score4, score5, scoreT);
 
@@ -90,6 +92,12 @@ public class RaceGameMode extends CCGameMode {
     @Override
     protected boolean isGameOver() {
         return numMovesLeft <= 0 && board.isWaitingForInput();
+    }
+
+    @Override
+    public void restartGame() {
+        super.restartGame();
+        numMovesLeft = numMoves;
     }
 
     @Override
@@ -197,11 +205,11 @@ public class RaceGameMode extends CCGameMode {
             List<NamedCandidateGroup> scores = ((RaceScoringSystem) gameMode.scoringSystem).getGroups();
             NamedCandidateGroup topGroup = scores.get(0);
             topScoreTable.getNameLabel().setText(topGroup.getName());
-            topScoreTable.getScoreLabel().setText(String.valueOf(topGroup.score));
+            topScoreTable.getScoreLabel().setText(scoreText(topGroup.score));
 
             for (int i = 0; i < scores.size() - 1 && i < otherScoreTables.size(); ++i) {
                 otherScoreTables.get(i).getNameLabel().setText(scores.get(i + 1).getName());
-                otherScoreTables.get(i).getScoreLabel().setText(String.valueOf(scores.get(i + 1).score));
+                otherScoreTables.get(i).getScoreLabel().setText(scoreText(scores.get(i + 1).score));
             }
         }
 

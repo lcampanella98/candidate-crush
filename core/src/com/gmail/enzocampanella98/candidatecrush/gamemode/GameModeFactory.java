@@ -72,8 +72,8 @@ public class GameModeFactory {
 
     public TimedVoteTargetGameMode getTimedVoteTargetGameMode() {
         assert stage != null;
-        int gameLength = getGameVal(60, 30);
-        int targetScore = getGameVal(20000, 2000);
+        int gameLength = getGameVal(75, 30);
+        int targetScore = getGameVal(30000, 2000);
         return new TimedVoteTargetGameMode(game, stage,
                 getBlockColorProvider(CANDIDATES_2020), CANDIDATES_2020, gameLength, targetScore);
     }
@@ -88,7 +88,7 @@ public class GameModeFactory {
 
     public RaceGameMode getElection2020GameMode(Character playerParty) {
         assert stage != null;
-        double trumpBlockFreq = 0.35;
+        double trumpBlockFreq = 0.4;
         List<NamedCandidateGroup> groups = new ArrayList<>();
         NamedCandidateGroup playerGroup;
         List<BlockType> repCands = new ArrayList<>();
