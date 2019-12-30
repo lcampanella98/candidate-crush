@@ -10,11 +10,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BadBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockTextureProvider;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.Crush;
 import com.gmail.enzocampanella98.candidatecrush.board.GoodBoardAnalyzer;
@@ -25,16 +25,16 @@ import com.gmail.enzocampanella98.candidatecrush.board.IBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
-import com.gmail.enzocampanella98.candidatecrush.sound.MusicHandler;
+import com.gmail.enzocampanella98.candidatecrush.sound.IMusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.tools.Methods;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -46,11 +46,8 @@ import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getGameVal
 
 
 public abstract class CCGameMode implements Disposable {
-    static final int boardWidth = 8;
-    static final String BG_PATH = "data/img/general/screen_bg_votetarget.png";
-    static final float DISPLAY_GAME_INFO_SEC = getGameVal(4f, 1f);
-
-    static final int score3 = 500, score4 = 1200, score5 = 3000, scoreT = 2000;
+    private static final String BG_PATH = "data/img/general/screen_bg_votetarget.png";
+    private static final float DISPLAY_GAME_INFO_SEC = getGameVal(4f, 1f);
 
     protected final CCSoundBank soundBank;
 
@@ -68,24 +65,34 @@ public abstract class CCGameMode implements Disposable {
     private boolean showedGameInstructions;
 
     protected Texture backgroundTexture;
-    protected MusicHandler musicHandler;
+    protected IMusicHandler musicHandler;
     protected IBlockTypeProvider newBlockTypeProvider;
     protected BlockTextureProvider blockTextureProvider;
     protected IBlockColorProvider blockColorProvider;
     protected ScoringSystem scoringSystem;
     protected IBoardAnalyzer boardAnalyzer;
     protected IBoardInitializer boardInitializer;
+    protected GameModeConfig config;
 
-    protected CCGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider, Collection<BlockType> blockTypes) {
-        this.stage = stage;
+    protected CCGameMode(CandidateCrush game,
+                         Stage stage,
+                         IBlockColorProvider blockColorProvider,
+                         GameModeConfig config) {
         this.game = game;
+        this.stage = stage;
         this.blockColorProvider = blockColorProvider;
         this.boardInitializer = new BadBoardInitializer();
         this.boardAnalyzer = new GoodBoardAnalyzer();
-        this.blockTextureProvider = new BlockTextureProvider(blockTypes, blockColorProvider);
+        this.blockTextureProvider = new BlockTextureProvider(config.candidates, blockColorProvider);
         this.backgroundTexture = new Texture(getBackgroundTexturePath());
         this.latestCrushes = new LinkedList<>();
         this.fontCache = new FontCache(new FontGenerator(Color.WHITE));
+        this.config = config;
+
+        // overridden by subclass
+        setMusicHandler();
+        setBlockTypeProvider();
+        setScoringSystem();
 
         this.soundBank = CCSoundBank.getInstance();
     }
@@ -101,9 +108,38 @@ public abstract class CCGameMode implements Disposable {
 
     private void init() {
         if (isInitialized) return;
+        board = instantiateBoard();
+        initStage();
         setupInputMultiplexer();
         startBackgroundMusic();
         isInitialized = true;
+    }
+
+    protected Board instantiateBoard() {
+        return new Board(
+                config.boardSize,
+                musicHandler,
+                newBlockTypeProvider,
+                blockTextureProvider,
+                boardAnalyzer,
+                boardInitializer
+        );
+    }
+
+    private void initStage() {
+        Table mainTable = new Table();
+        mainTable.setFillParent(true);
+
+        // instantiate hud
+        setHUD();
+        hud.initStage();
+
+        // add board to main table
+        Table boardTable = new Table();
+        boardTable.add(board);
+        mainTable.add(boardTable);
+
+        stage.addActor(mainTable);
     }
 
     private void startBackgroundMusic() {
@@ -129,6 +165,14 @@ public abstract class CCGameMode implements Disposable {
         return music;
     }
 
+    protected abstract void setHUD();
+
+    protected abstract void setScoringSystem();
+
+    protected abstract void setBlockTypeProvider();
+
+    protected abstract void setMusicHandler();
+
     protected abstract boolean wonGame();
 
     public void update(float dt) {
@@ -149,13 +193,17 @@ public abstract class CCGameMode implements Disposable {
         if (isGameOver()) {
             board.pauseInput();
             if (!displayedGameEndMessage) {
-                hud.showGameEndMessage(wonGame());
+                boolean hasBeatenLevel = game.hasBeatenLevel(config.levelNum, config.isHardMode);
+                hud.showGameEndMessage(wonGame(), hasBeatenLevel);
                 displayedGameEndMessage = true;
+
+                if (wonGame()) {
+                    game.beatLevel(config.levelNum, config.isHardMode);
+                }
 
                 // play win/loss music
                 musicHandler.stopAll();
                 musicHandler.playMusic(getGameEndedMusic());
-
             }
 //            else if (!hud.isGameOverMessageShowing()) {
 //                musicHandler.stopAll();
@@ -247,11 +295,14 @@ public abstract class CCGameMode implements Disposable {
         return backgroundTexture;
     }
 
+    public GameModeConfig getConfig() {
+        return config;
+    }
+
     public void dispose() {
         if (backgroundTexture != null) backgroundTexture.dispose();
         if (board != null) board.dispose();
         if (hud != null) hud.dispose();
-        if (musicHandler != null) musicHandler.dispose();
         if (blockTextureProvider != null) blockTextureProvider.dispose();
     }
 }

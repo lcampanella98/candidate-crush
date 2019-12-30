@@ -6,6 +6,7 @@ import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockColorProviderFactory;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 
 import java.util.ArrayList;
@@ -15,8 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen.CANDIDATES_2020;
-import static com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen.DEM_CANDIDATES_2020;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.colorFromRGB;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.firstToUpper;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getGameVal;
@@ -32,62 +31,59 @@ public class GameModeFactory {
     ));
 
     private final CandidateCrush game;
-    private Stage stage;
-    private BlockColorProviderFactory blockColorProviderFactory;
-    private boolean isHardMode;
+    private final BlockColorProviderFactory blockColorProviderFactory;
 
     public GameModeFactory(CandidateCrush game) {
         this.game = game;
         blockColorProviderFactory = new BlockColorProviderFactory();
     }
 
-    public RaceGameMode getDemocratPrimary2020GameMode(BlockType player) {
-        assert stage != null;
+    public RaceGameMode getDemocratPrimary2020GameMode(Stage stage, GameModeConfig config) {
         double playerBlockFreqAdvantange = 0.1;
         List<NamedCandidateGroup> groups = new ArrayList<>();
         NamedCandidateGroup playerGroup = null;
 
         Map<BlockType, Double> freqs = new HashMap<>();
-        double playerBlockFrequency = 1.0 / DEM_CANDIDATES_2020.size() + playerBlockFreqAdvantange;
-        double otherBlockFrequency = (1.0 - playerBlockFrequency) / (DEM_CANDIDATES_2020.size() - 1);
+        double playerBlockFrequency = 1.0 / config.candidates.size() + playerBlockFreqAdvantange;
+        double otherBlockFrequency = (1.0 - playerBlockFrequency) / (config.candidates.size() - 1);
 
-        for (BlockType dem : DEM_CANDIDATES_2020) {
+        for (BlockType dem : config.candidates) {
             NamedCandidateGroup grp = new NamedCandidateGroup(
                     Collections.singletonList(dem),
                     firstToUpper(dem.getLname()),
                     dem.getFriendlyName()
             );
             groups.add(grp);
-            freqs.put(dem, dem == player ? playerBlockFrequency : otherBlockFrequency);
-            if (dem == player) {
+            freqs.put(dem, dem == config.primaryPlayer ? playerBlockFrequency : otherBlockFrequency);
+            if (dem == config.primaryPlayer) {
                 playerGroup = grp;
             }
         }
         assert playerGroup != null;
 
-        int numMoves = getGameVal(20, 5);
-        return new RaceGameMode(game, stage, DEM_CANDIDATES_2020, groups, playerGroup,
-                getBlockColorProvider(DEM_CANDIDATES_2020), freqs, numMoves);
+        config.numMoves = getGameVal(config.numMoves, 5);
+        return new RaceGameMode(game, stage, groups, playerGroup,
+                getBlockColorProvider(config.isHardMode, config.candidates), freqs, config);
     }
 
-    public TimedVoteTargetGameMode getTimedVoteTargetGameMode() {
-        assert stage != null;
-        int gameLength = getGameVal(75, 30);
-        int targetScore = getGameVal(30000, 2000);
+    public TimedVoteTargetGameMode getTimedVoteTargetGameMode(Stage stage, GameModeConfig config) {
+        config.gameLength = getGameVal(config.gameLength, 30);
+        config.targetScore = getGameVal(config.targetScore, 2000);
         return new TimedVoteTargetGameMode(game, stage,
-                getBlockColorProvider(CANDIDATES_2020), CANDIDATES_2020, gameLength, targetScore);
+                getBlockColorProvider(config.isHardMode, config.candidates), config);
     }
 
-    public MoveLimitVoteTargetGameMode getMoveLimitVoteTargetGameMode() {
-        assert stage != null;
-        int numMoves = getGameVal(30, 1);
-        int targetScore = getGameVal(50000, 100);
+    public MoveLimitVoteTargetGameMode getMoveLimitVoteTargetGameMode(Stage stage, GameModeConfig config) {
+        config.numMoves = getGameVal(config.numMoves, 1);
+        config.targetScore = getGameVal(config.targetScore, 100);
         return new MoveLimitVoteTargetGameMode(game, stage,
-                getBlockColorProvider(CANDIDATES_2020), CANDIDATES_2020, numMoves, targetScore);
+                getBlockColorProvider(config.isHardMode, config.candidates), config);
     }
 
-    public RaceGameMode getElection2020GameMode(Character playerParty) {
-        assert stage != null;
+    public RaceGameMode getElection2020GameMode(Stage stage,
+                                                GameModeConfig config,
+                                                String demGroupLongName,
+                                                String repGroupLongName) {
         double trumpBlockFreq = 0.4;
         List<NamedCandidateGroup> groups = new ArrayList<>();
         NamedCandidateGroup playerGroup;
@@ -95,43 +91,32 @@ public class GameModeFactory {
         List<BlockType> demCands = new ArrayList<>();
 
         Map<BlockType, Double> freqs = new HashMap<>();
-        for (BlockType cand : CANDIDATES_2020) {
+        for (BlockType cand : config.candidates) {
             double f;
             if (cand == BlockType.TRUMP) {
                 f = trumpBlockFreq;
                 repCands.add(cand);
             } else {
-                f = (1.0 - trumpBlockFreq) / (CANDIDATES_2020.size() - 1);
+                f = (1.0 - trumpBlockFreq) / (config.candidates.size() - 1);
                 demCands.add(cand);
             }
             freqs.put(cand, f);
         }
-        NamedCandidateGroup demGroup = new NamedCandidateGroup(demCands, "Democrats", "The Democrats");
-        NamedCandidateGroup repGroup = new NamedCandidateGroup(repCands, "Trump", "Donald Trump");
+        NamedCandidateGroup demGroup = new NamedCandidateGroup(demCands, "Democrats", demGroupLongName);
+        NamedCandidateGroup repGroup = new NamedCandidateGroup(repCands, "Trump", repGroupLongName);
         groups.add(demGroup);
         groups.add(repGroup);
-        playerGroup = playerParty == 'D' ? demGroup : repGroup;
+        playerGroup = config.playerParty == 'D' ? demGroup : repGroup;
 
-        int numMoves = getGameVal(20, 3);
-        return new RaceGameMode(game, stage, CANDIDATES_2020, groups, playerGroup, getBlockColorProvider(CANDIDATES_2020), freqs, numMoves);
+        config.numMoves = getGameVal(config.numMoves, 3);
+        return new RaceGameMode(
+                game, stage, groups, playerGroup,
+                getBlockColorProvider(config.isHardMode, config.candidates), freqs, config);
     }
 
-    private IBlockColorProvider getBlockColorProvider(List<BlockType> blockTypes) {
+    private IBlockColorProvider getBlockColorProvider(boolean isHardMode, List<BlockType> blockTypes) {
         return isHardMode
                 ? blockColorProviderFactory.getEmptyBlockColorProvider()
                 : blockColorProviderFactory.getRandomBlockColorProvider(blockTypes, blockBgColors);
     }
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
-
-    public boolean isHardMode() {
-        return isHardMode;
-    }
-
-    public void setHardMode(boolean hardMode) {
-        isHardMode = hardMode;
-    }
-
 }

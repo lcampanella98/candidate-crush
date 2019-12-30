@@ -4,94 +4,77 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
-import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.EquallyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
-
 public class MoveLimitVoteTargetGameMode extends CCGameMode {
-    private static final float nonUserInvokedCrushScale = 0.8f;
 
-    private int targetScore;
-    private int numMoves;
-
+    private NoLevelMusicHandler noLevelMusicHandler;
     private int numMovesLeft;
-
-    private List<BlockType> blockTypes;
-
-    private Table mainTable;
 
     public MoveLimitVoteTargetGameMode(CandidateCrush game,
                                        Stage stage,
                                        IBlockColorProvider blockColorProvider,
-                                       List<BlockType> blockTypes,
-                                       int numMoves, int targetScore) {
-        super(game, stage, blockColorProvider, blockTypes);
+                                       GameModeConfig config) {
+        super(game, stage, blockColorProvider, config);
 
-        this.targetScore = targetScore;
-        this.numMoves = numMoves;
-        this.numMovesLeft = numMoves;
+        this.numMovesLeft = config.numMoves;
+    }
 
-        this.blockTypes = blockTypes;
-        this.blockTypes.remove(BlockType.BLANK);
+    @Override
+    protected void setHUD() {
+        hud = new HeadsUpDisplay(this);
+    }
 
-        musicHandler = new NoLevelMusicHandler();
+    @Override
+    protected void setScoringSystem() {
+        scoringSystem = new VoteTargetScoringSystem(config.crushVals, config.nonUserInvokedCrushScale);
+    }
 
-        newBlockTypeProvider = new EquallyRandomBlockTypeProvider(blockTypes);
+    @Override
+    protected void setBlockTypeProvider() {
+        newBlockTypeProvider = new EquallyRandomBlockTypeProvider(config.candidates);
+    }
 
-        this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
-        this.scoringSystem = new VoteTargetScoringSystem(
-                score3, score4, score5, scoreT, nonUserInvokedCrushScale);
-
-        this.mainTable = new Table();
-        this.mainTable.setFillParent(true);
-
-        // instantiate hud
-        hud = new MoveLimitVoteTargetGameMode.HeadsUpDisplay(this);
-        hud.initStage();
-
-        // add board to main table
-        Table boardTable = new Table();
-        boardTable.add(board);
-        this.mainTable.add(boardTable);
-
-        this.stage.addActor(mainTable);
+    @Override
+    protected void setMusicHandler() {
+        musicHandler = noLevelMusicHandler = new NoLevelMusicHandler();
     }
 
     @Override
     protected boolean wonGame() {
-        return scoringSystem.getPlayerScore() >= targetScore;
+        return scoringSystem.getPlayerScore() >= config.targetScore;
     }
 
     @Override
     protected boolean isGameOver() {
         // game is over if the player surpassed the score or has no more moves (or both in which case the player WINS)
-        return scoringSystem.getPlayerScore() >= targetScore || (numMovesLeft == 0 && board.isWaitingForInput());
+        return scoringSystem.getPlayerScore() >= config.targetScore || (numMovesLeft == 0 && board.isWaitingForInput());
     }
 
     @Override
     public void restartGame() {
         super.restartGame();
-        numMovesLeft = numMoves;
+        numMovesLeft = config.numMoves;
     }
 
     @Override
     public void update(float dt) {
         super.update(dt);
-        numMovesLeft = numMoves - board.getNumTotalUserCrushes();
+        numMovesLeft = config.numMoves - board.getNumTotalUserCrushes();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (noLevelMusicHandler != null) noLevelMusicHandler.dispose();
     }
 
     private static class HeadsUpDisplay extends HUD {
@@ -110,7 +93,7 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
         @Override
         public void updateLabels(float dt) {
             labelScore.setText("Votes: " + scoreText(gameMode.scoringSystem.getPlayerScore()));
-            labelTargetScore.setText("Target: " + scoreText(gameMode.targetScore));
+            labelTargetScore.setText("Target: " + scoreText(gameMode.config.targetScore));
             labelMovesLeft.setText("" + ((int) Math.ceil(gameMode.numMovesLeft)));
         }
 
@@ -151,14 +134,6 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
             infoBox.pack();
 
             mainTable.add(infoBox).padTop(45 + gameMode.board.getHeight()).expandX();
-        }
-
-        @Override
-        public Collection<String> getGameInfoDialogTextLines() {
-            return Arrays.asList(
-                    "You have " + gameMode.numMovesLeft + " moves",
-                    "to reach " + scoreText(gameMode.targetScore) + " votes!"
-            );
         }
     }
 }

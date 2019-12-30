@@ -4,63 +4,48 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
-import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.EquallyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-
-import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getCommaSeparatedNumber;
 
 public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
-    private static float nonUserInvokedCrushScale = 0.8f;
-    private static int boardWidth = 8;
 
-    private int targetScore;
+    private NoLevelMusicHandler noLevelMusicHandler;
 
-    private List<BlockType> blockTypes;
+    public TimedVoteTargetGameMode(CandidateCrush game,
+                                   Stage stage,
+                                   IBlockColorProvider blockColorProvider,
+                                   GameModeConfig config) {
+        super(game, stage, blockColorProvider, config);
+    }
 
-    private Table mainTable;
+    @Override
+    protected void setHUD() {
+        hud = new HeadsUpDisplay(this);
+    }
 
-    public TimedVoteTargetGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider, List<BlockType> blockTypes, double gameLength, int targetScore) {
-        super(game, stage, blockColorProvider, blockTypes, gameLength);
+    @Override
+    protected void setScoringSystem() {
+        scoringSystem = new VoteTargetScoringSystem(config.crushVals, config.nonUserInvokedCrushScale);
+    }
 
-        this.targetScore = targetScore;
+    @Override
+    protected void setBlockTypeProvider() {
+        newBlockTypeProvider = new EquallyRandomBlockTypeProvider(config.candidates);
+    }
 
-        this.blockTypes = blockTypes;
-        this.blockTypes.remove(BlockType.BLANK);
-
-        musicHandler = new NoLevelMusicHandler();
-
-        newBlockTypeProvider = new EquallyRandomBlockTypeProvider(blockTypes);
-
-        this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
-        this.scoringSystem = new VoteTargetScoringSystem(
-                score3, score4, score5, scoreT, nonUserInvokedCrushScale);
-
-        this.mainTable = new Table();
-        this.mainTable.setFillParent(true);
-
-        // instantiate hud
-        this.hud = new HeadsUpDisplay(this);
-        hud.initStage();
-
-        // add board to main table
-        Table boardTable = new Table();
-        boardTable.add(board);
-        this.mainTable.add(boardTable);
-
-        this.stage.addActor(mainTable);
+    @Override
+    protected void setMusicHandler() {
+        musicHandler = noLevelMusicHandler = new NoLevelMusicHandler();
     }
 
     @Override
@@ -70,7 +55,7 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
 
     @Override
     protected boolean isGameOver() {
-        return super.isGameTimeUp() || scoringSystem.getPlayerScore() >= targetScore;
+        return super.isGameTimeUp() || scoringSystem.getPlayerScore() >= config.targetScore;
     }
 
     @Override
@@ -79,6 +64,12 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
         if (isGameStarted() && !isGameOver()) {
             super.advanceGameTime(dt);
         }
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (noLevelMusicHandler != null) noLevelMusicHandler.dispose();
     }
 
     private static class HeadsUpDisplay extends HUD {
@@ -99,7 +90,7 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
         @Override
         public void updateLabels(float dt) {
             labelScore.setText("Votes: " + scoreText(gameMode.scoringSystem.getPlayerScore()));
-            labelTargetScore.setText("Target: " + scoreText(gameMode.targetScore));
+            labelTargetScore.setText("Target: " + scoreText(gameMode.config.targetScore));
             labelTimeLeft.setText("" + ((int) Math.ceil(gameMode.getTimeLeft())));
         }
 
@@ -140,14 +131,5 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
 
             mainTable.add(infoBox).padTop(45 + gameMode.board.getHeight()).expandX();
         }
-
-        @Override
-        public Collection<String> getGameInfoDialogTextLines() {
-            return Arrays.asList(
-                    "Reach " + scoreText(gameMode.targetScore) + " votes",
-                    "before time runs out!"
-            );
-        }
-
     }
 }

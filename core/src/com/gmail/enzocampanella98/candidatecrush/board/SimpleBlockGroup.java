@@ -1,5 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush.board;
 
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushType;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -91,6 +93,14 @@ public class SimpleBlockGroup implements Iterable<Block>{
 
     public boolean isLShape() {
         return maxRow - minRow > 1 && maxCol - minCol > 1;
+    }
+
+    public CrushType getCrushType() {
+        if (isLShape()) return CrushType.T;
+        int nBlocks = size();
+        if (nBlocks == 4) return CrushType.FOUR;
+        if (nBlocks == 5) return CrushType.FIVE;
+        return CrushType.THREE;
     }
 
     public boolean containsBlock(Block b) {

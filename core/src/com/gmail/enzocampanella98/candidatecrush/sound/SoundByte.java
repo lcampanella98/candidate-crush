@@ -3,6 +3,7 @@ package com.gmail.enzocampanella98.candidatecrush.sound;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.utils.Disposable;
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushType;
 
 import java.io.File;
 
@@ -27,8 +28,18 @@ public class SoundByte implements Disposable {
             description = filename.substring(0, filename.length() - 4);
     }
 
-    public char getLevel() {
-        return level;
+    public CrushType getCrushType() {
+        switch (level) {
+            case '3':
+                return CrushType.THREE;
+            case '4':
+                return CrushType.FOUR;
+            case 't':
+                return CrushType.T;
+            case '5':
+                return CrushType.FIVE;
+        }
+        return null;
     }
 
     public String getDescription() {

@@ -20,40 +20,19 @@ public abstract class ScoringSystem {
         - the specific blockType that was crushed
             - scale points?
      */
-    public static final Character CRUSHTYPE_THREE = '3';
-    public static final Character CRUSHTYPE_FOUR = '4';
-    public static final Character CRUSHTYPE_FIVE = '5';
-    public static final Character CRUSHTYPE_T_SHAPE = 't';
 
-    protected Map<Character, Integer> crushValues;
-    protected int userScore;
 
-    public ScoringSystem(int crushVal3, int crushVal4, int crushVal5, int crushValTShape) {
-        crushValues = new HashMap<>();
-        crushValues.put(CRUSHTYPE_THREE, crushVal3);
-        crushValues.put(CRUSHTYPE_FOUR, crushVal4);
-        crushValues.put(CRUSHTYPE_FIVE, crushVal5);
-        crushValues.put(CRUSHTYPE_T_SHAPE, crushValTShape);
-        userScore = 0;
+    protected final CrushVals crushVals;
+
+    public ScoringSystem(CrushVals crushVals) {
+        this.crushVals = crushVals;
     }
 
     public abstract void updateScore(Crush crush);
 
     public abstract void reset();
 
-    public void setCrushValue(char crushType, int value) {
-        crushValues.put(crushType, value);
-    }
-
     public abstract int getBlockGroupValue(SimpleBlockGroup bg, boolean userInvoked);
-
-    public static char getCrushType(SimpleBlockGroup blockGroup) {
-        int nBlocks = blockGroup.size();
-        if (blockGroup.isLShape()) return CRUSHTYPE_T_SHAPE;
-        if (nBlocks >= 5) return CRUSHTYPE_FIVE;
-        if (nBlocks == 4) return CRUSHTYPE_FOUR;
-        return CRUSHTYPE_THREE;
-    }
 
     public abstract int getPlayerScore();
 

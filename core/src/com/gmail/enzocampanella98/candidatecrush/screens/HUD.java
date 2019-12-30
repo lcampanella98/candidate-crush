@@ -66,7 +66,7 @@ public abstract class HUD implements Disposable {
     private GameInfoBox gameInstructionsBox;
     private GameInfoBox gameOverBox;
 
-    protected static String scoreText(int votes) {
+    public static String scoreText(int votes) {
         return NumberFormat.getNumberInstance(Locale.US).format(votes);
     }
 
@@ -175,7 +175,7 @@ public abstract class HUD implements Disposable {
         gameInstructionsBox.addAction(seq);
     }
 
-    public void showGameEndMessage(boolean win) {
+    public void showGameEndMessage(boolean win, boolean hasBeatenLevel) {
         gameOverBox.clearChildren();
 
         String msg = win ? "You win!" : "You lose.";
@@ -183,8 +183,21 @@ public abstract class HUD implements Disposable {
         Label.LabelStyle lblStyle = new Label.LabelStyle(endFont, endFont.getColor());
         Label lblMessage = new Label(msg, lblStyle);
         int nCols = win ? 1 : 2;
-        gameOverBox.center().pad(20f).add(lblMessage).colspan(nCols).padBottom(10f);
+        gameOverBox.center().pad(20f).add(lblMessage).colspan(nCols).padBottom(8f);
         gameOverBox.row();
+
+        if (win && !hasBeatenLevel) {
+            Label unlockLabelLine;
+            Label.LabelStyle infoStyle = new Label.LabelStyle(defaultFontCache.get(40), Color.BLACK);
+            int lvlNum = gameMode.getConfig().levelNum;
+            boolean isHardMode = gameMode.getConfig().isHardMode;
+
+            Collection<String> lines = gameMode.getGame().getNewlyBeatenLevelUnlocks(lvlNum, isHardMode);
+            for (String line : lines) {
+                unlockLabelLine = new Label(line, infoStyle);
+                gameOverBox.add(unlockLabelLine).center().colspan(nCols).row();
+            }
+        }
 
         CCButtonFactory fact = new CCButtonFactory(whiteFontCache);
         CCButton btnBack = fact.getVoteButton("Back", 50);
@@ -229,7 +242,9 @@ public abstract class HUD implements Disposable {
         return gameInfoMessageTimeLeft > 0;
     }
 
-    public abstract Collection<String> getGameInfoDialogTextLines();
+    public Collection<String> getGameInfoDialogTextLines() {
+        return gameMode.getConfig().instructionLines;
+    }
 
     public abstract void updateLabels(float dt);
 

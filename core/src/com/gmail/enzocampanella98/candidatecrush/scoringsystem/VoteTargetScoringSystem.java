@@ -6,19 +6,21 @@ import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 
 public class VoteTargetScoringSystem extends ScoringSystem {
 
-    private float nonUserInvokedScale;
+    private int userScore;
+    private final double nonUserInvokedCrushScale;
 
-    public VoteTargetScoringSystem(int crushVal3, int crushVal4, int crushVal5, int crushValTShape, float nonUserInvokedScale) {
-        super(crushVal3, crushVal4, crushVal5, crushValTShape);
-        this.nonUserInvokedScale = nonUserInvokedScale;
-    }
-
-    public VoteTargetScoringSystem(int crushVal3, int crushVal4, int crushVal5, int crushValTShape) {
-        this(crushVal3, crushVal4, crushVal5, crushValTShape, 1.0f);
+    public VoteTargetScoringSystem(CrushVals crushVals, double nonUserInvokedCrushScale) {
+        super(crushVals);
+        this.nonUserInvokedCrushScale = nonUserInvokedCrushScale;
+        this.userScore = 0;
     }
 
     public int getBlockGroupValue(SimpleBlockGroup bg, boolean userInvoked) {
-        return Math.round(crushValues.get(getCrushType(bg)) * (userInvoked ? 1f : nonUserInvokedScale));
+        return (int)Math.round(crushVals.get(bg.getCrushType()) * (userInvoked ? 1.0 : nonUserInvokedCrushScale));
+    }
+
+    public void setPlayerScore(int score) {
+        this.userScore = score;
     }
 
     @Override
@@ -32,10 +34,6 @@ public class VoteTargetScoringSystem extends ScoringSystem {
     @Override
     public void reset() {
         setPlayerScore(0);
-    }
-
-    public void setPlayerScore(int score) {
-        this.userScore = score;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.gmail.enzocampanella98.candidatecrush.sound;
 
 import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ public class NoLevelMusicHandler extends MusicHandler {
 
     private static ObjectMap<String, List<SoundByte>> initSoundsLeft() {
         soundsLeft = new ObjectMap<>();
-        for (SoundByte sound : allSoundBytes) {
+        for (SoundByte sound : soundBank.allSoundBytes) {
             String name = sound.getLastname();
             if (!soundsLeft.containsKey(name)) {
                 soundsLeft.put(name, new ArrayList<SoundByte>());
@@ -27,7 +28,7 @@ public class NoLevelMusicHandler extends MusicHandler {
     private void repopulateCandidateIfNecessary(String name) {
         if (soundsLeft.get(name).size() > 0) return;
 
-        for (SoundByte sound : allSoundBytes) {
+        for (SoundByte sound : soundBank.allSoundBytes) {
             if (sound.getLastname().equalsIgnoreCase(name)) {
                 soundsLeft.get(name).add(sound);
             }
@@ -35,7 +36,7 @@ public class NoLevelMusicHandler extends MusicHandler {
     }
 
     @Override
-    public SoundByte getNextSoundByte(BlockType type, char level) {
+    public SoundByte getNextSoundByte(BlockType type, CrushType crushType) {
         repopulateCandidateIfNecessary(type.getLname());
         List<SoundByte> sounds = soundsLeft.get(type.getLname());
         int randIdx = rand.nextInt(sounds.size());

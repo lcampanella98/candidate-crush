@@ -4,6 +4,7 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushType;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -12,7 +13,7 @@ import java.util.Queue;
 import java.util.Set;
 
 public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionListener, Disposable {
-    protected static List<SoundByte> allSoundBytes = CCSoundBank.getInstance().allSoundBytes;
+    protected static CCSoundBank soundBank = CCSoundBank.getInstance();
 
     protected Queue<SoundByte> soundByteQueue;
     private SoundByte lastSoundByte;
@@ -64,8 +65,8 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
     }
 
     @Override
-    public void queueSoundByte(BlockType type, char level) {
-        SoundByte next = getNextSoundByte(type, level);
+    public void queueSoundByte(BlockType type, CrushType crushType) {
+        SoundByte next = getNextSoundByte(type, crushType);
         next.getMusic().setOnCompletionListener(this);
         next.getMusic().setLooping(false);
         if (isPlayingSoundByte()) {
@@ -105,7 +106,7 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
         }
     }
 
-    public abstract SoundByte getNextSoundByte(BlockType type, char level);
+    public abstract SoundByte getNextSoundByte(BlockType type, CrushType crushType);
 
     @Override
     public void dispose() {

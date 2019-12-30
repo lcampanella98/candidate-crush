@@ -12,7 +12,8 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
-import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
+import com.gmail.enzocampanella98.candidatecrush.level.Level;
+import com.gmail.enzocampanella98.candidatecrush.tools.Methods;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ public class CCButtonFactory implements Disposable {
     private static final String VOTE_BTN_UP = "btn_skin_up";
     private static final String VOTE_BTN_DOWN = "btn_skin_down";
     private static final String VOTE_BTN_CHECKED = "btn_skin_checked";
+    private static final String VOTE_BTN_DISABLED = "btn_skin_disabled";
 
     private FontCache fontCache;
     private ObjectMap<BlockType, Texture> candTextures;
@@ -39,20 +41,28 @@ public class CCButtonFactory implements Disposable {
         extraTextures = new ArrayList<>();
     }
 
+    public LevelButton getLevelButton(Level level, int fontSize, boolean levelUnlocked) {
+        return new LevelButton(
+                getVoteButtonStyle(fontCache.get(fontSize), voteSkin),
+                level, levelUnlocked);
+    }
+
+    /*
     public CandidateButton getCandidateButton(int fontSize, BlockType candidate) {
         ImageTextButton.ImageTextButtonStyle style = getCandidateButtonStyle(
                 fontCache.get(fontSize), voteSkin, candTextures.get(candidate));
         return new CandidateButton(style, candidate);
     }
-
+*/
     public CCButton getVoteButton(String text, int fontSize) {
         return new CCButton(text, getVoteButtonStyle(fontCache.get(fontSize), voteSkin));
     }
 
-    public GameModeButton getGameModeButton(String text, int fontSize, MenuScreen.GameMode gameMode) {
-        return new GameModeButton(text, getVoteButtonStyle(fontCache.get(fontSize), voteSkin), gameMode);
-    }
-
+    /*
+        public GameModeButton getGameModeButton(String text, int fontSize, MenuScreen.GameMode gameMode) {
+            return new GameModeButton(text, getVoteButtonStyle(fontCache.get(fontSize), voteSkin), gameMode);
+        }
+    */
     private Skin getVoteSkin() {
         return new Skin(new TextureAtlas(VOTE_BTN_PACK_PATH));
     }
@@ -62,6 +72,8 @@ public class CCButtonFactory implements Disposable {
         voteButtonStyle.checked = skin.getDrawable(VOTE_BTN_CHECKED);
         voteButtonStyle.down = skin.getDrawable(VOTE_BTN_DOWN);
         voteButtonStyle.up = skin.getDrawable(VOTE_BTN_UP);
+        voteButtonStyle.disabled = skin.getDrawable(VOTE_BTN_DISABLED);
+        voteButtonStyle.disabledFontColor = Methods.colorFromRGB(219, 219, 219);
         voteButtonStyle.font = font;
         return voteButtonStyle;
     }
@@ -78,8 +90,8 @@ public class CCButtonFactory implements Disposable {
         Pixmap skinPixmap = texToPixmap(regChecked.getTexture());
 
         Pixmap pixmapChecked = texRegionToPixmap(skinPixmap, regChecked);
-        Pixmap pixmapDown    = texRegionToPixmap(skinPixmap, regDown);
-        Pixmap pixmapUp      = texRegionToPixmap(skinPixmap, regUp);
+        Pixmap pixmapDown = texRegionToPixmap(skinPixmap, regDown);
+        Pixmap pixmapUp = texRegionToPixmap(skinPixmap, regUp);
 
         int xf = 4, yf = 0;
         pixmapChecked.drawPixmap(pixmapCand, 0, 0,

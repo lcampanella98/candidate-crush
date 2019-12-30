@@ -259,7 +259,7 @@ public class Board extends Group implements Disposable {
             if (userInvoked) {
                 assert largestGroup != null;
                 musicHandler.queueSoundByte(largestGroup.getType(),
-                        ScoringSystem.getCrushType(largestGroup));
+                        largestGroup.getCrushType());
             }
             musicHandler.playSound(CCSoundBank.getInstance().popSound);
             return true;

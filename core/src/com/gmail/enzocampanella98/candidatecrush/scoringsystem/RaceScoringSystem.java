@@ -1,8 +1,8 @@
 package com.gmail.enzocampanella98.candidatecrush.scoringsystem;
 
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Crush;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,8 +21,8 @@ public class RaceScoringSystem extends ScoringSystem {
     public RaceScoringSystem(
             List<NamedCandidateGroup> groups,
             NamedCandidateGroup playerGroup,
-            int crushVal3, int crushVal4, int crushVal5, int crushValTShape) {
-        super(crushVal3, crushVal4, crushVal5, crushValTShape);
+            CrushVals crushVals) {
+        super(crushVals);
         this.groups = groups;
         this.playerGroup = playerGroup;
     }
@@ -59,11 +59,10 @@ public class RaceScoringSystem extends ScoringSystem {
     @Override
     public int getBlockGroupValue(SimpleBlockGroup bg, boolean userInvoked) {
         BlockType blockType = bg.getType();
-        char crushType = getCrushType(bg);
         NamedCandidateGroup toGroup = firstGroupWithType(blockType, groups);
         assert toGroup != null;
 
-        int score = crushValues.get(crushType);
+        int score = crushVals.get(bg.getCrushType());
         if (!playerGroup.containsCandidate(blockType)) {
             score *= 1.1;
         }

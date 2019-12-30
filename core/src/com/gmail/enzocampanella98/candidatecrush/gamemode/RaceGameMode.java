@@ -10,78 +10,71 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
-import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.FrequencyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 public class RaceGameMode extends CCGameMode {
+
     private final List<NamedCandidateGroup> groups;
     private final NamedCandidateGroup playerGroup;
     private final Map<BlockType, Double> blockFrequencies;
 
-    private int numMoves;
-    private List<BlockType> blockTypes;
-
-    private Table mainTable;
-
     private int numMovesLeft;
+    private NoLevelMusicHandler noLevelMusicHandler;
 
     public RaceGameMode(CandidateCrush game,
                         Stage stage,
-                        List<BlockType> blockTypes,
                         List<NamedCandidateGroup> groups,
                         NamedCandidateGroup playerGroup,
                         IBlockColorProvider blockColorProvider,
                         Map<BlockType, Double> blockFrequencies,
-                        int numMoves) {
-        super(game, stage, blockColorProvider, blockTypes);
+                        GameModeConfig config) {
+        super(game, stage, blockColorProvider, config);
 
-        this.numMoves = numMoves;
-        this.blockTypes = blockTypes;
         this.groups = groups;
         this.playerGroup = playerGroup;
         this.blockFrequencies = blockFrequencies;
+    }
 
-        musicHandler = new NoLevelMusicHandler();
+    @Override
+    protected String getBackgroundTexturePath() {
+        return "data/img/general/screen_bg_race.png";
+    }
 
+    @Override
+    protected void setHUD() {
+        hud = new HeadsUpDisplay(this);
+    }
+
+    @Override
+    protected void setScoringSystem() {
+        scoringSystem = new RaceScoringSystem(groups, playerGroup, config.crushVals);
+    }
+
+    @Override
+    protected void setBlockTypeProvider() {
         newBlockTypeProvider = new FrequencyRandomBlockTypeProvider(this.blockFrequencies);
-
-        this.board = new Board(boardWidth, musicHandler, newBlockTypeProvider, blockTextureProvider, boardAnalyzer, boardInitializer);
-
-        int score5 = 5000;
-        this.scoringSystem = new RaceScoringSystem(
-                groups, playerGroup, score3, score4, score5, scoreT);
-
-        // set background texture
-        String bg1 = "data/img/general/screen_bg_race.png";
-        this.backgroundTexture = new Texture(bg1);
-
-        this.mainTable = new Table();
-        this.mainTable.setFillParent(true);
-
-        this.mainTable.add(board).center();
-
-        this.stage.addActor(this.mainTable);
-
-        this.hud = new HeadsUpDisplay(this);
-        hud.initStage();
 
     }
 
     public int getNumMovesLeft() {
         return this.numMovesLeft;
+    }
+
+    @Override
+    protected void setMusicHandler() {
+        musicHandler = noLevelMusicHandler = new NoLevelMusicHandler();
     }
 
     @Override
@@ -97,13 +90,19 @@ public class RaceGameMode extends CCGameMode {
     @Override
     public void restartGame() {
         super.restartGame();
-        numMovesLeft = numMoves;
+        numMovesLeft = config.numMoves;
     }
 
     @Override
     public void update(float dt) {
         super.update(dt);
-        numMovesLeft = numMoves - board.getNumTotalUserCrushes();
+        numMovesLeft = config.numMoves - board.getNumTotalUserCrushes();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (noLevelMusicHandler != null) noLevelMusicHandler.dispose();
     }
 
     private static class HeadsUpDisplay extends HUD {
@@ -235,14 +234,6 @@ public class RaceGameMode extends CCGameMode {
             }
             assert ret != null;
             return ret;
-        }
-
-        @Override
-        public Collection<String> getGameInfoDialogTextLines() {
-            return Arrays.asList(
-                    "You play " + gameMode.playerGroup.getLongName() + ". ",
-                    "Be on top after " + gameMode.numMoves + " moves!"
-            );
         }
 
         private static class ScoreTable extends Table {

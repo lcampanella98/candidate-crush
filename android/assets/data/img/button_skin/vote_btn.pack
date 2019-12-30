@@ -5,6 +5,13 @@ filter: Nearest,Nearest
 repeat: none
 btn_skin_checked
   rotate: false
+  xy: 1, 391
+  size: 512, 128
+  orig: 512, 128
+  offset: 0, 0
+  index: -1
+btn_skin_disabled
+  rotate: false
   xy: 1, 261
   size: 512, 128
   orig: 512, 128

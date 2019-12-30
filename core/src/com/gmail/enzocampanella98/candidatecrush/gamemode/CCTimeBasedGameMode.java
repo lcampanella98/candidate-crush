@@ -3,19 +3,19 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
-
-import java.util.Collection;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 
 public abstract class CCTimeBasedGameMode extends CCGameMode {
 
     protected double t;
-    protected double gameLength;
 
-    protected CCTimeBasedGameMode(CandidateCrush game, Stage stage, IBlockColorProvider blockColorProvider, Collection<BlockType> blockTypes, double gameLength) {
-        super(game, stage, blockColorProvider, blockTypes);
-        this.gameLength = gameLength;
+    protected CCTimeBasedGameMode(
+            CandidateCrush game,
+            Stage stage,
+            IBlockColorProvider blockColorProvider,
+            GameModeConfig config) {
+        super(game, stage, blockColorProvider, config);
         this.t = 0.0;
     }
 
@@ -34,11 +34,11 @@ public abstract class CCTimeBasedGameMode extends CCGameMode {
     }
 
     public double getTimeLeft() {
-        return gameLength - t;
+        return config.gameLength - t;
     }
 
     public boolean isGameTimeUp() {
-        return t >= gameLength;
+        return t >= config.gameLength;
     }
 
     public void advanceGameTime(float dt) {
