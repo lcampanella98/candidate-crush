@@ -1,4 +1,6 @@
-package com.gmail.enzocampanella98.candidatecrush.board;
+package com.gmail.enzocampanella98.candidatecrush.board.blockConfig;
+
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 
 import java.util.Map;
 import java.util.Random;
@@ -14,7 +16,7 @@ public class FrequencyRandomBlockTypeProvider implements IBlockTypeProvider {
     }
 
     @Override
-    public BlockType provideBlockType() {
+    public BlockType provide() {
         BlockType blockType = null;
 
         double num = rand.nextDouble();

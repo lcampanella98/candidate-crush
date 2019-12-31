@@ -8,22 +8,13 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
-import com.badlogic.gdx.scenes.scene2d.actions.MoveByAction;
-import com.badlogic.gdx.scenes.scene2d.actions.ParallelAction;
-import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
-import com.badlogic.gdx.scenes.scene2d.actions.VisibleAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.action.MyBlockInflaterAction;
-import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
-import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
-import com.gmail.enzocampanella98.candidatecrush.sound.IMusicHandler;
-
-import java.util.LinkedList;
-import java.util.Queue;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBoardAnalyzer;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBoardInitializer;
 
 import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
@@ -39,30 +30,26 @@ public class Board extends Group implements Disposable {
 
     private int numBlocksAcross;
 
+    private final IBlockProvider blockProvider;
+    private final IOnCrushListener onCrushListener;
+    private final IBoardAnalyzer boardAnalyzer;
     private final IBoardInitializer boardInitializer;
-    private IMusicHandler musicHandler;
-    private IBlockTypeProvider blockTypeProvider;
-    private IBlockTextureProvider blockTextureProvider;
-    private IBoardAnalyzer boardAnalyzer;
 
     private float blockSpacing;
 
     private Array<SimpleBlockGroup> blockGroups; // not set to null because we need it to animate
-    private Queue<Crush> blockGroupsProcessQueue; // push every crush
 
     private int numTotalCrushes;
     private float boardPad;
 
     public Board(int numBlocksAcross,
-                 IMusicHandler musicHandler,
-                 IBlockTypeProvider blockTypeProvider,
-                 IBlockTextureProvider blockTextureProvider,
+                 IBlockProvider blockProvider,
+                 IOnCrushListener onCrushListener,
                  IBoardAnalyzer boardAnalyzer,
                  IBoardInitializer boardInitializer) {
         this.numBlocksAcross = numBlocksAcross;
-        this.musicHandler = musicHandler;
-        this.blockTypeProvider = blockTypeProvider;
-        this.blockTextureProvider = blockTextureProvider;
+        this.blockProvider = blockProvider;
+        this.onCrushListener = onCrushListener;
         this.boardAnalyzer = boardAnalyzer;
         this.boardInitializer = boardInitializer;
 
@@ -75,10 +62,6 @@ public class Board extends Group implements Disposable {
 
     public int getNumBlocksAcross() {
         return numBlocksAcross;
-    }
-
-    public IBlockTypeProvider getBlockTypeProvider() {
-        return blockTypeProvider;
     }
 
     public void initBoard() {
@@ -98,8 +81,6 @@ public class Board extends Group implements Disposable {
         super.setWidth(boardWidth);
         super.setHeight(boardHeight);
         super.setOrigin(0, 0);
-
-        blockGroupsProcessQueue = new LinkedList<>();
 
         Pixmap boardPixmap = new Pixmap(boardWidth, boardHeight, RGBA8888);
         boardPixmap.setColor(Color.BLUE);
@@ -204,28 +185,14 @@ public class Board extends Group implements Disposable {
         int numRows = blocks.length;
         Vector2 initialBlockPosition = getBlockPosition(numRows, col);
         for (int bottomRow = numRows - crushedBlocksInCol, i = 0; bottomRow + i < numRows; i++) {
-            Block b = blocks[bottomRow + i][col];
+            final Block b = blocks[bottomRow + i][col];
             b.setPosition(initialBlockPosition.x, initialBlockPosition.y);
-
-            DelayAction da = new DelayAction(SINGLE_BLOCK_DROP_TIME * i);
-
-            MyBlockInflaterAction sizeDownAction = new MyBlockInflaterAction(0f);
-            sizeDownAction.setDuration(0f);
-
-            MyBlockInflaterAction sizeUpAction = new MyBlockInflaterAction(b.getHeight());
-            sizeUpAction.setDuration(SINGLE_BLOCK_DROP_TIME);
-
-            MoveByAction mba = new MoveByAction();
-            mba.setAmount(0, -(crushedBlocksInCol - i) * blockSpacing);
-            mba.setDuration(SINGLE_BLOCK_DROP_TIME * (crushedBlocksInCol - i));
-
-            VisibleAction showA = new VisibleAction();
-            showA.setVisible(true);
-
-            ParallelAction pa = new ParallelAction(sizeUpAction, mba);
-
-            SequenceAction sa = new SequenceAction(da, sizeDownAction, showA, pa);
-            b.addAction(sa);
+            b.animateDown(
+                    SINGLE_BLOCK_DROP_TIME * i,
+                    SINGLE_BLOCK_DROP_TIME,
+                    -(crushedBlocksInCol - i) * blockSpacing,
+                    SINGLE_BLOCK_DROP_TIME * (crushedBlocksInCol - i)
+            );
         }
     }
 
@@ -256,12 +223,8 @@ public class Board extends Group implements Disposable {
                     }
                 }
             }
-            if (userInvoked) {
-                assert largestGroup != null;
-                musicHandler.queueSoundByte(largestGroup.getType(),
-                        largestGroup.getCrushType());
-            }
-            musicHandler.playSound(CCSoundBank.getInstance().popSound);
+            Crush crush = new Crush(blockGroups, largestGroup, userFlippedBlocks);
+            onCrushListener.onCrush(crush);
             return true;
         } else { // there was no match
             blockGroups = null;
@@ -331,17 +294,8 @@ public class Board extends Group implements Disposable {
     }
 
     public Block getNewBlock(int row, int col) {
-        return getBlockWithTypeRowAndCol(
-                row, col, blockTypeProvider.provideBlockType()
-        );
-    }
-
-    public Block getBlockWithTypeRowAndCol(int row, int col, BlockType type) {
-        return new Block(
-                type,
-                blockTextureProvider.provideBlockTexture(type),
-                getBlockPosition(row, col),
-                blockSpacing, blockSpacing, row, col);
+        return blockProvider
+                .provide(row, col, getBlockPosition(row, col), blockSpacing, blockSpacing);
     }
 
     private boolean doChildrenHaveActions() {
@@ -375,7 +329,6 @@ public class Board extends Group implements Disposable {
             gotMatches = analyzeAndAnimateBoard(userFlippedBlocks); // crush
             shouldAnalyze = false;
             if (gotMatches) { // user crushed blocks
-                blockGroupsProcessQueue.add(new Crush(blockGroups, userFlippedBlocks)); // enqueue block groups only directly after crush
                 if (userFlippedBlocks)
                     numTotalCrushes++; // increment
             }
@@ -438,10 +391,6 @@ public class Board extends Group implements Disposable {
             }
         }
 
-    }
-
-    public Queue<Crush> latestCrushes() {
-        return blockGroupsProcessQueue;
     }
 
     private Block firstSelectedBlock, secondSelectedBlock;

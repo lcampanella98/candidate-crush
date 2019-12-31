@@ -2,7 +2,6 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode.config;
 
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushVals;
-import com.gmail.enzocampanella98.candidatecrush.sound.SoundByte;
 
 import java.util.Collection;
 import java.util.List;
@@ -21,6 +20,9 @@ public class GameModeConfig {
     public int levelNum;
     public Collection<String> instructionLines;
     public int soundTier;
+    public int targetNumSoundBytes;
+    public double soundByteFrequency;
+    public boolean showCrushLabels;
 
     public static class Builder {
         private final GameModeConfig config;
@@ -91,6 +93,21 @@ public class GameModeConfig {
 
         public Builder soundTier(int soundTier) {
             config.soundTier = soundTier;
+            return this;
+        }
+
+        public Builder targetNumSoundBytes(int targetNumSoundBytes) {
+            config.targetNumSoundBytes = targetNumSoundBytes;
+            return this;
+        }
+
+        public Builder soundByteFrequency(double soundByteFrequency) {
+            config.soundByteFrequency = soundByteFrequency;
+            return this;
+        }
+
+        public Builder showCrushLabels(boolean showCrushLabels) {
+            config.showCrushLabels = showCrushLabels;
             return this;
         }
 

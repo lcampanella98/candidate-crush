@@ -107,6 +107,16 @@ public class SimpleBlockGroup implements Iterable<Block>{
         return blocks.contains(b);
     }
 
+    public int numSoundByteBlocks() {
+        int n = 0;
+        for (Block b : blocks) {
+            if (b.isSoundByteBlock()) {
+                n++;
+            }
+        }
+        return n;
+    }
+
     public void addAllFrom(SimpleBlockGroup group) {
         blocks.addAll(group.blocks);
         setRanges();

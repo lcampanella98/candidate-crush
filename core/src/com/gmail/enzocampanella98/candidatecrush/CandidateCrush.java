@@ -19,7 +19,9 @@ public class CandidateCrush extends Game {
 
     public static final int V_WIDTH = 1080, V_HEIGHT = 1920;
     public static final String TITLE = "Candidate Crush";
+
     public static final boolean IS_TESTING_LEVELS = false;
+    public static final Integer START_LEVEL_OVERRIDE = 2;
 
     public CCGameData gameData;
     private Json json = new Json();
@@ -51,7 +53,12 @@ public class CandidateCrush extends Game {
         } else {
             loadData();
         }
-        //gameData.setMaxBeatenLevel(13);
+
+        // overrides
+        if (START_LEVEL_OVERRIDE != null) {
+            gameData.setMaxBeatenLevel(START_LEVEL_OVERRIDE - 1);
+        }
+
         saveData();
     }
 

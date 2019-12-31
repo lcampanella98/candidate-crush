@@ -49,7 +49,7 @@ public class PersistentTierMusicHandler extends MusicHandler {
     private void repopulateCandidateIfNecessary(String name) {
         if (soundsLeft.get(soundTier).get(name).size() > 0) return;
 
-        for (SoundByte sound : soundsLeft.get(soundTier).get(name)) {
+        for (SoundByte sound : soundBank.soundbyteTiers.get(soundTier)) {
             if (sound.getLastname().equalsIgnoreCase(name)) {
                 soundsLeft.get(soundTier).get(name).add(sound);
             }

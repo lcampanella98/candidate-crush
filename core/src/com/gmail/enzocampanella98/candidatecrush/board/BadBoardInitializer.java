@@ -1,5 +1,8 @@
 package com.gmail.enzocampanella98.candidatecrush.board;
 
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBoardAnalyzer;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBoardInitializer;
+
 public class BadBoardInitializer implements IBoardInitializer {
     @Override
     public Block[][] getInitializedBlocks(Board board) {

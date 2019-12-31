@@ -17,11 +17,15 @@ public class MyBlockInflaterAction extends Action {
     private float h0;
     private float h;
 
-    public MyBlockInflaterAction(float finalHeight) {
+    public MyBlockInflaterAction(float finalHeight, float duration) {
         super();
         started = finished = false;
-        duration = 0f;
+        this.duration = duration;
         hFinal = finalHeight;
+    }
+
+    public MyBlockInflaterAction(float finalHeight) {
+        this(finalHeight, 0f);
     }
 
     public void setDuration(float duration) {
@@ -47,7 +51,6 @@ public class MyBlockInflaterAction extends Action {
         }
         time += delta;
 
-
         Vector2 prevOrigin = new Vector2(a.getOriginX(), a.getOriginY());
         a.setOrigin(0f, 0f);
         float delH = (hFinal - h0) * delta / duration;
@@ -55,7 +58,6 @@ public class MyBlockInflaterAction extends Action {
             delH = hFinal - h0;
         }
         h += delH;
-
         a.setHeight(h);
 
         a.setOrigin(prevOrigin.x, prevOrigin.y);

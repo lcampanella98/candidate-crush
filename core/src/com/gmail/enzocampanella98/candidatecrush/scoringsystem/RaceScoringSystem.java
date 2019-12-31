@@ -37,12 +37,12 @@ public class RaceScoringSystem extends ScoringSystem {
 
     @Override
     public void updateScore(Crush crush) {
-        assert crush != null && crush.crushedBlocks != null;
-        for (SimpleBlockGroup bg : crush.crushedBlocks) {
+        assert crush != null && crush.getCrushedBlocks() != null;
+        for (SimpleBlockGroup bg : crush.getCrushedBlocks()) {
             BlockType blockType = bg.getType();
             NamedCandidateGroup to = firstGroupWithType(blockType, groups);
             assert to != null;
-            to.score += getBlockGroupValue(bg, crush.wasUserInvoked);
+            to.score += getBlockGroupValue(bg, crush.isWasUserInvoked());
         }
 
         Collections.sort(groups);

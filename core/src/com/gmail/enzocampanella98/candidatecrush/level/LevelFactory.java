@@ -32,6 +32,7 @@ public class LevelFactory {
     ));
 
     static final double defaultNonUserInvokedCrushScale = 0.8;
+    static final double defaultSoundByteFrequency = 0.10;
     static final CrushVals defaultCrushVals = new CrushVals(
             500, 1200, 2500, 5000
     );
@@ -44,55 +45,34 @@ public class LevelFactory {
 
     public Level getLevel(int levelNum) {
         int soundTier = getSoundTierOfLevel(levelNum);
-        GameModeConfig config;
+        GameModeConfig config = defConfig(levelNum, soundTier);
         switch (levelNum) {
             case 1:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
+                config.candidates = DEM_CANDIDATES_2020;
+                config.gameLength = 60;
+                config.targetNumSoundBytes = 10;
+                config.instructionLines = getTimedSoundByteInstructions(config);
                 return new Level(config, null, false, false, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getTimedSoundByteTargetGameMode(stage, config);
                     }
                 };
             case 2:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
+                config.candidates = CANDIDATES_2020;
+                config.numMoves = 20;
+                config.targetScore = 25000;
+                config.instructionLines = getMoveLimitInstructions(config);
                 return new Level(config, null, false, false, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getMoveLimitVoteTargetGameMode(stage, config);
                     }
                 };
             case 3:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
+                config.gameLength = 60;
+                config.targetScore = 1000;
+                config.candidates = DEM_CANDIDATES_2020;
                 config.instructionLines = getTimedVoteInstructions(config);
                 return new Level(config, null, false, false, levelNum) {
                     @Override
@@ -325,6 +305,17 @@ public class LevelFactory {
         );
     }
 
+    public static Collection<String> getTimedSoundByteInstructions(GameModeConfig config) {
+        return getTimedSoundByteInstructions(config.targetNumSoundBytes);
+    }
+
+    public static Collection<String> getTimedSoundByteInstructions(int targetNumSoundBytes) {
+        return Arrays.asList(
+                "Crush " + targetNumSoundBytes + " sound-bytes",
+                "before time runs out!"
+        );
+    }
+
     public static Collection<String> getMoveLimitInstructions(GameModeConfig config) {
         return getMoveLimitInstructions(config.numMoves, config.targetScore);
     }
@@ -341,6 +332,18 @@ public class LevelFactory {
                 "You play " + playerName + ". ",
                 "Be on top after " + numMoves + " moves!"
         );
+    }
+
+    public static GameModeConfig defConfig(int lvl, int soundTier) {
+        return new GameModeConfig.Builder()
+                .boardSize(8)
+                .levelNum(lvl)
+                .soundTier(soundTier)
+                .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
+                .crushVals(defaultCrushVals)
+                .soundByteFrequency(defaultSoundByteFrequency)
+                .showCrushLabels(true)
+                .build();
     }
 
 }

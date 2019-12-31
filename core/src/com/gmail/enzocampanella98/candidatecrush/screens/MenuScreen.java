@@ -151,7 +151,6 @@ public class MenuScreen implements Screen {
         int levelToScroll = isHardModeSelected()
                 ? Math.min(game.gameData.getMaxBeatenLevelHardMode() + 1, LevelFactory.NUM_LEVELS)
                 : Math.min(game.gameData.getMaxBeatenLevel() + 1, LevelFactory.NUM_LEVELS);
-        System.out.println("Scrolling to level " + levelToScroll);
         levelScrollPane.setScrollX(getButtonXInScrollPane(levelToScroll));
     }
 

@@ -3,9 +3,8 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockColorProviderFactory;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
-import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockColorMapFactory;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 
@@ -31,20 +30,18 @@ public class GameModeFactory {
     ));
 
     private final CandidateCrush game;
-    private final BlockColorProviderFactory blockColorProviderFactory;
 
     public GameModeFactory(CandidateCrush game) {
         this.game = game;
-        blockColorProviderFactory = new BlockColorProviderFactory();
     }
 
     public RaceGameMode getDemocratPrimary2020GameMode(Stage stage, GameModeConfig config) {
-        double playerBlockFreqAdvantange = 0.1;
+        double playerBlockFreqAdvantage = 0.1;
         List<NamedCandidateGroup> groups = new ArrayList<>();
         NamedCandidateGroup playerGroup = null;
 
-        Map<BlockType, Double> freqs = new HashMap<>();
-        double playerBlockFrequency = 1.0 / config.candidates.size() + playerBlockFreqAdvantange;
+        Map<BlockType, Double> freqMap = new HashMap<>();
+        double playerBlockFrequency = 1.0 / config.candidates.size() + playerBlockFreqAdvantage;
         double otherBlockFrequency = (1.0 - playerBlockFrequency) / (config.candidates.size() - 1);
 
         for (BlockType dem : config.candidates) {
@@ -54,7 +51,7 @@ public class GameModeFactory {
                     dem.getFriendlyName()
             );
             groups.add(grp);
-            freqs.put(dem, dem == config.primaryPlayer ? playerBlockFrequency : otherBlockFrequency);
+            freqMap.put(dem, dem == config.primaryPlayer ? playerBlockFrequency : otherBlockFrequency);
             if (dem == config.primaryPlayer) {
                 playerGroup = grp;
             }
@@ -62,22 +59,27 @@ public class GameModeFactory {
         assert playerGroup != null;
 
         config.numMoves = getGameVal(config.numMoves, 5);
-        return new RaceGameMode(game, stage, groups, playerGroup,
-                getBlockColorProvider(config.isHardMode, config.candidates), freqs, config);
+
+        return new RaceGameMode(game, stage, groups, playerGroup, freqMap, config);
     }
 
     public TimedVoteTargetGameMode getTimedVoteTargetGameMode(Stage stage, GameModeConfig config) {
         config.gameLength = getGameVal(config.gameLength, 30);
         config.targetScore = getGameVal(config.targetScore, 2000);
-        return new TimedVoteTargetGameMode(game, stage,
-                getBlockColorProvider(config.isHardMode, config.candidates), config);
+        return new TimedVoteTargetGameMode(game, stage, config);
+    }
+
+    public TimedSoundByteTargetGameMode getTimedSoundByteTargetGameMode(Stage stage, GameModeConfig config) {
+        config.showCrushLabels = false;
+        config.gameLength = getGameVal(config.gameLength, 30);
+        config.targetNumSoundBytes = getGameVal(config.targetNumSoundBytes, 2);
+        return new TimedSoundByteTargetGameMode(game, stage, config);
     }
 
     public MoveLimitVoteTargetGameMode getMoveLimitVoteTargetGameMode(Stage stage, GameModeConfig config) {
         config.numMoves = getGameVal(config.numMoves, 1);
         config.targetScore = getGameVal(config.targetScore, 100);
-        return new MoveLimitVoteTargetGameMode(game, stage,
-                getBlockColorProvider(config.isHardMode, config.candidates), config);
+        return new MoveLimitVoteTargetGameMode(game, stage, config);
     }
 
     public RaceGameMode getElection2020GameMode(Stage stage,
@@ -109,14 +111,12 @@ public class GameModeFactory {
         playerGroup = config.playerParty == 'D' ? demGroup : repGroup;
 
         config.numMoves = getGameVal(config.numMoves, 3);
-        return new RaceGameMode(
-                game, stage, groups, playerGroup,
-                getBlockColorProvider(config.isHardMode, config.candidates), freqs, config);
+        return new RaceGameMode(game, stage, groups, playerGroup, freqs, config);
     }
 
-    private IBlockColorProvider getBlockColorProvider(boolean isHardMode, List<BlockType> blockTypes) {
+    static Map<BlockType, Color> getBlockColorMap(boolean isHardMode, List<BlockType> blockTypes) {
         return isHardMode
-                ? blockColorProviderFactory.getEmptyBlockColorProvider()
-                : blockColorProviderFactory.getRandomBlockColorProvider(blockTypes, blockBgColors);
+                ? new HashMap<BlockType, Color>()
+                : BlockColorMapFactory.getRandomBlockColorProvider(blockTypes, blockBgColors);
     }
 }

@@ -10,15 +10,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
-import com.gmail.enzocampanella98.candidatecrush.board.FrequencyRandomBlockTypeProvider;
-import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.AlwaysFalseSoundByteBlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.FrequencyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
-import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
+import com.gmail.enzocampanella98.candidatecrush.sound.PersistentTierMusicHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,16 +32,17 @@ public class RaceGameMode extends CCGameMode {
     private final Map<BlockType, Double> blockFrequencies;
 
     private int numMovesLeft;
-    private NoLevelMusicHandler noLevelMusicHandler;
+    private PersistentTierMusicHandler tierMusicHandler;
+    private BlockProvider myBlockProvider;
+    private RaceScoringSystem myScoringSystem;
 
     public RaceGameMode(CandidateCrush game,
                         Stage stage,
                         List<NamedCandidateGroup> groups,
                         NamedCandidateGroup playerGroup,
-                        IBlockColorProvider blockColorProvider,
                         Map<BlockType, Double> blockFrequencies,
                         GameModeConfig config) {
-        super(game, stage, blockColorProvider, config);
+        super(game, stage, config);
 
         this.groups = groups;
         this.playerGroup = playerGroup;
@@ -59,13 +61,17 @@ public class RaceGameMode extends CCGameMode {
 
     @Override
     protected void setScoringSystem() {
-        scoringSystem = new RaceScoringSystem(groups, playerGroup, config.crushVals);
+        scoringSystem = myScoringSystem = new RaceScoringSystem(groups, playerGroup, config.crushVals);
     }
 
     @Override
-    protected void setBlockTypeProvider() {
-        newBlockTypeProvider = new FrequencyRandomBlockTypeProvider(this.blockFrequencies);
-
+    protected void setBlockProvider() {
+        blockProvider = myBlockProvider = new BlockProvider(
+                config.candidates,
+                GameModeFactory.getBlockColorMap(config.isHardMode, config.candidates),
+                new FrequencyRandomBlockTypeProvider(this.blockFrequencies),
+                new AlwaysFalseSoundByteBlockProvider()
+        );
     }
 
     public int getNumMovesLeft() {
@@ -74,17 +80,21 @@ public class RaceGameMode extends CCGameMode {
 
     @Override
     protected void setMusicHandler() {
-        musicHandler = noLevelMusicHandler = new NoLevelMusicHandler();
+        musicHandler = tierMusicHandler = new PersistentTierMusicHandler(config.soundTier);
     }
 
     @Override
     protected boolean wonGame() {
-        return ((RaceScoringSystem) scoringSystem).getGroups().get(0) == playerGroup;
+        return numMovesLeft <= 0
+                && board.isWaitingForInput()
+                && myScoringSystem.getGroups().get(0) == playerGroup;
     }
 
     @Override
-    protected boolean isGameOver() {
-        return numMovesLeft <= 0 && board.isWaitingForInput();
+    protected boolean lostGame() {
+        return numMovesLeft <= 0
+                && board.isWaitingForInput()
+                && myScoringSystem.getGroups().get(0) != playerGroup;
     }
 
     @Override
@@ -102,7 +112,8 @@ public class RaceGameMode extends CCGameMode {
     @Override
     public void dispose() {
         super.dispose();
-        if (noLevelMusicHandler != null) noLevelMusicHandler.dispose();
+        if (tierMusicHandler != null) tierMusicHandler.dispose();
+        if (myBlockProvider != null) myBlockProvider.dispose();
     }
 
     private static class HeadsUpDisplay extends HUD {
@@ -159,7 +170,7 @@ public class RaceGameMode extends CCGameMode {
 
             playerViewTable = new Table();
             for (BlockType bt : gameMode.playerGroup.getCandidates()) {
-                Texture userTexture = gameMode.blockTextureProvider.provideBlockTexture(bt);
+                Texture userTexture = gameMode.blockProvider.getBlockTexture(bt);
                 Image userImg = new Image(userTexture);
                 userImg.scaleBy(1.4f - (0.2f * gameMode.playerGroup.getCandidates().size()));
                 userImg.setOrigin(Align.center);

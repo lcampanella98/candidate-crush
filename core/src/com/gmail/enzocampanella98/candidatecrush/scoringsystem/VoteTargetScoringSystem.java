@@ -25,9 +25,9 @@ public class VoteTargetScoringSystem extends ScoringSystem {
 
     @Override
     public void updateScore(Crush crush) {
-        assert crush != null && crush.crushedBlocks != null;
-        for (SimpleBlockGroup bg : crush.crushedBlocks) {
-            userScore += getBlockGroupValue(bg, crush.wasUserInvoked);
+        assert crush != null && crush.getCrushedBlocks() != null;
+        for (SimpleBlockGroup bg : crush.getCrushedBlocks()) {
+            userScore += getBlockGroupValue(bg, crush.isWasUserInvoked());
         }
     }
 

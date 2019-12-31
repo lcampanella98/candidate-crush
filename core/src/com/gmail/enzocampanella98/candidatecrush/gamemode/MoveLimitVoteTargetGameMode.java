@@ -5,25 +5,27 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
-import com.gmail.enzocampanella98.candidatecrush.board.EquallyRandomBlockTypeProvider;
-import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.AlwaysFalseSoundByteBlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.EquallyRandomBlockTypeProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.FrequencyIsSoundByteBlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
-import com.gmail.enzocampanella98.candidatecrush.sound.NoLevelMusicHandler;
+import com.gmail.enzocampanella98.candidatecrush.sound.PersistentTierMusicHandler;
 
 public class MoveLimitVoteTargetGameMode extends CCGameMode {
 
-    private NoLevelMusicHandler noLevelMusicHandler;
+    private PersistentTierMusicHandler tierMusicHandler;
+    private BlockProvider myBlockProvider;
     private int numMovesLeft;
 
     public MoveLimitVoteTargetGameMode(CandidateCrush game,
                                        Stage stage,
-                                       IBlockColorProvider blockColorProvider,
                                        GameModeConfig config) {
-        super(game, stage, blockColorProvider, config);
+        super(game, stage, config);
 
         this.numMovesLeft = config.numMoves;
     }
@@ -39,13 +41,18 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
     }
 
     @Override
-    protected void setBlockTypeProvider() {
-        newBlockTypeProvider = new EquallyRandomBlockTypeProvider(config.candidates);
+    protected void setBlockProvider() {
+        blockProvider = myBlockProvider = new BlockProvider(
+                config.candidates,
+                GameModeFactory.getBlockColorMap(config.isHardMode, config.candidates),
+                new EquallyRandomBlockTypeProvider(config.candidates),
+                new AlwaysFalseSoundByteBlockProvider()
+        );
     }
 
     @Override
     protected void setMusicHandler() {
-        musicHandler = noLevelMusicHandler = new NoLevelMusicHandler();
+        musicHandler = tierMusicHandler = new PersistentTierMusicHandler(config.soundTier);
     }
 
     @Override
@@ -54,9 +61,10 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
     }
 
     @Override
-    protected boolean isGameOver() {
-        // game is over if the player surpassed the score or has no more moves (or both in which case the player WINS)
-        return scoringSystem.getPlayerScore() >= config.targetScore || (numMovesLeft == 0 && board.isWaitingForInput());
+    protected boolean lostGame() {
+        return numMovesLeft <= 0
+                && board.isWaitingForInput()
+                && scoringSystem.getPlayerScore() < config.targetScore;
     }
 
     @Override
@@ -74,7 +82,8 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
     @Override
     public void dispose() {
         super.dispose();
-        if (noLevelMusicHandler != null) noLevelMusicHandler.dispose();
+        if (tierMusicHandler != null) tierMusicHandler.dispose();
+        if (myBlockProvider != null) myBlockProvider.dispose();
     }
 
     private static class HeadsUpDisplay extends HUD {

@@ -1,4 +1,6 @@
-package com.gmail.enzocampanella98.candidatecrush.board;
+package com.gmail.enzocampanella98.candidatecrush.board.blockConfig;
+
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 
 import java.util.Collection;
 import java.util.HashMap;

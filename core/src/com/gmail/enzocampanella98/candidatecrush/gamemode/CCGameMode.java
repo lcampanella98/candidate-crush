@@ -14,15 +14,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BadBoardInitializer;
-import com.gmail.enzocampanella98.candidatecrush.board.BlockTextureProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.Crush;
 import com.gmail.enzocampanella98.candidatecrush.board.GoodBoardAnalyzer;
-import com.gmail.enzocampanella98.candidatecrush.board.IBlockColorProvider;
-import com.gmail.enzocampanella98.candidatecrush.board.IBlockTypeProvider;
-import com.gmail.enzocampanella98.candidatecrush.board.IBoardAnalyzer;
-import com.gmail.enzocampanella98.candidatecrush.board.IBoardInitializer;
+import com.gmail.enzocampanella98.candidatecrush.board.IOnCrushListener;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBlockProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBoardAnalyzer;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
@@ -45,7 +44,7 @@ import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getGameVal;
 
 
-public abstract class CCGameMode implements Disposable {
+public abstract class CCGameMode implements Disposable, IOnCrushListener {
     private static final String BG_PATH = "data/img/general/screen_bg_votetarget.png";
     private static final float DISPLAY_GAME_INFO_SEC = getGameVal(4f, 1f);
 
@@ -66,9 +65,7 @@ public abstract class CCGameMode implements Disposable {
 
     protected Texture backgroundTexture;
     protected IMusicHandler musicHandler;
-    protected IBlockTypeProvider newBlockTypeProvider;
-    protected BlockTextureProvider blockTextureProvider;
-    protected IBlockColorProvider blockColorProvider;
+    protected IBlockProvider blockProvider;
     protected ScoringSystem scoringSystem;
     protected IBoardAnalyzer boardAnalyzer;
     protected IBoardInitializer boardInitializer;
@@ -76,14 +73,11 @@ public abstract class CCGameMode implements Disposable {
 
     protected CCGameMode(CandidateCrush game,
                          Stage stage,
-                         IBlockColorProvider blockColorProvider,
                          GameModeConfig config) {
         this.game = game;
         this.stage = stage;
-        this.blockColorProvider = blockColorProvider;
         this.boardInitializer = new BadBoardInitializer();
         this.boardAnalyzer = new GoodBoardAnalyzer();
-        this.blockTextureProvider = new BlockTextureProvider(config.candidates, blockColorProvider);
         this.backgroundTexture = new Texture(getBackgroundTexturePath());
         this.latestCrushes = new LinkedList<>();
         this.fontCache = new FontCache(new FontGenerator(Color.WHITE));
@@ -91,7 +85,7 @@ public abstract class CCGameMode implements Disposable {
 
         // overridden by subclass
         setMusicHandler();
-        setBlockTypeProvider();
+        setBlockProvider();
         setScoringSystem();
 
         this.soundBank = CCSoundBank.getInstance();
@@ -118,9 +112,8 @@ public abstract class CCGameMode implements Disposable {
     protected Board instantiateBoard() {
         return new Board(
                 config.boardSize,
-                musicHandler,
-                newBlockTypeProvider,
-                blockTextureProvider,
+                blockProvider,
+                this,
                 boardAnalyzer,
                 boardInitializer
         );
@@ -169,11 +162,17 @@ public abstract class CCGameMode implements Disposable {
 
     protected abstract void setScoringSystem();
 
-    protected abstract void setBlockTypeProvider();
+    protected abstract void setBlockProvider();
 
     protected abstract void setMusicHandler();
 
     protected abstract boolean wonGame();
+
+    protected abstract boolean lostGame();
+
+    protected final boolean isGameOver() {
+        return wonGame() || lostGame();
+    }
 
     public void update(float dt) {
         init();
@@ -205,28 +204,34 @@ public abstract class CCGameMode implements Disposable {
                 musicHandler.stopAll();
                 musicHandler.playMusic(getGameEndedMusic());
             }
-//            else if (!hud.isGameOverMessageShowing()) {
-//                musicHandler.stopAll();
-//                returnToMenu(); // done!
-//            }
         }
 
-        List<Crush> latestCrushes = new ArrayList<>();
-        while (board.latestCrushes().size() > 0 && !isGameOver()) {
-            Crush crush = board.latestCrushes().poll();
-            latestCrushes.add(crush);
-            scoringSystem.updateScore(crush);
-        }
         hud.update(dt);
+    }
 
-        for (Crush c : latestCrushes) {
-            addCrushVotesAndAnimations(Objects.requireNonNull(c));
+    @Override
+    public void onCrush(Crush crush) {
+        if (!isGameOver()) {
+            playSoundsForCrush(crush);
+            scoringSystem.updateScore(crush);
+            if (config.showCrushLabels) {
+                addCrushVotesAndAnimations(crush);
+            }
+        }
+    }
+
+    public void playSoundsForCrush(Crush crush) {
+        musicHandler.playSound(soundBank.popSound);
+        if (crush.isWasUserInvoked()) {
+            musicHandler.queueSoundByte(
+                    crush.getLargestGroup().getType(),
+                    crush.getLargestGroup().getCrushType());
         }
     }
 
     private void addCrushVotesAndAnimations(Crush crush) {
-        for (SimpleBlockGroup bg : crush.crushedBlocks) {
-            stage.addActor(getCrushVoteLabelWithAnimation(bg, crush.wasUserInvoked));
+        for (SimpleBlockGroup bg : crush.getCrushedBlocks()) {
+            stage.addActor(getCrushVoteLabelWithAnimation(bg, crush.isWasUserInvoked()));
         }
     }
 
@@ -242,8 +247,6 @@ public abstract class CCGameMode implements Disposable {
         musicHandler.stopAll();
         musicHandler.playBackgroundMusic();
     }
-
-    protected abstract boolean isGameOver();
 
     private void setupInputMultiplexer() {
         inputMultiplexer = new InputMultiplexer();
@@ -299,10 +302,11 @@ public abstract class CCGameMode implements Disposable {
         return config;
     }
 
+    @Override
     public void dispose() {
         if (backgroundTexture != null) backgroundTexture.dispose();
         if (board != null) board.dispose();
         if (hud != null) hud.dispose();
-        if (blockTextureProvider != null) blockTextureProvider.dispose();
     }
+
 }

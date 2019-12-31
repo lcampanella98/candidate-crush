@@ -1,6 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush.board;
 
 import com.badlogic.gdx.utils.Array;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBoardAnalyzer;
 
 import java.util.HashSet;
 import java.util.Set;
