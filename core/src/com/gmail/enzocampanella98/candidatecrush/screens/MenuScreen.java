@@ -31,6 +31,7 @@ import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeFactory;
 import com.gmail.enzocampanella98.candidatecrush.level.Level;
 import com.gmail.enzocampanella98.candidatecrush.level.LevelFactory;
 import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
+import com.sun.org.apache.xerces.internal.util.XMLEntityDescriptionImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -254,7 +255,19 @@ public class MenuScreen implements Screen {
         for (LevelButton btn : levelButtons) {
             float padLeft = btn.getLevel().getLevelNumber() == 1 ? getInitialLevelButtonPad() : 0f;
             float padRight = btn.getLevel().getLevelNumber() == LevelFactory.NUM_LEVELS ? getInitialLevelButtonPad() : levelButtonPadRight;
-            levelTable.add(btn).width(w).height(btn.scaledHeight(w)).padLeft(padLeft).padRight(padRight);
+            Table subTable = new Table();
+            String msg;
+            if (btn.getLevel().isElection() || btn.getLevel().isPrimary()) {
+                msg = btn.getLevel().isElection() ? "Election" : "Primary";
+            } else {
+                msg = "";
+            }
+            Label.LabelStyle style = new Label.LabelStyle(fontCache.get(50), Color.BLACK);
+            Label label = new Label(msg, style);
+            subTable.add(btn).width(w).height(btn.scaledHeight(w));
+            subTable.row();
+            subTable.add(label);
+            levelTable.add(subTable).padLeft(padLeft).padRight(padRight);
         }
         levelTable.invalidate();
     }

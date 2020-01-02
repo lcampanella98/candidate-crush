@@ -48,7 +48,8 @@ public class LevelFactory {
         GameModeConfig config = defConfig(levelNum, soundTier);
         switch (levelNum) {
             case 1:
-                config.candidates = DEM_CANDIDATES_2020;
+                config.candidates = getCandidates2020();
+                    config.candidates.remove(BlockType.BUTTIGIEG); // save for primary round
                 config.gameLength = 60;
                 config.targetNumSoundBytes = 10;
                 config.instructionLines = getTimedSoundByteInstructions(config);
@@ -59,7 +60,8 @@ public class LevelFactory {
                     }
                 };
             case 2:
-                config.candidates = CANDIDATES_2020;
+                config.candidates = getCandidates2020();
+                    config.candidates.remove(BlockType.BUTTIGIEG); // save for primary round
                 config.numMoves = 20;
                 config.targetScore = 25000;
                 config.instructionLines = getMoveLimitInstructions(config);
@@ -70,215 +72,143 @@ public class LevelFactory {
                     }
                 };
             case 3:
-                config.gameLength = 60;
-                config.targetScore = 1000;
-                config.candidates = DEM_CANDIDATES_2020;
-                config.instructionLines = getTimedVoteInstructions(config);
-                return new Level(config, null, false, false, levelNum) {
+                config.candidates = getDemCandidates2020();
+                config.numMoves = 10;
+                config.primaryPlayer = BlockType.BUTTIGIEG;
+                config.instructionLines = getRaceInstructions(BlockType.BUTTIGIEG.getFriendlyName(), config.numMoves);
+                return new Level(config, null, false, true, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getDemocratPrimary2020GameMode(stage, config);
                     }
                 };
             case 4:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
+                config.candidates = getCandidates2020();
+                    config.candidates.remove(BlockType.WARREN);
+                config.gameLength = 60;
+                config.targetNumSoundBytes = 15;
+                config.instructionLines = getTimedSoundByteInstructions(config);
                 return new Level(config, null, false, false, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getTimedSoundByteTargetGameMode(stage, config);
                     }
                 };
             case 5:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
+                config.candidates = getCandidates2020();
+                    config.candidates.remove(BlockType.WARREN);
+                config.numMoves = 25;
+                config.targetScore = 30000;
+                config.instructionLines = getMoveLimitInstructions(config);
                 return new Level(config, null, false, false, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getMoveLimitVoteTargetGameMode(stage, config);
                     }
                 };
             case 6:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
-                return new Level(config, null, false, false, levelNum) {
+                config.candidates = getDemCandidates2020();
+                config.numMoves = 15;
+                config.primaryPlayer = BlockType.WARREN;
+                config.instructionLines = getRaceInstructions(BlockType.WARREN.getFriendlyName(), config.numMoves);
+                return new Level(config, null, false, true, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getDemocratPrimary2020GameMode(stage, config);
                     }
                 };
             case 7:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
-                return new Level(config, null, false, false, levelNum) {
+                config.candidates = getCandidates2020();
+                config.numMoves = 15;
+                config.playerParty = 'D';
+                config.instructionLines = getRaceInstructions("The Democrats", config.numMoves);
+                return new Level(config, null, true, false, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getElection2020GameMode(stage, config, "The Democrats", "Donald Trump");
                     }
                 };
             case 8:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
+                config.candidates = getCandidates2020();
+                config.candidates.remove(BlockType.BIDEN);
+                config.gameLength = 75;
+                config.targetNumSoundBytes = 25;
+                config.instructionLines = getTimedSoundByteInstructions(config);
                 return new Level(config, null, false, false, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getTimedSoundByteTargetGameMode(stage, config);
                     }
                 };
             case 9:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
+                config.candidates = getCandidates2020();
+                config.candidates.remove(BlockType.BIDEN);
+                config.numMoves = 25;
+                config.targetScore = 35000;
+                config.instructionLines = getMoveLimitInstructions(config);
                 return new Level(config, null, false, false, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getMoveLimitVoteTargetGameMode(stage, config);
                     }
                 };
             case 10:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
-                return new Level(config, null, false, false, levelNum) {
+                config.candidates = getDemCandidates2020();
+                config.numMoves = 20;
+                config.primaryPlayer = BlockType.BIDEN;
+                config.instructionLines = getRaceInstructions(BlockType.BIDEN.getFriendlyName(), config.numMoves);
+                return new Level(config, null, false, true, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getDemocratPrimary2020GameMode(stage, config);
                     }
                 };
             case 11:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
+                config.candidates = getCandidates2020();
+                config.candidates.remove(BlockType.SANDERS);
+                config.gameLength = 75;
+                config.targetNumSoundBytes = 30;
+                config.instructionLines = getTimedSoundByteInstructions(config);
                 return new Level(config, null, false, false, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getTimedSoundByteTargetGameMode(stage, config);
                     }
                 };
             case 12:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
+                config.candidates = getCandidates2020();
+                config.candidates.remove(BlockType.SANDERS);
+                config.numMoves = 20;
+                config.targetScore = 35000;
+                config.instructionLines = getMoveLimitInstructions(config);
                 return new Level(config, null, false, false, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getMoveLimitVoteTargetGameMode(stage, config);
                     }
                 };
             case 13:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
-                return new Level(config, null, false, false, levelNum) {
+                config.candidates = getDemCandidates2020();
+                config.numMoves = 25;
+                config.primaryPlayer = BlockType.SANDERS;
+                config.instructionLines = getRaceInstructions(BlockType.BUTTIGIEG.getFriendlyName(), config.numMoves);
+                return new Level(config, null, false, true, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getDemocratPrimary2020GameMode(stage, config);
                     }
                 };
             case 14:
-                config = new GameModeConfig.Builder()
-                        .levelNum(levelNum)
-                        .boardSize(8)
-                        .soundTier(soundTier)
-                        .candidates(DEM_CANDIDATES_2020)
-                        .crushVals(defaultCrushVals)
-                        .nonUserInvokedCrushScale(defaultNonUserInvokedCrushScale)
-                        .gameLength(60)
-                        .targetScore(1000)
-                        .build();
-                config.instructionLines = getTimedVoteInstructions(config);
-                return new Level(config, null, false, false, levelNum) {
+                config.candidates = getCandidates2020();
+                config.numMoves = 30;
+                config.playerParty = 'R';
+                config.instructionLines = getRaceInstructions("Donald Trump", config.numMoves);
+                return new Level(config, null, true, false, levelNum) {
                     @Override
                     public CCGameMode getGameMode() {
-                        return gmf.getTimedVoteTargetGameMode(stage, config);
+                        return gmf.getElection2020GameMode(stage, config, "The Democrats", "Donald Trump");
                     }
                 };
-
         }
         return null;
     }
@@ -332,6 +262,14 @@ public class LevelFactory {
                 "You play " + playerName + ". ",
                 "Be on top after " + numMoves + " moves!"
         );
+    }
+
+    public static List<BlockType> getCandidates2020() {
+        return new ArrayList<>(CANDIDATES_2020);
+    }
+
+    public static List<BlockType> getDemCandidates2020() {
+        return new ArrayList<>(DEM_CANDIDATES_2020);
     }
 
     public static GameModeConfig defConfig(int lvl, int soundTier) {
