@@ -109,6 +109,7 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
     protected Board instantiateBoard() {
         return new Board(
                 config.boardSize,
+                config.singleBlockDropTime,
                 blockProvider,
                 this,
                 boardAnalyzer,

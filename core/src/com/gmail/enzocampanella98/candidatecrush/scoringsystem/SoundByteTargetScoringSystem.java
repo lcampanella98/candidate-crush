@@ -18,6 +18,9 @@ public class SoundByteTargetScoringSystem extends ScoringSystem {
     public void updateScore(Crush crush) {
         for (SimpleBlockGroup bg : crush.getCrushedBlocks()) {
             curNumSoundBytes += getBlockGroupValue(bg, crush.isWasUserInvoked());
+            if (curNumSoundBytes > targetNumSoundBytes) {
+                curNumSoundBytes = targetNumSoundBytes;
+            }
         }
     }
 

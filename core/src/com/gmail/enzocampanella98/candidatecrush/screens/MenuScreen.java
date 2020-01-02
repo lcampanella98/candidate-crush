@@ -27,6 +27,7 @@ import com.gmail.enzocampanella98.candidatecrush.customui.CCButtonFactory;
 import com.gmail.enzocampanella98.candidatecrush.customui.LevelButton;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
+import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeFactory;
 import com.gmail.enzocampanella98.candidatecrush.level.Level;
 import com.gmail.enzocampanella98.candidatecrush.level.LevelFactory;
@@ -77,7 +78,7 @@ public class MenuScreen implements Screen {
         fontCache = new FontCache(new FontGenerator(2, Color.WHITE));
         buttonFactory = new CCButtonFactory(fontCache);
         gameModeFactory = new GameModeFactory(game);
-        levelFactory = new LevelFactory(gameModeFactory);
+        levelFactory = new LevelFactory();
 
         // init cam
         cam = new OrthographicCamera(V_WIDTH, CandidateCrush.V_HEIGHT);
@@ -179,11 +180,11 @@ public class MenuScreen implements Screen {
                     Level level = levelButton.getLevel();
                     CandidateCrushPlayScreen playScreen = new CandidateCrushPlayScreen(game);
 
-                    level.stage = playScreen.playStage;
                     level.config.isHardMode = isHardModeSelected();
 
                     dispose();
-                    playScreen.setGameMode(level.getGameMode());
+                    CCGameMode gameMode = gameModeFactory.getGameMode(playScreen.playStage, level.config);
+                    playScreen.setGameMode(gameMode);
                     game.setScreen(playScreen);
                 }
             }
@@ -281,7 +282,7 @@ public class MenuScreen implements Screen {
 
     private float getButtonXInScrollPane(int level) {
         return //getInitialLevelButtonPadLeft() +
-                (level-1) * (400f + 20f);
+                (level - 1) * (400f + 20f);
     }
 
     private void initHardModeButton() {
@@ -290,7 +291,7 @@ public class MenuScreen implements Screen {
         btnHardMode.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                Button btn = (Button)actor;
+                Button btn = (Button) actor;
                 playStampIfChecked(btn.isChecked());
                 initLevelButtons();
                 scrollToNextLevel();

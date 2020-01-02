@@ -21,7 +21,7 @@ public class CandidateCrush extends Game {
     public static final String TITLE = "Candidate Crush";
 
     public static final boolean IS_TESTING_LEVELS = false;
-    public static final Integer START_LEVEL_OVERRIDE = 3;
+    public static final Integer START_LEVEL_OVERRIDE = 8;
 
     public CCGameData gameData;
     private Json json = new Json();
@@ -35,6 +35,7 @@ public class CandidateCrush extends Game {
         initializeGameData();
         batch = new SpriteBatch();
         setScreen(new MenuScreen(this));
+        LevelFactory.printLevels();
     }
 
     public void disposeCurrentScreen() {
@@ -111,7 +112,7 @@ public class CandidateCrush extends Game {
             }
         } else {
             lines.add("Level " + (levelBeaten+1) + " unlocked!");
-            if (LevelFactory.increaseTierLevels.contains(levelBeaten)) {
+            if (LevelFactory.increaseTierLevels.contains(levelBeaten+1)) {
                 lines.add("New sound-bytes unlocked!");
             }
         }

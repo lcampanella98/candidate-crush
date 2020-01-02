@@ -21,7 +21,7 @@ import static com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888;
 
 public class Board extends Group implements Disposable {
 
-    private static final float SINGLE_BLOCK_DROP_TIME = .3f;
+    private static final float SINGLE_BLOCK_SWAP_TIME = .3f;
 
     private Block[][] blocks;
 
@@ -29,6 +29,7 @@ public class Board extends Group implements Disposable {
     private Rectangle boardBounds;
 
     private int numBlocksAcross;
+    private float singleBlockDropTime;
 
     private final IBlockProvider blockProvider;
     private final IOnCrushListener onCrushListener;
@@ -43,11 +44,13 @@ public class Board extends Group implements Disposable {
     private float boardPad;
 
     public Board(int numBlocksAcross,
+                 float singleBlockDropTime,
                  IBlockProvider blockProvider,
                  IOnCrushListener onCrushListener,
                  IBoardAnalyzer boardAnalyzer,
                  IBoardInitializer boardInitializer) {
         this.numBlocksAcross = numBlocksAcross;
+        this.singleBlockDropTime = singleBlockDropTime;
         this.blockProvider = blockProvider;
         this.onCrushListener = onCrushListener;
         this.boardAnalyzer = boardAnalyzer;
@@ -70,11 +73,9 @@ public class Board extends Group implements Disposable {
         this.numTotalCrushes = 0; // track number of user-invoked crushes
 
         int boardWidth = CandidateCrush.V_WIDTH;
-        int boardX = (CandidateCrush.V_WIDTH - boardWidth) / 2;
 
         //noinspection SuspiciousNameCombination
         int boardHeight = boardWidth;
-        int boardY = (CandidateCrush.V_HEIGHT - boardHeight) / 2;
 
         //super.setPosition(boardX, boardY);
 
@@ -188,17 +189,17 @@ public class Board extends Group implements Disposable {
             final Block b = blocks[bottomRow + i][col];
             b.setPosition(initialBlockPosition.x, initialBlockPosition.y);
             b.animateDown(
-                    SINGLE_BLOCK_DROP_TIME * i,
-                    SINGLE_BLOCK_DROP_TIME,
+                    singleBlockDropTime * i,
+                    singleBlockDropTime,
                     -(crushedBlocksInCol - i) * blockSpacing,
-                    SINGLE_BLOCK_DROP_TIME * (crushedBlocksInCol - i)
+                    singleBlockDropTime * (crushedBlocksInCol - i)
             );
         }
     }
 
     private void shiftAndAnimateBlockDown(Block b, int spaces) {
         moveBlock(b.getRow(), b.getCol(), b.getRow() - spaces, b.getCol());
-        b.addAction(Actions.moveBy(0, -blockSpacing * spaces, SINGLE_BLOCK_DROP_TIME * spaces));
+        b.addAction(Actions.moveBy(0, -blockSpacing * spaces, singleBlockDropTime * spaces));
     }
 
     private boolean analyzeAndAnimateBoard(final boolean userInvoked) {
@@ -233,23 +234,23 @@ public class Board extends Group implements Disposable {
     }
 
     private void fadeBlockOut(Block b) {
-        b.addAction(Actions.scaleTo(0f, 0f, SINGLE_BLOCK_DROP_TIME));
+        b.addAction(Actions.scaleTo(0f, 0f, SINGLE_BLOCK_SWAP_TIME));
     }
 
     private void shiftBlockOneLeft(Block b) {
-        b.addAction(Actions.moveBy(-blockSpacing, 0, SINGLE_BLOCK_DROP_TIME));
+        b.addAction(Actions.moveBy(-blockSpacing, 0, SINGLE_BLOCK_SWAP_TIME));
     }
 
     private void shiftBlockOneRight(Block b) {
-        b.addAction(Actions.moveBy(blockSpacing, 0, SINGLE_BLOCK_DROP_TIME));
+        b.addAction(Actions.moveBy(blockSpacing, 0, SINGLE_BLOCK_SWAP_TIME));
     }
 
     private void shiftBlockOneUp(Block b) {
-        b.addAction(Actions.moveBy(0, blockSpacing, SINGLE_BLOCK_DROP_TIME));
+        b.addAction(Actions.moveBy(0, blockSpacing, SINGLE_BLOCK_SWAP_TIME));
     }
 
     private void shiftBlockOneDown(Block b) {
-        b.addAction(Actions.moveBy(0, -blockSpacing, SINGLE_BLOCK_DROP_TIME));
+        b.addAction(Actions.moveBy(0, -blockSpacing, SINGLE_BLOCK_SWAP_TIME));
     }
 
     private void refillBoard(Array<SimpleBlockGroup> groups) {

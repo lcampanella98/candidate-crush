@@ -84,4 +84,25 @@ public final class Methods {
     public static Object getGameVal(Object prodVal, Object testVal) {
         return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
     }
+
+    /*
+    Maths
+     */
+    public static int roundUpToNearest(double n, int toNext) {
+        return ((int)Math.floor(n / toNext)) * toNext;
+    }
+    public static int roundDownToNearest(double n, int toNext) {
+        return ((int)Math.ceil(n / toNext)) * toNext;
+    }
+
+    public static int roundToNearest(double n, int toNext) {
+        int down = roundDownToNearest(n, toNext);
+        int up = roundUpToNearest(n, toNext);
+        if (Math.abs(n - down) < Math.abs(n - up)) {
+            return down;
+        }
+        return up;
+    }
+
+
 }

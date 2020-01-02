@@ -6,6 +6,9 @@ import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockColorMapFactory;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
+import com.gmail.enzocampanella98.candidatecrush.level.GameModeType;
+import com.gmail.enzocampanella98.candidatecrush.level.LevelBuilder;
+import com.gmail.enzocampanella98.candidatecrush.level.LevelFactory;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 
 import java.util.ArrayList;
@@ -33,6 +36,20 @@ public class GameModeFactory {
 
     public GameModeFactory(CandidateCrush game) {
         this.game = game;
+    }
+
+    public CCGameMode getGameMode(Stage stage, GameModeConfig config) {
+        switch (config.gameModeType) {
+            case SOUND_BYTE:
+                return getTimedSoundByteTargetGameMode(stage, config);
+            case MOVE_LIMIT:
+                return getMoveLimitVoteTargetGameMode(stage, config);
+            case PRIMARY:
+                return getDemocratPrimary2020GameMode(stage, config);
+            case ELECTION:
+                return getElection2020GameMode(stage, config);
+        }
+        return null;
     }
 
     public RaceGameMode getDemocratPrimary2020GameMode(Stage stage, GameModeConfig config) {
@@ -71,6 +88,7 @@ public class GameModeFactory {
 
     public TimedSoundByteTargetGameMode getTimedSoundByteTargetGameMode(Stage stage, GameModeConfig config) {
         config.showCrushLabels = false;
+        config.singleBlockDropTime = 0.15f;
         config.gameLength = getGameVal(config.gameLength, 30);
         config.targetNumSoundBytes = getGameVal(config.targetNumSoundBytes, 2);
         return new TimedSoundByteTargetGameMode(game, stage, config);
@@ -83,9 +101,7 @@ public class GameModeFactory {
     }
 
     public RaceGameMode getElection2020GameMode(Stage stage,
-                                                GameModeConfig config,
-                                                String demGroupLongName,
-                                                String repGroupLongName) {
+                                                GameModeConfig config) {
         double trumpBlockFreq = 0.4;
         List<NamedCandidateGroup> groups = new ArrayList<>();
         NamedCandidateGroup playerGroup;
@@ -104,8 +120,8 @@ public class GameModeFactory {
             }
             freqs.put(cand, f);
         }
-        NamedCandidateGroup demGroup = new NamedCandidateGroup(demCands, "Democrats", demGroupLongName);
-        NamedCandidateGroup repGroup = new NamedCandidateGroup(repCands, "Trump", repGroupLongName);
+        NamedCandidateGroup demGroup = new NamedCandidateGroup(demCands, "Democrats", LevelBuilder.DEMOCRAT_LONG_NAME);
+        NamedCandidateGroup repGroup = new NamedCandidateGroup(repCands, "Trump", LevelBuilder.REPUBLICAN_LONG_NAME);
         groups.add(demGroup);
         groups.add(repGroup);
         playerGroup = config.playerParty == 'D' ? demGroup : repGroup;

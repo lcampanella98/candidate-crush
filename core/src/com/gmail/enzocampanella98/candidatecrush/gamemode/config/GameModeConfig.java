@@ -1,13 +1,16 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode.config;
 
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
+import com.gmail.enzocampanella98.candidatecrush.level.GameModeType;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushVals;
 
 import java.util.Collection;
 import java.util.List;
 
 public class GameModeConfig {
+    public GameModeType gameModeType;
     public int boardSize;
+    public float singleBlockDropTime;
     public boolean isHardMode;
     public CrushVals crushVals;
     public BlockType primaryPlayer;
@@ -31,8 +34,18 @@ public class GameModeConfig {
             config = new GameModeConfig();
         }
 
+        public Builder gameModeType(GameModeType gameModeType) {
+            config.gameModeType = gameModeType;
+            return this;
+        }
+
         public Builder boardSize(int boardSize) {
             config.boardSize = boardSize;
+            return this;
+        }
+
+        public Builder singleBlockDropTime(float singleBlockDropTime) {
+            config.singleBlockDropTime = singleBlockDropTime;
             return this;
         }
 
