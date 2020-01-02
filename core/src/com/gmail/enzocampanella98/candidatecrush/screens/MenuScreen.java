@@ -31,7 +31,6 @@ import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeFactory;
 import com.gmail.enzocampanella98.candidatecrush.level.Level;
 import com.gmail.enzocampanella98.candidatecrush.level.LevelFactory;
 import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
-import com.sun.org.apache.xerces.internal.util.XMLEntityDescriptionImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,18 +155,19 @@ public class MenuScreen implements Screen {
     }
 
     private void initPlayButton() {
-        TextureAtlas btnAtlas = new TextureAtlas("data/playbutton.pack");
+        TextureAtlas btnAtlas = new TextureAtlas("data/btn-play.pack");
         Skin skinPlay = new Skin(btnAtlas);
         ImageTextButton.ImageTextButtonStyle btnPlayStyle = new ImageTextButton.ImageTextButtonStyle();
-        btnPlayStyle.up = skinPlay.getDrawable("skin-up");
-        btnPlayStyle.down = skinPlay.getDrawable("skin-down");
+        btnPlayStyle.up = skinPlay.getDrawable("up");
+        btnPlayStyle.down = skinPlay.getDrawable("down");
+        btnPlayStyle.disabled = skinPlay.getDrawable("disabled");
         btnPlayStyle.font = fontCache.get(FONT_LG);
         btnPlayStyle.fontColor = com.badlogic.gdx.graphics.Color.BLACK;
 
         btnPlay = new ImageTextButton("To the Campaign Trail", btnPlayStyle);
         btnPlay.pad(50, 80, 50, 80);
 
-        btnPlay.setVisible(false);
+        btnPlay.setDisabled(true);
         btnPlay.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -200,11 +200,11 @@ public class MenuScreen implements Screen {
         return null;
     }
 
-    private void updatePlayButtonVisibility() {
-        btnPlay.setVisible(shouldPlayButtonBeVisible());
+    private void updatePlayButtonEnabled() {
+        btnPlay.setDisabled(!shouldPlayButtonBeEnabled());
     }
 
-    private boolean shouldPlayButtonBeVisible() {
+    private boolean shouldPlayButtonBeEnabled() {
         return getSelectedLevelButton() != null;
     }
 
@@ -246,7 +246,7 @@ public class MenuScreen implements Screen {
                     }
 
                     playStampIfChecked(btn.isChecked());
-                    updatePlayButtonVisibility();
+                    updatePlayButtonEnabled();
                 }
             });
             levelButtons.add(btn);
@@ -294,7 +294,7 @@ public class MenuScreen implements Screen {
                 playStampIfChecked(btn.isChecked());
                 initLevelButtons();
                 scrollToNextLevel();
-                updatePlayButtonVisibility();
+                updatePlayButtonEnabled();
             }
         });
     }

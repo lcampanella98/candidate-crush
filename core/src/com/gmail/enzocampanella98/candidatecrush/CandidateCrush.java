@@ -21,7 +21,7 @@ public class CandidateCrush extends Game {
     public static final String TITLE = "Candidate Crush";
 
     public static final boolean IS_TESTING_LEVELS = false;
-    public static final Integer START_LEVEL_OVERRIDE = 2;
+    public static final Integer START_LEVEL_OVERRIDE = 3;
 
     public CCGameData gameData;
     private Json json = new Json();

@@ -32,11 +32,8 @@ import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
 import com.gmail.enzocampanella98.candidatecrush.sound.IMusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.tools.Methods;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
 import java.util.Queue;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
@@ -83,11 +80,6 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
         this.fontCache = new FontCache(new FontGenerator(Color.WHITE));
         this.config = config;
 
-        // overridden by subclass
-        setMusicHandler();
-        setBlockProvider();
-        setScoringSystem();
-
         this.soundBank = CCSoundBank.getInstance();
     }
 
@@ -102,6 +94,11 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
 
     private void init() {
         if (isInitialized) return;
+        // overridden by subclass
+        setMusicHandler();
+        setBlockProvider();
+        setScoringSystem();
+
         board = instantiateBoard();
         initStage();
         setupInputMultiplexer();
