@@ -108,6 +108,8 @@ public class BlockProvider implements IBlockProvider, Disposable {
     private static ObjectMap<Color, Texture> getBgColorTextures(Collection<Color> colors, int size) {
         ObjectMap<Color, Texture> bgTextures = new ObjectMap<>();
         for (Color color : colors) {
+            if (color == null) continue;
+
             Pixmap bgPixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
 
             // draw the background

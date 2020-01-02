@@ -100,9 +100,9 @@ public class LevelBuilder {
         boolean isPrimary = gameModeType == PRIMARY;
 
         if (gameModeType == PRIMARY) {
-            config.candidates = getCandidates2020();
-        } else {
             config.candidates = getDemCandidates2020();
+        } else {
+            config.candidates = getCandidates2020();
         }
         if (exceptCandidate != null) {
             config.candidates.remove(exceptCandidate);

@@ -287,7 +287,7 @@ public class MenuScreen implements Screen {
 
     private void initHardModeButton() {
         btnHardMode = buttonFactory.getVoteButton("Hard Mode", FONT_MD);
-        btnHardMode.setChecked(true);
+        btnHardMode.setChecked(false);
         btnHardMode.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
