@@ -224,9 +224,7 @@ public class CCSoundBank implements Disposable {
 
     @Override
     public void dispose() {
-        List<Disposable> toDispose = new ArrayList<>();
-        toDispose.addAll(allSoundBytes);
-        toDispose.addAll(Arrays.asList(
+        List<Disposable> toDispose = new ArrayList<>(Arrays.asList(
                 popSound, stampSound, bgMusic1, winMusic, loseMusic
         ));
         for (Disposable sound : toDispose) {

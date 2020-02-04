@@ -11,15 +11,15 @@ import java.io.File;
  * Created by enzoc on 5/21/2018.
  */
 
-public class SoundByte implements Disposable {
+public class SoundByte {
 
     private char level;
     private String lastname;
     private String description;
-    private Music music;
+    private String internalPath;
 
     public SoundByte(String internalPath) { // filename relative to sound root
-        music = Gdx.audio.newMusic(Gdx.files.internal(internalPath));
+        this.internalPath = internalPath;
         String filename = new File(internalPath).getName();
         String[] parts = filename.split("_");
         if (parts.length > 0) lastname = parts[0];
@@ -50,12 +50,8 @@ public class SoundByte implements Disposable {
         return lastname;
     }
 
-    public Music getMusic() {
-        return music;
+    public Music getNewMusic() {
+        return Gdx.audio.newMusic(Gdx.files.internal(internalPath));
     }
 
-    @Override
-    public void dispose() {
-        music.dispose();
-    }
 }

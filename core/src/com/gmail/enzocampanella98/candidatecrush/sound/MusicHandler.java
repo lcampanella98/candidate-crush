@@ -1,23 +1,22 @@
 package com.gmail.enzocampanella98.candidatecrush.sound;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
-import com.gmail.enzocampanella98.candidatecrush.board.Crush;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushType;
 
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
 public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionListener, Disposable {
     protected static CCSoundBank soundBank = CCSoundBank.getInstance();
 
-    protected Queue<SoundByte> soundByteQueue;
-    private SoundByte lastSoundByte;
+    protected Queue<Music> soundByteQueue;
+    private Music lastSoundByte;
     private Set<Sound> soundSet;
     private Set<Music> musicSet;
     private Music bgMusic;
@@ -31,7 +30,7 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
 
     @Override
     public boolean isPlayingSoundByte() {
-        return lastSoundByte != null && lastSoundByte.getMusic().isPlaying();
+        return lastSoundByte != null && lastSoundByte.isPlaying();
     }
 
     @Override
@@ -68,13 +67,15 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
     @Override
     public void queueSoundByte(BlockType type, CrushType crushType) {
         SoundByte next = getNextSoundByte(type, crushType);
-        next.getMusic().setOnCompletionListener(this);
-        next.getMusic().setLooping(false);
+        Music music = next.getNewMusic();
+        music.setOnCompletionListener(this);
+        music.setLooping(false);
         if (isPlayingSoundByte()) {
-            soundByteQueue.add(next);
+            soundByteQueue.add(music);
         } else {
-            lastSoundByte = next;
-            next.getMusic().play();
+            lastSoundByte = music;
+            musicSet.add(music);
+            music.play();
         }
         if (bgMusic != null) {
             bgMusic.setVolume(bgMusicInitVolume / 4f);
@@ -83,9 +84,12 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
 
     @Override
     public void onCompletion(Music music) {
+        music.dispose();
+
         lastSoundByte = soundByteQueue.poll();
         if (lastSoundByte != null) {
-            lastSoundByte.getMusic().play();
+            musicSet.add(lastSoundByte);
+            lastSoundByte.play();
         } else {
             if (bgMusic != null) {
                 bgMusic.setVolume(bgMusicInitVolume);
@@ -97,7 +101,7 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
     public void stopAll() {
         soundByteQueue.clear();
         if (lastSoundByte != null) {
-            lastSoundByte.getMusic().stop();
+            lastSoundByte.stop();
         }
         for (Sound s : soundSet) {
             s.stop();
