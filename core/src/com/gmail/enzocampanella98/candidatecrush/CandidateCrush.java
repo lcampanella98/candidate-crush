@@ -21,8 +21,8 @@ public class CandidateCrush extends Game {
     public static final String TITLE = "Candidate Crush";
 
     public static final boolean IS_TESTING_LEVELS = false;
-    public static final Integer START_LEVEL_OVERRIDE = 14;
-    public static final Integer START_LEVEL_HARD_MODE_OVERRIDE = 1;
+    public static final Integer START_LEVEL_OVERRIDE = null;
+    public static final Integer START_LEVEL_HARD_MODE_OVERRIDE = null;
 
     public CCGameData gameData;
     private Json json = new Json();
@@ -59,6 +59,8 @@ public class CandidateCrush extends Game {
         // overrides
         if (START_LEVEL_OVERRIDE != null) {
             gameData.setMaxBeatenLevel(START_LEVEL_OVERRIDE - 1);
+        }
+        if (START_LEVEL_HARD_MODE_OVERRIDE != null) {
             gameData.setMaxBeatenLevelHardMode(START_LEVEL_HARD_MODE_OVERRIDE - 1);
         }
 
