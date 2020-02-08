@@ -59,6 +59,7 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
 
     @Override
     public void playBackgroundMusic() {
+        bgMusic.setVolume(bgMusicInitVolume);
         if (bgMusic != null && !bgMusic.isPlaying()) {
             bgMusic.play();
         }

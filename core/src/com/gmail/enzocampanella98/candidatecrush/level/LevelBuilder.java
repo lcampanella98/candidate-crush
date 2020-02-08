@@ -144,7 +144,7 @@ public class LevelBuilder {
     private static void setSoundByteGameModeParams(GameModeConfig config, double timeLimit, int difficulty) {
         config.gameLength = timeLimit;
         config.soundByteFrequency = (float) linearDiff(0.10, 0.05, difficulty);
-        config.targetNumSoundBytes = roundToNearest(timeLimit / (linearDiff(4, 6, difficulty)), 5);
+        config.targetNumSoundBytes = Math.max(roundToNearest(timeLimit / (linearDiff(4, 6, difficulty)), 5), 5);
     }
 
     private static void setMoveLimitGameModeParams(GameModeConfig config, int numMoves, int difficulty) {
