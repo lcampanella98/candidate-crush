@@ -121,16 +121,17 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
         Table mainTable = new Table();
         mainTable.setFillParent(true);
 
-        // instantiate hud
-        setHUD();
-        hud.initStage();
-
         // add board to main table
         Table boardTable = new Table();
         boardTable.add(board);
         mainTable.add(boardTable);
 
         stage.addActor(mainTable);
+        mainTable.validate();
+
+        // instantiate hud
+        setHUD();
+        hud.initStage();
     }
 
     private void startBackgroundMusic() {

@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveByAction;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -39,6 +40,10 @@ import java.util.Collection;
 import java.util.Locale;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.SM;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.XL;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.fontSize;
 
 public abstract class HUD implements Disposable {
 
@@ -64,6 +69,8 @@ public abstract class HUD implements Disposable {
     private GameInfoBox gameInstructionsBox;
     private GameInfoBox gameOverBox;
 
+    private Cell firstCellBelowBoard;
+
     public static String scoreText(int votes) {
         return NumberFormat.getNumberInstance(Locale.US).format(votes);
     }
@@ -83,12 +90,11 @@ public abstract class HUD implements Disposable {
 
     public void initStage() {
         stack = new Stack();
+        hudStage.addActor(stack);
         stack.setFillParent(true);
         initTable();
         initInfoOverlay();
         initGameoverOverlay();
-
-        hudStage.addActor(stack);
     }
 
     public abstract Vector2 getScoreInfoBoxPosition(SimpleBlockGroup group);
@@ -96,11 +102,12 @@ public abstract class HUD implements Disposable {
     private void initTable() {
         mainTable = new Table();
         mainTable.top();
+        stack.add(mainTable);
+
         addExitButton();
 
         // overridden by subclass
         addActorsToTable();
-        stack.add(mainTable);
     }
 
     private void addExitButton() {
@@ -120,7 +127,7 @@ public abstract class HUD implements Disposable {
                 return true;
             }
         });
-        mainTable.add(btnExit).left();
+        mainTable.add(btnExit).pad(3f).left();
         mainTable.row();
     }
 
@@ -128,7 +135,7 @@ public abstract class HUD implements Disposable {
         // setup animations for info box
         gameInstructionsBox = new GameInfoBox(gameMode.blockProvider, gameMode.board.getBlockSpacing()); // we need to pass the parameters because we are adding GameInstructionRows
 
-        Label.LabelStyle instructionsLabelStyle = new Label.LabelStyle(defaultFontCache.get(60), Color.BLACK);
+        Label.LabelStyle instructionsLabelStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(MD)), Color.BLACK);
         gameInstructionsBox.addRows(instructionsLabelStyle, getGameInfoDialogTextLines());
         gameInstructionsBox.pad(20f);
 
@@ -177,7 +184,7 @@ public abstract class HUD implements Disposable {
         gameOverBox.clearChildren();
 
         String msg = win ? "You win!" : "You lose.";
-        endFont = new FontGenerator(win ? Color.GREEN : Color.RED).generateFont(100);
+        endFont = new FontGenerator(win ? Color.GREEN : Color.RED).generateFont(fontSize(XL));
         Label.LabelStyle lblStyle = new Label.LabelStyle(endFont, endFont.getColor());
         Label lblMessage = new Label(msg, lblStyle);
         int nCols = win ? 1 : 2;
@@ -186,7 +193,7 @@ public abstract class HUD implements Disposable {
 
         if (win && !hasBeatenLevel) {
             Label unlockLabelLine;
-            Label.LabelStyle infoStyle = new Label.LabelStyle(defaultFontCache.get(40), Color.BLACK);
+            Label.LabelStyle infoStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(SM)), Color.BLACK);
             int lvlNum = gameMode.getConfig().levelNum;
             boolean isHardMode = gameMode.getConfig().isHardMode;
 
@@ -198,7 +205,7 @@ public abstract class HUD implements Disposable {
         }
 
         CCButtonFactory fact = new CCButtonFactory(whiteFontCache);
-        CCButton btnBack = fact.getVoteButton("Back", 50);
+        CCButton btnBack = fact.getVoteButton("Back", fontSize(MD));
         btnBack.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -209,7 +216,7 @@ public abstract class HUD implements Disposable {
         gameOverBox.add(btnBack)
                 .height(btnHt).width(btnBack.scaledWidth(btnHt)).center();
         if (!win) {
-            CCButton btnPlayAgain = fact.getVoteButton("Play again", 50);
+            CCButton btnPlayAgain = fact.getVoteButton("Play again", fontSize(MD));
             btnPlayAgain.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -217,7 +224,7 @@ public abstract class HUD implements Disposable {
                 }
             });
             gameOverBox.add(btnPlayAgain)
-                    .height(btnHt).width(btnPlayAgain.scaledWidth(btnHt)).center();
+                    .height(btnHt).width(btnPlayAgain.scaledWidth(btnHt)).padLeft(10f).center();
         }
         gameOverBox.setVisible(true);
     }
@@ -231,7 +238,25 @@ public abstract class HUD implements Disposable {
             gameInfoMessageTimeLeft -= dt;
         }
         updateLabels(dt);
+        updateFirstCellBelowBoard();
         hudStage.act(dt);
+    }
+
+    private void updateFirstCellBelowBoard() {
+        if (firstCellBelowBoard == null) return;
+
+        float localY = firstCellBelowBoard.getActor().localToStageCoordinates(new Vector2(0, firstCellBelowBoard.getActorHeight())).y;
+        float boardY = gameMode.board.getAbsY();
+        float padTop = localY - boardY;
+        if (padTop > 0) {
+            System.out.printf("%f, %f, %f\n", localY, boardY, padTop);
+            firstCellBelowBoard.padTop(padTop + 10f); // add some extra space
+            mainTable.invalidate();
+        }
+    }
+
+    protected void setFirstCellBelowBoard(Cell firstCellBelowBoard) {
+        this.firstCellBelowBoard = firstCellBelowBoard;
     }
 
     protected abstract void addActorsToTable();

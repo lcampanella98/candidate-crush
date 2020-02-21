@@ -17,7 +17,7 @@ import java.util.List;
 
 public class CandidateCrush extends Game {
 
-    public static final int V_WIDTH = 1080, V_HEIGHT = 1920;
+    public static int V_WIDTH = 1080, V_HEIGHT = 1920;
     public static final String TITLE = "Candidate Crush";
 
     public static final boolean IS_TESTING_LEVELS = false;
@@ -30,13 +30,32 @@ public class CandidateCrush extends Game {
 
     public SpriteBatch batch;
 
+    public static final float iphone11Width = 1242.0f;
+
     @Override
     public void create() {
+        V_HEIGHT = Math.round((int)(V_WIDTH * (((double)Gdx.graphics.getHeight()) / Gdx.graphics.getWidth())));
+
+
         CCSoundBank.getInstance();
         initializeGameData();
         batch = new SpriteBatch();
         setScreen(new MenuScreen(this));
         LevelFactory.printLevels();
+    }
+
+    public static float scaled(float n) {
+        if (Gdx.graphics.getWidth() > iphone11Width) {
+            return n * (iphone11Width / Gdx.graphics.getWidth());
+        }
+        return n;
+    }
+
+    public void printScreenInfo() {
+        System.out.printf("Width: %d\nHeight: %d\nDensity: %f\n",
+                Gdx.graphics.getWidth(),
+                Gdx.graphics.getHeight(),
+                Gdx.graphics.getDensity());
     }
 
     public void disposeCurrentScreen() {

@@ -76,7 +76,8 @@ public class Board extends Group implements Disposable {
 
         this.numTotalCrushes = 0; // track number of user-invoked crushes
 
-        int boardWidth = CandidateCrush.V_WIDTH;
+
+        int boardWidth = (int)((9.0/16.0)*CandidateCrush.V_HEIGHT);
 
         //noinspection SuspiciousNameCombination
         int boardHeight = boardWidth;
@@ -444,6 +445,18 @@ public class Board extends Group implements Disposable {
 
     public Vector2 getPositionOfRowAndCol(int row, int col) {
         return localToStageCoordinates(getBlockPosition(row, col));
+    }
+
+    public Vector2 getAbsolutePosition() {
+        return localToStageCoordinates(new Vector2(getX(), getY()));
+    }
+
+    public float getAbsX() {
+        return getAbsolutePosition().x;
+    }
+
+    public float getAbsY() {
+        return getAbsolutePosition().y;
     }
 
     @Override

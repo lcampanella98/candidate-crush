@@ -3,6 +3,7 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.Crush;
@@ -16,10 +17,14 @@ import com.gmail.enzocampanella98.candidatecrush.scoringsystem.SoundByteTargetSc
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.PersistentTierMusicHandler;
 
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.LG;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.SM;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.XL;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.fontSize;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
 
 public class TimedSoundByteTargetGameMode extends CCTimeBasedGameMode {
 
@@ -94,12 +99,11 @@ public class TimedSoundByteTargetGameMode extends CCTimeBasedGameMode {
 
     private static class HeadsUpDisplay extends HUD {
 
-        private static int FONT_LG = 100, FONT_MD = 70, FONT_SM = 50;
-
         private Label labelSoundBytesLeft;
         private Label labelTimeLeft;
 
         private TimedSoundByteTargetGameMode gameMode;
+
 
         protected HeadsUpDisplay(TimedSoundByteTargetGameMode gameMode) {
             super(gameMode);
@@ -114,8 +118,8 @@ public class TimedSoundByteTargetGameMode extends CCTimeBasedGameMode {
         @Override
         protected void addActorsToTable() {
             // init table elements
-            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_LG), Color.BLACK);
-            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_MD), Color.BLACK);
+            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(XL)), Color.BLACK);
+            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(LG)), Color.BLACK);
 
             labelTimeLeft = new Label(null, timeLabelStyle);
             labelSoundBytesLeft = new Label(null, targetLabelStyle);
@@ -132,8 +136,10 @@ public class TimedSoundByteTargetGameMode extends CCTimeBasedGameMode {
             infoBox.add(labelSoundBytesLeft).pad(20f);
             infoBox.pack();
 
-            mainTable.add(infoBox).padTop(170f + gameMode.board.getHeight()).expandX();
+            setFirstCellBelowBoard(mainTable.add(infoBox).expandX());
+
         }
+
 
         @Override
         public void updateLabels(float dt) {

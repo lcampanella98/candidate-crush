@@ -37,6 +37,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.LG;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.SM;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.XL;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.fontSize;
 
 /**
  * Created by lorenzo on 9/5/2016.
@@ -44,10 +49,6 @@ import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 public class MenuScreen implements Screen {
 
     private static final String BG_IMAGE_PATH = "data/img/general/cc_bg.png";
-
-    private static final int FONT_LG = 70;
-    private static final int FONT_MD = 50;
-    private static final int FONT_SM = 30;
 
     private final CandidateCrush game;
     private final Stage menuStage;
@@ -99,9 +100,9 @@ public class MenuScreen implements Screen {
         textureBg = new Texture(Gdx.files.internal(BG_IMAGE_PATH));
 
         // init label style
-        smallLabelStyle = new Label.LabelStyle(fontCache.get(FONT_SM), Color.WHITE);
-        normalLabelStyle = new Label.LabelStyle(fontCache.get(FONT_MD), Color.WHITE);
-        titleLabelStyle = new Label.LabelStyle(fontCache.get(FONT_LG), Color.WHITE);
+        smallLabelStyle = new Label.LabelStyle(fontCache.get(fontSize(SM)), Color.WHITE);
+        normalLabelStyle = new Label.LabelStyle(fontCache.get(fontSize(MD)), Color.WHITE);
+        titleLabelStyle = new Label.LabelStyle(fontCache.get(fontSize(LG)), Color.WHITE);
 
         // ACTORS
         levelTable = new Table();
@@ -162,7 +163,7 @@ public class MenuScreen implements Screen {
         btnPlayStyle.up = skinPlay.getDrawable("up");
         btnPlayStyle.down = skinPlay.getDrawable("down");
         btnPlayStyle.disabled = skinPlay.getDrawable("disabled");
-        btnPlayStyle.font = fontCache.get(FONT_LG);
+        btnPlayStyle.font = fontCache.get(fontSize(LG));
         btnPlayStyle.fontColor = com.badlogic.gdx.graphics.Color.BLACK;
 
         btnPlay = new ImageTextButton("To the Campaign Trail", btnPlayStyle);
@@ -231,7 +232,7 @@ public class MenuScreen implements Screen {
         for (int lvlNum = 1; lvlNum <= LevelFactory.NUM_LEVELS; ++lvlNum) {
             Level level = levelFactory.getLevel(lvlNum);
             LevelButton btn = buttonFactory.getLevelButton(
-                    level, FONT_MD,
+                    level, fontSize(MD),
                     isLevelUnlockedInCurrentMode(lvlNum)
             );
             btn.addListener(new ChangeListener() {
@@ -263,7 +264,7 @@ public class MenuScreen implements Screen {
             } else {
                 msg = "";
             }
-            Label.LabelStyle style = new Label.LabelStyle(fontCache.get(50), Color.BLACK);
+            Label.LabelStyle style = new Label.LabelStyle(fontCache.get(fontSize(MD)), Color.BLACK);
             Label label = new Label(msg, style);
             subTable.add(btn).width(w).height(btn.scaledHeight(w));
             subTable.row();
@@ -286,7 +287,7 @@ public class MenuScreen implements Screen {
     }
 
     private void initHardModeButton() {
-        btnHardMode = buttonFactory.getVoteButton("Hard Mode", FONT_MD);
+        btnHardMode = buttonFactory.getVoteButton("Hard Mode", fontSize(MD));
         btnHardMode.setChecked(false);
         btnHardMode.addListener(new ChangeListener() {
             @Override

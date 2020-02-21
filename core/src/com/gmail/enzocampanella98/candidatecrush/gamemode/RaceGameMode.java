@@ -25,6 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.scaled;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.LG;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.XL;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.fontSize;
+
 public class RaceGameMode extends CCGameMode {
 
     private final List<NamedCandidateGroup> groups;
@@ -117,7 +123,6 @@ public class RaceGameMode extends CCGameMode {
     }
 
     private static class HeadsUpDisplay extends HUD {
-        private static final int FONT_LG = 100, FONT_MD = 60, FONT_SM = 40;
 
         private Label labelNumMovesLeft;
 
@@ -144,9 +149,9 @@ public class RaceGameMode extends CCGameMode {
         @Override
         protected void addActorsToTable() {
             // init table elements
-            Label.LabelStyle topScoreLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_MD), Color.BLACK);
-            Label.LabelStyle numMovesLeftLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_LG), Color.BLACK);
-            Label.LabelStyle otherScoreLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_SM), Color.BLACK);
+            Label.LabelStyle topScoreLabelStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(LG)), Color.BLACK);
+            Label.LabelStyle numMovesLeftLabelStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(XL)), Color.BLACK);
+            Label.LabelStyle otherScoreLabelStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(MD)), Color.BLACK);
 
             labelNumMovesLeft = new Label(null, numMovesLeftLabelStyle);
 
@@ -172,11 +177,11 @@ public class RaceGameMode extends CCGameMode {
             for (BlockType bt : gameMode.playerGroup.getCandidates()) {
                 Texture userTexture = gameMode.blockProvider.getBlockTexture(bt);
                 Image userImg = new Image(userTexture);
-                userImg.scaleBy(1.4f - (0.2f * gameMode.playerGroup.getCandidates().size()));
+                userImg.scaleBy(scaled(1.2f) - (scaled(0.2f) * gameMode.playerGroup.getCandidates().size()));
                 userImg.setOrigin(Align.center);
                 playerViewTable.add(userImg).padRight(10f).padLeft(10f);
             }
-            mainTable.add(playerViewTable).padTop(40f).center();
+            mainTable.add(playerViewTable).padTop(15f).center();
 
             mainTable.row();
 
@@ -184,7 +189,7 @@ public class RaceGameMode extends CCGameMode {
             infoBox.add(topScoreTable).pad(20f);
             infoBox.pack();
 
-            mainTable.add(infoBox).padTop(100 + gameMode.board.getHeight()).center().expandX();
+            setFirstCellBelowBoard(mainTable.add(infoBox).center().expandX());
             mainTable.row();
 
             int numScoresPerRow = 3;
@@ -203,7 +208,7 @@ public class RaceGameMode extends CCGameMode {
             infoBox.add(otherScoresTable).center().pad(20f);
             infoBox.pack();
 
-            mainTable.add(infoBox).center().padTop(30f);
+            mainTable.add(infoBox).center().padTop(15f);
         }
 
         @Override

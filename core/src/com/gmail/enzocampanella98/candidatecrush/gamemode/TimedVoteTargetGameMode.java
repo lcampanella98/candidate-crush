@@ -15,6 +15,12 @@ import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoring
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.PersistentTierMusicHandler;
 
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.LG;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.SM;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.XL;
+import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.fontSize;
+
 public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
 
     private PersistentTierMusicHandler tierMusicHandler;
@@ -70,8 +76,6 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
 
     private static class HeadsUpDisplay extends HUD {
 
-        private static int FONT_LG = 100, FONT_MD = 70, FONT_SM = 50;
-
         private Label labelScore;
         private Label labelTimeLeft;
         private Label labelTargetScore;
@@ -98,9 +102,9 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
         @Override
         protected void addActorsToTable() {
             // init table elements
-            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_MD), Color.BLACK);
-            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_LG), Color.BLACK);
-            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(defaultFontCache.get(FONT_MD), Color.BLACK);
+            Label.LabelStyle scoreLabelStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(LG)), Color.BLACK);
+            Label.LabelStyle timeLabelStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(XL)), Color.BLACK);
+            Label.LabelStyle targetLabelStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(LG)), Color.BLACK);
 
             labelScore = new Label(null, scoreLabelStyle);
             labelTimeLeft = new Label(null, timeLabelStyle);
@@ -125,7 +129,7 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
             infoBox.add(labelTargetScore).pad(20f);
             infoBox.pack();
 
-            mainTable.add(infoBox).padTop(45 + gameMode.board.getHeight()).expandX();
+            setFirstCellBelowBoard(mainTable.add(infoBox).expandX());
         }
     }
 }
