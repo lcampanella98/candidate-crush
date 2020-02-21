@@ -1,6 +1,9 @@
 package com.gmail.enzocampanella98.candidatecrush.level;
 
+import com.gmail.enzocampanella98.candidatecrush.board.Block;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockConfig;
+import com.gmail.enzocampanella98.candidatecrush.customui.GameInstructionRow;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushVals;
 
@@ -112,7 +115,7 @@ public class LevelBuilder {
         config.primaryPlayer = primaryCandidate;
 
         setGameModeParams(config);
-        config.instructionLines = getGameInstructions(config);
+        config.instructionRows = getGameInstructions(config);
 
         return new Level(config, null, isElection, isPrimary, levelNum);
     }
@@ -183,7 +186,7 @@ public class LevelBuilder {
                 .build();
     }
 
-    public static Collection<String> getGameInstructions(GameModeConfig config) {
+    public static Collection<GameInstructionRow> getGameInstructions(GameModeConfig config) {
         switch (config.gameModeType) {
             case SOUND_BYTE:
                 return getTimedSoundByteInstructions(config);
@@ -196,6 +199,7 @@ public class LevelBuilder {
         }
         return null;
     }
+/*
 
     public static Collection<String> getTimedVoteInstructions(GameModeConfig config) {
         return getTimedVoteInstructions(config.targetScore);
@@ -207,41 +211,43 @@ public class LevelBuilder {
                 "before time runs out!"
         );
     }
+*/
 
-    public static Collection<String> getTimedSoundByteInstructions(GameModeConfig config) {
+    public static Collection<GameInstructionRow> getTimedSoundByteInstructions(GameModeConfig config) {
         return getTimedSoundByteInstructions(config.targetNumSoundBytes);
     }
 
-    public static Collection<String> getTimedSoundByteInstructions(int targetNumSoundBytes) {
+    public static Collection<GameInstructionRow> getTimedSoundByteInstructions(int targetNumSoundBytes) {
         return Arrays.asList(
-                "Crush " + targetNumSoundBytes + " sound-bytes",
-                "before time runs out!"
+                new GameInstructionRow("Crush " + targetNumSoundBytes + " sound-bytes"),
+                new GameInstructionRow(new BlockConfig.Builder().withIsSoundbyteBlock(true).withType(BlockType.TRUMP).build()),
+                new GameInstructionRow("before time runs out!")
         );
     }
 
-    public static Collection<String> getMoveLimitInstructions(GameModeConfig config) {
+    public static Collection<GameInstructionRow> getMoveLimitInstructions(GameModeConfig config) {
         return getMoveLimitInstructions(config.numMoves, config.targetScore);
     }
 
-    public static Collection<String> getMoveLimitInstructions(int numMoves, int targetScore) {
+    public static Collection<GameInstructionRow> getMoveLimitInstructions(int numMoves, int targetScore) {
         return Arrays.asList(
-                "You have " + numMoves + " moves",
-                "to reach " + scoreText(targetScore) + " votes!"
+                new GameInstructionRow("You have " + numMoves + " moves"),
+                new GameInstructionRow("to reach " + scoreText(targetScore) + " votes!")
         );
     }
 
-    public static Collection<String> getDemocratPrimaryInstructions(GameModeConfig config) {
+    public static Collection<GameInstructionRow> getDemocratPrimaryInstructions(GameModeConfig config) {
         return getRaceInstructions(config.primaryPlayer.getFriendlyName(), config.numMoves);
     }
 
-    public static Collection<String> getElectionInstructions(GameModeConfig config) {
+    public static Collection<GameInstructionRow> getElectionInstructions(GameModeConfig config) {
         return getRaceInstructions(config.playerParty == 'D' ? DEMOCRAT_LONG_NAME : REPUBLICAN_LONG_NAME, config.numMoves);
     }
 
-    public static Collection<String> getRaceInstructions(String playerName, int numMoves) {
+    public static Collection<GameInstructionRow> getRaceInstructions(String playerName, int numMoves) {
         return Arrays.asList(
-                "You play " + playerName + ". ",
-                "Be on top after " + numMoves + " moves!"
+                new GameInstructionRow("You play " + playerName + ". "),
+                new GameInstructionRow("Be on top after " + numMoves + " moves!")
         );
     }
 

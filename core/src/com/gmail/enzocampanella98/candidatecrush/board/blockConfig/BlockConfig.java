@@ -50,4 +50,27 @@ public class BlockConfig {
     public void setBgTexture(Texture bgTexture) {
         this.bgTexture = bgTexture;
     }
+
+    public static class Builder {
+        private BlockConfig config;
+
+        public Builder() {
+            config = new BlockConfig();
+        }
+        public Builder withType(BlockType type) {
+            config.type = type;
+            return this;
+        }
+        public Builder withBackgroundColor(Color backgroundColor) {
+            config.backgroundColor = backgroundColor;
+            return this;
+        }
+        public Builder withIsSoundbyteBlock(boolean isSoundByteBlock) {
+            config.isSoundByteBlock = isSoundByteBlock;
+            return this;
+        }
+        public BlockConfig build() {
+            return config;
+        }
+    }
 }

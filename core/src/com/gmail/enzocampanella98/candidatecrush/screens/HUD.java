@@ -21,7 +21,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -30,6 +29,7 @@ import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.customui.CCButton;
 import com.gmail.enzocampanella98.candidatecrush.customui.CCButtonFactory;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
+import com.gmail.enzocampanella98.candidatecrush.customui.GameInstructionRow;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
@@ -37,8 +37,6 @@ import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.Locale;
-
-import javax.swing.GroupLayout;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
 
@@ -128,10 +126,10 @@ public abstract class HUD implements Disposable {
 
     private void initInfoOverlay() {
         // setup animations for info box
-        gameInstructionsBox = new GameInfoBox();
+        gameInstructionsBox = new GameInfoBox(gameMode.blockProvider, gameMode.board.getBlockSpacing()); // we need to pass the parameters because we are adding GameInstructionRows
 
         Label.LabelStyle instructionsLabelStyle = new Label.LabelStyle(defaultFontCache.get(60), Color.BLACK);
-        gameInstructionsBox.addLines(instructionsLabelStyle, getGameInfoDialogTextLines());
+        gameInstructionsBox.addRows(instructionsLabelStyle, getGameInfoDialogTextLines());
         gameInstructionsBox.pad(20f);
 
         Table overlay = new Table();
@@ -242,8 +240,8 @@ public abstract class HUD implements Disposable {
         return gameInfoMessageTimeLeft > 0;
     }
 
-    public Collection<String> getGameInfoDialogTextLines() {
-        return gameMode.getConfig().instructionLines;
+    public Collection<GameInstructionRow> getGameInfoDialogTextLines() {
+        return gameMode.getConfig().instructionRows;
     }
 
     public abstract void updateLabels(float dt);

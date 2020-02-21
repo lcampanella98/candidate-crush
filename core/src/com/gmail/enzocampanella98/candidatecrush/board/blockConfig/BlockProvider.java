@@ -61,6 +61,16 @@ public class BlockProvider implements IBlockProvider, Disposable {
         config.setBackgroundColor(colorMap.get(config.getType()));
         config.setSoundByteBlock(isSoundByteBlockProvider.provide(config));
 
+        return provideFromConfig(row, col, pos, width, height, config);
+    }
+
+    @Override
+    public Texture getBlockTexture(BlockType type) {
+        return candidateTextures.get(type);
+    }
+
+    @Override
+    public Block provideFromConfig(int row, int col, Vector2 pos, float width, float height, BlockConfig config) {
         Texture candidateTexture;
         if (config.isSoundByteBlock()) {
             candidateTexture = candidateTexturesWithSound.get(config.getType());
@@ -74,11 +84,6 @@ public class BlockProvider implements IBlockProvider, Disposable {
         }
 
         return new Block(row, col, pos, width, height, config);
-    }
-
-    @Override
-    public Texture getBlockTexture(BlockType type) {
-        return candidateTextures.get(type);
     }
 
     @Override

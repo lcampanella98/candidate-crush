@@ -48,7 +48,7 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
     protected final CCSoundBank soundBank;
 
     protected Stage stage;
-    protected Board board;
+    public Board board;
     protected HUD hud;
     protected FontCache fontCache;
     protected CandidateCrush game;
@@ -62,7 +62,7 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
 
     protected Texture backgroundTexture;
     protected IMusicHandler musicHandler;
-    protected IBlockProvider blockProvider;
+    public IBlockProvider blockProvider;
     protected ScoringSystem scoringSystem;
     protected IBoardAnalyzer boardAnalyzer;
     protected IBoardInitializer boardInitializer;

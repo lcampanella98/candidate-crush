@@ -67,6 +67,10 @@ public class Board extends Group implements Disposable {
         return numBlocksAcross;
     }
 
+    public float getBlockSpacing() {
+        return blockSpacing;
+    }
+
     public void initBoard() {
         clearChildren();
 

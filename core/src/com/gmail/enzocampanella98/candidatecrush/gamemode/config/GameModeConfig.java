@@ -1,6 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode.config;
 
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
+import com.gmail.enzocampanella98.candidatecrush.customui.GameInstructionRow;
 import com.gmail.enzocampanella98.candidatecrush.level.GameModeType;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushVals;
 
@@ -21,7 +22,7 @@ public class GameModeConfig {
     public double nonUserInvokedCrushScale;
     public List<BlockType> candidates;
     public int levelNum;
-    public Collection<String> instructionLines;
+    public Collection<GameInstructionRow> instructionRows;
     public int soundTier;
     public int targetNumSoundBytes;
     public double soundByteFrequency;
@@ -99,8 +100,8 @@ public class GameModeConfig {
             return this;
         }
 
-        public Builder instructionLines(Collection<String> instructionLines) {
-            config.instructionLines = instructionLines;
+        public Builder instructionRows(Collection<GameInstructionRow> instructionRows) {
+            config.instructionRows = instructionRows;
             return this;
         }
 

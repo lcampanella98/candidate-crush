@@ -1,14 +1,16 @@
 package com.gmail.enzocampanella98.candidatecrush.customui;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Disposable;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBlockProvider;
 
 import java.util.Collection;
 
@@ -21,8 +23,16 @@ public class GameInfoBox extends Table implements Disposable {
     private static Texture bgTexture;
 
     private Drawable bgDrawable;
+    private final IBlockProvider blockProvider;
+    private final Float blockWidth;
 
     public GameInfoBox() {
+        this(null, null);
+    }
+
+    public GameInfoBox(IBlockProvider blockProvider, Float blockWidth) {
+        this.blockProvider = blockProvider;
+        this.blockWidth = blockWidth;
         getTexture();
         TextureRegion region = new TextureRegion(bgTexture, bgTexture.getWidth(), bgTexture.getHeight());
         bgDrawable = new TextureRegionDrawable(region);
@@ -31,10 +41,19 @@ public class GameInfoBox extends Table implements Disposable {
         setBackground(bgDrawable);
     }
 
-    public void addLines(Label.LabelStyle style, Collection<String> lines) {
-        for (String s : lines) {
-            Label l = new Label(s, style);
-            add(l).pad(10f).row();
+    public void addRows(Label.LabelStyle style, Collection<GameInstructionRow> rows) {
+        for (GameInstructionRow row : rows) {
+            Actor a;
+            if (row.isTextLine()) {
+                a = new Label(row.line, style);
+            } else if (row.isBlock()) {
+                a = blockProvider.provideFromConfig(0, 0, Vector2.Zero,
+                        blockWidth, blockWidth, row.blockConfig);
+            }
+            else {
+                a = row.actor; // we are sure the game instruction row has a actor
+            }
+            add(a).pad(10f).row();
         }
     }
 
