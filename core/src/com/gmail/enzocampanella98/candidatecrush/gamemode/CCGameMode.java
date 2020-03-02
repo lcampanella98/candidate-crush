@@ -43,7 +43,7 @@ import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getGameVal
 
 public abstract class CCGameMode implements Disposable, IOnCrushListener {
     private static final String BG_PATH = "data/img/general/screen_bg_votetarget.png";
-    private static final float DISPLAY_GAME_INFO_SEC = getGameVal(4f, 1f);
+    private static final float DISPLAY_GAME_INFO_SEC = getGameVal(6f, 1f);
 
     protected final CCSoundBank soundBank;
 

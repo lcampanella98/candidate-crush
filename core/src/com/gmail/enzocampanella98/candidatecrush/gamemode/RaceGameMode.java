@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.scaled;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.LG;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
@@ -177,9 +178,10 @@ public class RaceGameMode extends CCGameMode {
             for (BlockType bt : gameMode.playerGroup.getCandidates()) {
                 Texture userTexture = gameMode.blockProvider.getBlockTexture(bt);
                 Image userImg = new Image(userTexture);
-                userImg.scaleBy(scaled(1.2f) - (scaled(0.2f) * gameMode.playerGroup.getCandidates().size()));
                 userImg.setOrigin(Align.center);
-                playerViewTable.add(userImg).padRight(10f).padLeft(10f);
+                float size = gameMode.board.getBlockSpacing();
+                float scale = scaled(1.2f) - (scaled(0.2f) * (gameMode.playerGroup.getCandidates().size() - 1));
+                playerViewTable.add(userImg).width(size*scale).height(size*scale).padRight(10f).padLeft(10f);
             }
             mainTable.add(playerViewTable).padTop(15f).center();
 

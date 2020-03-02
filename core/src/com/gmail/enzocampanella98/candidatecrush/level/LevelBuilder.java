@@ -219,9 +219,9 @@ public class LevelBuilder {
 
     public static Collection<GameInstructionRow> getTimedSoundByteInstructions(int targetNumSoundBytes) {
         return Arrays.asList(
-                new GameInstructionRow("Crush " + targetNumSoundBytes + " sound-bytes"),
+                new GameInstructionRow("Crush " + targetNumSoundBytes + " speaking candidates"),
                 new GameInstructionRow(new BlockConfig.Builder().withIsSoundbyteBlock(true).withType(BlockType.TRUMP).build()),
-                new GameInstructionRow("before time runs out!")
+                new GameInstructionRow("before time runs out. Act Fast!")
         );
     }
 
@@ -246,8 +246,8 @@ public class LevelBuilder {
 
     public static Collection<GameInstructionRow> getRaceInstructions(String playerName, int numMoves) {
         return Arrays.asList(
-                new GameInstructionRow("You play " + playerName + ". "),
-                new GameInstructionRow("Be on top after " + numMoves + " moves!")
+                new GameInstructionRow("Help " + playerName + " get most votes"),
+                new GameInstructionRow("after " + numMoves + " moves!")
         );
     }
 
