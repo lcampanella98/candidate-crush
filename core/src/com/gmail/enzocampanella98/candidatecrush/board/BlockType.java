@@ -6,7 +6,7 @@ package com.gmail.enzocampanella98.candidatecrush.board;
 public enum BlockType {
 
     TRUMP("trump", "Donald Trump"),
-    CLINTON("clinton", "Hillary Clinton"),
+    // CLINTON("clinton", "Hillary Clinton"),
     SANDERS("sanders", "Bernie Sanders"),
     CRUZ("cruz", "Ted Cruz"),
     BIDEN("biden", "Joe Biden"),
@@ -20,7 +20,7 @@ public enum BlockType {
     BlockType(String lname, String friendlyName) {
         this.lname = lname;
         this.internalPath = SPRITE_ROOT + lname + ".png";
-        this.internalPathWithSound = SPRITE_ROOT + lname + "_sound.png";
+        this.internalPathWithSound = SPRITE_ROOT + lname + "_soundbite.png";
         this.friendlyName = friendlyName;
     }
 
