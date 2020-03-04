@@ -249,7 +249,7 @@ public abstract class HUD implements Disposable {
         float boardY = gameMode.board.getAbsY();
         float padTop = localY - boardY;
         if (padTop > 0) {
-            System.out.printf("%f, %f, %f\n", localY, boardY, padTop);
+            // System.out.printf("%f, %f, %f\n", localY, boardY, padTop);
             firstCellBelowBoard.padTop(padTop + 10f); // add some extra space
             mainTable.invalidate();
         }

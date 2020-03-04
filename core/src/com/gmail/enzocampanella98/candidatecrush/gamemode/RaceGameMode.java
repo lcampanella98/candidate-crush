@@ -179,9 +179,9 @@ public class RaceGameMode extends CCGameMode {
                 Texture userTexture = gameMode.blockProvider.getBlockTexture(bt);
                 Image userImg = new Image(userTexture);
                 userImg.setOrigin(Align.center);
-                float size = gameMode.board.getBlockSpacing();
-                float scale = scaled(1.2f) - (scaled(0.2f) * (gameMode.playerGroup.getCandidates().size() - 1));
-                playerViewTable.add(userImg).width(size*scale).height(size*scale).padRight(10f).padLeft(10f);
+                //float size = gameMode.board.getBlockSpacing();
+                //float scale = scaled(.75f); //scaled(1.2f) - (scaled(0.2f) * (gameMode.playerGroup.getCandidates().size() - 1));
+                playerViewTable.add(userImg).width(scaled(90)).height(scaled(90)).padRight(5f);
             }
             mainTable.add(playerViewTable).padTop(15f).center();
 
