@@ -19,7 +19,8 @@ public class CCSoundBank implements Disposable {
 
     private static final String[] SOUNDBYTE_NAMES = new String[]{
             "biden_3_brought_people_together.mp3",
-            "biden_4_barak_america.mp3",
+            "biden_3_the_thing.mp3",
+//            "biden_4_barak_america.mp3",
             "biden_5_decriminalize_marijuana.mp3",
             "biden_t_kim_jung_un_rabid_dog.mp3",
             "biden_3_change_culture_of_how_women_are_treated.mp3",
