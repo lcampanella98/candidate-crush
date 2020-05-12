@@ -1,25 +1,41 @@
 package com.gmail.enzocampanella98.candidatecrush.level;
 
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.gmail.enzocampanella98.candidatecrush.board.BlockType.BIDEN;
-import static com.gmail.enzocampanella98.candidatecrush.board.BlockType.BUTTIGIEG;
-import static com.gmail.enzocampanella98.candidatecrush.board.BlockType.SANDERS;
-import static com.gmail.enzocampanella98.candidatecrush.board.BlockType.WARREN;
-import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.ELECTION;
-import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.MOVE_LIMIT;
-import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.PRIMARY;
-import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.SOUND_BYTE;
+import static com.gmail.enzocampanella98.candidatecrush.board.BlockType.*;
+import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.*;
+
 
 public class LevelFactory {
     public static final int NUM_LEVELS = 14;
     public static final int NUM_TIERS = 4;
     public static final List<Integer> increaseTierLevels = Arrays.asList(4, 8, 11);
 
-    public Level getLevel(int levelNum) {
+    public static final int NUM_LEVELS_OAK_BAES = 14;
+    public static final int NUM_TIERS_OAK_BAES = 4;
+    public static final List<Integer> increaseTierLevelsOakBaes = Arrays.asList(4, 8, 11);
+
+    public static final String LS_NORMAL = "normal";
+    public static final String LS_OAK = "oakbaes";
+
+    public Level getLevel(int levelNum, String levelSet) {
+        System.out.printf("getting level %d of set %s", levelNum, levelSet);
+        if (levelSet.equalsIgnoreCase(LS_NORMAL)) {
+            return getNormalLevel(levelNum);
+        }
+        if (levelSet.equalsIgnoreCase(LS_OAK)) {
+            return getOakBaesLevel(levelNum);
+        }
+        return null;
+    }
+
+    public Level getNormalLevel(int levelNum) {
         int soundTier = getSoundTierOfLevel(levelNum);
-        LevelBuilder builder = new LevelBuilder(levelNum, soundTier);
+        LevelBuilder builder = new LevelBuilder(LS_NORMAL, levelNum, soundTier);
         switch (levelNum) {
             case 1:
                 builder.gameModeType(SOUND_BYTE)
@@ -103,6 +119,23 @@ public class LevelFactory {
         return builder.build();
     }
 
+    public Level getOakBaesLevel(int levelNum) {
+        int soundTier = 1;
+        LevelBuilder builder = new LevelBuilder(LS_OAK, levelNum, soundTier);
+
+        builder.gameModeType(MOVE_LIMIT)
+                .difficulty(1)
+                .withCandidates(Arrays.asList(CAMPANELLA, MEZA, GHATTAS, KOZAN))
+                .initialGameParameter(20);
+
+        return builder.build();
+    }
+
+    public static int getNumLevels(String levelSet) {
+        if (levelSet.equals(LS_OAK)) return NUM_LEVELS_OAK_BAES;
+        return NUM_LEVELS;
+    }
+
     public static int getSoundTierOfLevel(int level) {
         int tier = 1;
         int nextTierLvlIdx = 0;
@@ -117,7 +150,7 @@ public class LevelFactory {
     public static void printLevels() {
         LevelFactory lf = new LevelFactory();
         for (int i = 1; i <= NUM_LEVELS; i++) {
-            System.out.println(lf.getLevel(i));
+            System.out.println(lf.getLevel(i, LS_NORMAL));
         }
     }
 

@@ -12,14 +12,16 @@ public class Level {
     private boolean isElection;
     private boolean isPrimary;
     private int levelNumber;
+    private final String levelSet;
 
     Level(GameModeConfig config, Stage stage,
-                 boolean isElection, boolean isPrimary, int levelNumber) {
+                 boolean isElection, boolean isPrimary, int levelNumber, String levelSet) {
         this.config = config;
         this.stage = stage;
         this.isElection = isElection;
         this.isPrimary = isPrimary;
         this.levelNumber = levelNumber;
+        this.levelSet = levelSet;
     }
 
     public boolean isElection() {
@@ -37,7 +39,7 @@ public class Level {
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
-        s.append(String.format("Level %d\n", levelNumber));
+        s.append(String.format("%s Level %d\n", levelSet, levelNumber));
         s.append(String.format("\tGame Mode: %s\n", config.gameModeType));
         switch (config.gameModeType) {
             case SOUND_BYTE:

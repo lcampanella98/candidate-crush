@@ -1,6 +1,7 @@
 package com.gmail.enzocampanella98.candidatecrush.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -8,6 +9,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -36,6 +38,7 @@ import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.LG;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
@@ -66,6 +69,7 @@ public class MenuScreen implements Screen {
     private ScrollPane levelScrollPane;
     private Table table;
     private CCButton btnHardMode;
+    private CCButton btnOakBaes;
     private ImageTextButton btnPlay;
 
     private Label.LabelStyle smallLabelStyle;
@@ -73,6 +77,8 @@ public class MenuScreen implements Screen {
     private Label.LabelStyle normalLabelStyle;
 
     private List<LevelButton> levelButtons;
+
+    private String levelSet;
 
     public MenuScreen(final CandidateCrush game) {
         this.game = game;
@@ -114,11 +120,19 @@ public class MenuScreen implements Screen {
         // add items to table
         table.padTop(700f).top();
 
-        if (game.isHardModeUnlocked()) {
-            initHardModeButton();
-            table.add(btnHardMode).right().width(400f).height(btnHardMode.scaledHeight(400f)).pad(50f);
-            table.row();
-        }
+        Table optionButtonTable = new Table();
+
+        initOakBaesButton();
+        optionButtonTable.add(btnOakBaes).left().width(400f).height(btnOakBaes.scaledHeight(400f)).pad(0, 0, 50, 30);
+
+        initHardModeButton();
+        optionButtonTable.add(btnHardMode).right().width(400f).height(btnHardMode.scaledHeight(400f)).pad(0, 30, 50, 0);
+
+        table.add(optionButtonTable).right().width(V_WIDTH);
+
+        table.row();
+
+        levelSet = LevelFactory.LS_NORMAL;
 
         // init level buttons
         initLevelButtons();
@@ -142,6 +156,7 @@ public class MenuScreen implements Screen {
         table.pack();
         scrollToNextLevel();
     }
+
 
     private void initLevelScrollPane() {
         levelScrollPane = new ScrollPane(levelTable);
@@ -220,17 +235,24 @@ public class MenuScreen implements Screen {
     }
 
     private boolean isLevelUnlockedInCurrentMode(int lvl) {
-        return isHardModeSelected()
-                ? lvl <= game.gameData.getMaxBeatenLevelHardMode() + 1
-                : lvl <= game.gameData.getMaxBeatenLevel() + 1;
+        if (levelSet.equals(LevelFactory.LS_OAK)) {
+            return isHardModeSelected()
+                    ? lvl <= game.gameData.getMaxBeatenOakBaesLevelHardMode() + 1
+                    : lvl <= game.gameData.getMaxBeatenOakBaesLevel() + 1;
+        } else {
+            return isHardModeSelected()
+                    ? lvl <= game.gameData.getMaxBeatenLevelHardMode() + 1
+                    : lvl <= game.gameData.getMaxBeatenLevel() + 1;
+        }
     }
 
     private void initLevelButtons() {
         levelButtons = new ArrayList<>();
         levelTable.clearChildren();
 
-        for (int lvlNum = 1; lvlNum <= LevelFactory.NUM_LEVELS; ++lvlNum) {
-            Level level = levelFactory.getLevel(lvlNum);
+        for (int lvlNum = 1; lvlNum <= LevelFactory.getNumLevels(levelSet); ++lvlNum) {
+            Level level = levelFactory.getLevel(lvlNum,
+                    isOakBaesSelected() ? LevelFactory.LS_OAK : LevelFactory.LS_NORMAL);
             LevelButton btn = buttonFactory.getLevelButton(
                     level, fontSize(MD),
                     isLevelUnlockedInCurrentMode(lvlNum)
@@ -256,7 +278,7 @@ public class MenuScreen implements Screen {
         float w = 400f;
         for (LevelButton btn : levelButtons) {
             float padLeft = btn.getLevel().getLevelNumber() == 1 ? getInitialLevelButtonPad() : 0f;
-            float padRight = btn.getLevel().getLevelNumber() == LevelFactory.NUM_LEVELS ? getInitialLevelButtonPad() : levelButtonPadRight;
+            float padRight = btn.getLevel().getLevelNumber() == LevelFactory.getNumLevels(levelSet) ? getInitialLevelButtonPad() : levelButtonPadRight;
             Table subTable = new Table();
             String msg;
             if (btn.getLevel().isElection() || btn.getLevel().isPrimary()) {
@@ -287,18 +309,44 @@ public class MenuScreen implements Screen {
     }
 
     private void initHardModeButton() {
-        btnHardMode = buttonFactory.getVoteButton("Hard Mode", fontSize(MD));
-        btnHardMode.setChecked(false);
-        btnHardMode.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                Button btn = (Button) actor;
-                playStampIfChecked(btn.isChecked());
-                initLevelButtons();
-                scrollToNextLevel();
-                updatePlayButtonEnabled();
-            }
-        });
+        if (btnHardMode == null) {
+            btnHardMode = buttonFactory.getVoteButton("Hard Mode", fontSize(MD));
+            btnHardMode.setChecked(false);
+            btnHardMode.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    Button btn = (Button) actor;
+                    playStampIfChecked(btn.isChecked());
+                    initLevelButtons();
+                    scrollToNextLevel();
+                    updatePlayButtonEnabled();
+                }
+            });
+        }
+        //btnHardMode.setVisible(game.isHardModeUnlocked());
+    }
+
+
+    private void initOakBaesButton() {
+        if (btnOakBaes == null) {
+            btnOakBaes = buttonFactory.getVoteButton("Oak Baes!", fontSize(MD));
+            btnOakBaes.setChecked(false);
+            btnOakBaes.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    Button btn = (Button) actor;
+                    playStampIfChecked(btn.isChecked());
+                    initLevelButtons();
+                    scrollToNextLevel();
+                    updatePlayButtonEnabled();
+                }
+            });
+        }
+        //btnOakBaes.setVisible(game.isOakBaesUnlocked());
+    }
+
+    private boolean isOakBaesSelected() {
+        return btnOakBaes != null && btnOakBaes.isChecked();
     }
 
     private void playStampIfChecked(boolean checked) {
@@ -321,7 +369,31 @@ public class MenuScreen implements Screen {
     }
 
     private void handleInput(float delta) {
+        if (Gdx.input.isTouched()) {
+            Vector2 p = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+            if (!game.isOakBaesUnlocked()) {
+                int w = Gdx.graphics.getWidth(), h = Gdx.graphics.getHeight();
+                int targetWidth = Math.min(w / 8, h / 8);
+                if ((p.x >= w - targetWidth && p.x <= w)
+                        && (p.y >= 0 && p.y <= targetWidth)) {
+                    Gdx.input.getTextInput(new Input.TextInputListener() {
+                        @Override
+                        public void input(String text) {
+                            if (!game.isOakBaesUnlocked() && game.tryUnlockOakBaes(text)) {
+                                initOakBaesButton();
+                                // maybe play a fun sound?
+                            }
+                        }
 
+                        @Override
+                        public void canceled() {
+
+                        }
+                    }, "Enter Secret", "", "");
+                }
+            }
+
+        }
     }
 
     @Override

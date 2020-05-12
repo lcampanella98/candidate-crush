@@ -14,6 +14,7 @@ import java.util.List;
 
 import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.ELECTION;
 import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.PRIMARY;
+import static com.gmail.enzocampanella98.candidatecrush.level.LevelFactory.LS_OAK;
 import static com.gmail.enzocampanella98.candidatecrush.screens.HUD.scoreText;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.roundToNearest;
 
@@ -43,6 +44,7 @@ public class LevelBuilder {
 
     public static final int DEFAULT_BOARD_SIZE = 8;
 
+    private String levelSet;
     private int levelNum;
     private int soundTier;
 
@@ -52,9 +54,11 @@ public class LevelBuilder {
     private char playerParty;
     private BlockType primaryCandidate;
     private BlockType exceptCandidate;
+    private List<BlockType> withCandidates;
 
-    public LevelBuilder(int levelNum,
+    public LevelBuilder(String levelSet, int levelNum,
                         int soundTier) {
+        this.levelSet = levelSet;
         this.levelNum = levelNum;
         this.soundTier = soundTier;
     }
@@ -66,6 +70,11 @@ public class LevelBuilder {
 
     public LevelBuilder exceptCandidate(BlockType exceptCandidate) {
         this.exceptCandidate = exceptCandidate;
+        return this;
+    }
+
+    public LevelBuilder withCandidates(List<BlockType> candidates) {
+        this.withCandidates = candidates;
         return this;
     }
 
@@ -102,13 +111,17 @@ public class LevelBuilder {
         boolean isElection = gameModeType == ELECTION;
         boolean isPrimary = gameModeType == PRIMARY;
 
-        if (gameModeType == PRIMARY) {
-            config.candidates = getDemCandidates2020();
+        if (levelSet.equals(LS_OAK)) {
+            config.candidates = withCandidates;
         } else {
-            config.candidates = getCandidates2020();
-        }
-        if (exceptCandidate != null) {
-            config.candidates.remove(exceptCandidate);
+            if (gameModeType == PRIMARY) {
+                config.candidates = getDemCandidates2020();
+            } else {
+                config.candidates = getCandidates2020();
+            }
+            if (exceptCandidate != null) {
+                config.candidates.remove(exceptCandidate);
+            }
         }
 
         config.playerParty = playerParty;
@@ -117,7 +130,7 @@ public class LevelBuilder {
         setGameModeParams(config);
         config.instructionRows = getGameInstructions(config);
 
-        return new Level(config, null, isElection, isPrimary, levelNum);
+        return new Level(config, null, isElection, isPrimary, levelNum, levelSet);
     }
 
     /*

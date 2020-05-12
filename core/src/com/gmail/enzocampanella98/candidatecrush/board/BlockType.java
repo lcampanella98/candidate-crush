@@ -11,7 +11,18 @@ public enum BlockType {
     CRUZ("cruz", "Ted Cruz"),
     BIDEN("biden", "Joe Biden"),
     WARREN("warren", "Elizabeth Warren"),
-    BUTTIGIEG("buttigieg", "Pete Buttigieg");
+    BUTTIGIEG("buttigieg", "Pete Buttigieg"),
+
+    // the oak baes
+    CAMPANELLA("campanella", "Lorenzo Campanella"),
+    YOUNG("young", "Daniel Young"),
+    MEZA("meza", "Daniel Meza"),
+    DAUDELIN("daudelin", "John Daudelin"),
+    GHATTAS("ghattas", "Yasmine Ghattas"),
+    KOZAN("kozan", "Natalie Kozan"),
+    LOMUSCIO("lomuscio", "Samantha Lomuscio"),
+    MORGAN("morgan", "Sarah Morgan");
+
     //MEZA("meza", "Daniel Meza"),
 
     private static final String SPRITE_ROOT = "data/img/block_sprites/";
