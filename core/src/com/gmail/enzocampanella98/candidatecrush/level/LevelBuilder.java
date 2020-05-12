@@ -153,7 +153,7 @@ public class LevelBuilder {
     private static void setMoveLimitGameModeParams(GameModeConfig config, int numMoves, int difficulty) {
         config.numMoves = numMoves;
         double target = linearDiff(5000, 12000, difficulty)
-                + numMoves * linearDiff(1000, 1600, difficulty);
+                + numMoves * linearDiff(1000, 2200, difficulty);
         config.targetScore = roundToNearest(target, 5000);
     }
 
