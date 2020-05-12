@@ -23,7 +23,6 @@ public class LevelFactory {
     public static final String LS_OAK = "oakbaes";
 
     public Level getLevel(int levelNum, String levelSet) {
-        System.out.printf("getting level %d of set %s", levelNum, levelSet);
         if (levelSet.equalsIgnoreCase(LS_NORMAL)) {
             return getNormalLevel(levelNum);
         }

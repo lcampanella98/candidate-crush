@@ -106,7 +106,7 @@ public class LevelBuilder {
     }
 
     public Level build() {
-        GameModeConfig config = defaultConfig(levelNum, soundTier);
+        GameModeConfig config = defaultConfig(levelNum, soundTier, levelSet);
         config.gameModeType = gameModeType;
         boolean isElection = gameModeType == ELECTION;
         boolean isPrimary = gameModeType == PRIMARY;
@@ -187,8 +187,9 @@ public class LevelBuilder {
     /*
     Other helpful configuration methods
      */
-    public static GameModeConfig defaultConfig(int lvl, int soundTier) {
+    public static GameModeConfig defaultConfig(int lvl, int soundTier, String levelSet) {
         return new GameModeConfig.Builder()
+                .levelSet(levelSet)
                 .levelNum(lvl)
                 .soundTier(soundTier)
                 .boardSize(DEFAULT_BOARD_SIZE)

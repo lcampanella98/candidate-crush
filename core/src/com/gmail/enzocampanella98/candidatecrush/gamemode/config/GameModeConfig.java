@@ -24,6 +24,7 @@ public class GameModeConfig {
     public int levelNum;
     public Collection<GameInstructionRow> instructionRows;
     public int soundTier;
+    public String levelSet;
     public int targetNumSoundBytes;
     public double soundByteFrequency;
     public boolean showCrushLabels;
@@ -107,6 +108,11 @@ public class GameModeConfig {
 
         public Builder soundTier(int soundTier) {
             config.soundTier = soundTier;
+            return this;
+        }
+
+        public Builder levelSet(String levelSet) {
+            config.levelSet = levelSet;
             return this;
         }
 
