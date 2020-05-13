@@ -16,6 +16,7 @@ import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockProvider
 import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.FrequencyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
+import com.gmail.enzocampanella98.candidatecrush.level.ILevelSet;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.RaceScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
@@ -25,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.scaled;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.LG;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
@@ -48,8 +48,9 @@ public class RaceGameMode extends CCGameMode {
                         List<NamedCandidateGroup> groups,
                         NamedCandidateGroup playerGroup,
                         Map<BlockType, Double> blockFrequencies,
-                        GameModeConfig config) {
-        super(game, stage, config);
+                        GameModeConfig config,
+                        ILevelSet levelSet) {
+        super(game, stage, config, levelSet);
 
         this.groups = groups;
         this.playerGroup = playerGroup;
@@ -75,7 +76,7 @@ public class RaceGameMode extends CCGameMode {
     protected void setBlockProvider() {
         blockProvider = myBlockProvider = new BlockProvider(
                 config.candidates,
-                GameModeFactory.getBlockColorMap(config.isHardMode, config.candidates),
+                CCGameMode.getBlockColorMap(config.isHardMode, config.candidates),
                 new FrequencyRandomBlockTypeProvider(this.blockFrequencies),
                 new AlwaysFalseSoundByteBlockProvider()
         );
@@ -87,7 +88,7 @@ public class RaceGameMode extends CCGameMode {
 
     @Override
     protected void setMusicHandler() {
-        musicHandler = tierMusicHandler = new PersistentTierMusicHandler(config.soundTier);
+        musicHandler = tierMusicHandler = new PersistentTierMusicHandler(levelSet.getNumSoundTiers(), config.soundTier);
     }
 
     @Override

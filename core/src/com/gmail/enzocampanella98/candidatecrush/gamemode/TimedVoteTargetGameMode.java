@@ -11,13 +11,12 @@ import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockProvider
 import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.EquallyRandomBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
+import com.gmail.enzocampanella98.candidatecrush.level.ILevelSet;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.VoteTargetScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.sound.PersistentTierMusicHandler;
 
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.LG;
-import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
-import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.SM;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.XL;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.fontSize;
 
@@ -28,8 +27,9 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
 
     public TimedVoteTargetGameMode(CandidateCrush game,
                                    Stage stage,
-                                   GameModeConfig config) {
-        super(game, stage, config);
+                                   GameModeConfig config,
+                                   ILevelSet levelSet) {
+        super(game, stage, config, levelSet);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
     protected void setBlockProvider() {
         blockProvider = myBlockProvider = new BlockProvider(
                 config.candidates,
-                GameModeFactory.getBlockColorMap(config.isHardMode, config.candidates),
+                CCGameMode.getBlockColorMap(config.isHardMode, config.candidates),
                 new EquallyRandomBlockTypeProvider(config.candidates),
                 new AlwaysFalseSoundByteBlockProvider()
         );
@@ -54,7 +54,7 @@ public class TimedVoteTargetGameMode extends CCTimeBasedGameMode {
 
     @Override
     protected void setMusicHandler() {
-        musicHandler = tierMusicHandler = new PersistentTierMusicHandler(config.soundTier);
+        musicHandler = tierMusicHandler = new PersistentTierMusicHandler(levelSet.getNumSoundTiers(), config.soundTier);
     }
 
     @Override

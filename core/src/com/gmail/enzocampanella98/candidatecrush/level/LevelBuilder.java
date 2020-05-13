@@ -1,6 +1,5 @@
 package com.gmail.enzocampanella98.candidatecrush.level;
 
-import com.gmail.enzocampanella98.candidatecrush.board.Block;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockConfig;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInstructionRow;
@@ -14,7 +13,6 @@ import java.util.List;
 
 import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.ELECTION;
 import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.PRIMARY;
-import static com.gmail.enzocampanella98.candidatecrush.level.LevelFactory.LS_OAK;
 import static com.gmail.enzocampanella98.candidatecrush.screens.HUD.scoreText;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.roundToNearest;
 
@@ -44,7 +42,7 @@ public class LevelBuilder {
 
     public static final int DEFAULT_BOARD_SIZE = 8;
 
-    private String levelSet;
+    private String levelSetName;
     private int levelNum;
     private int soundTier;
 
@@ -56,9 +54,9 @@ public class LevelBuilder {
     private BlockType exceptCandidate;
     private List<BlockType> withCandidates;
 
-    public LevelBuilder(String levelSet, int levelNum,
+    public LevelBuilder(String levelSetName, int levelNum,
                         int soundTier) {
-        this.levelSet = levelSet;
+        this.levelSetName = levelSetName;
         this.levelNum = levelNum;
         this.soundTier = soundTier;
     }
@@ -106,12 +104,12 @@ public class LevelBuilder {
     }
 
     public Level build() {
-        GameModeConfig config = defaultConfig(levelNum, soundTier, levelSet);
+        GameModeConfig config = defaultConfig(levelNum, soundTier, levelSetName);
         config.gameModeType = gameModeType;
         boolean isElection = gameModeType == ELECTION;
         boolean isPrimary = gameModeType == PRIMARY;
 
-        if (levelSet.equals(LS_OAK)) {
+        if (withCandidates != null) {
             config.candidates = withCandidates;
         } else {
             if (gameModeType == PRIMARY) {
@@ -130,7 +128,7 @@ public class LevelBuilder {
         setGameModeParams(config);
         config.instructionRows = getGameInstructions(config);
 
-        return new Level(config, null, isElection, isPrimary, levelNum, levelSet);
+        return new Level(config, null, isElection, isPrimary, levelNum, levelSetName);
     }
 
     /*

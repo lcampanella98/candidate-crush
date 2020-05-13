@@ -4,6 +4,7 @@ package com.gmail.enzocampanella98.candidatecrush.screens;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -16,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveByAction;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -26,6 +28,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.customui.CCButton;
 import com.gmail.enzocampanella98.candidatecrush.customui.CCButtonFactory;
@@ -196,8 +199,17 @@ public abstract class HUD implements Disposable {
             Label.LabelStyle infoStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(SM)), Color.BLACK);
             int lvlNum = gameMode.getConfig().levelNum;
             boolean isHardMode = gameMode.getConfig().isHardMode;
+            String levelSet =gameMode.getConfig().levelSet;
 
-            Collection<String> lines = gameMode.getGame().getNewlyBeatenLevelUnlocks(lvlNum, isHardMode);
+            Collection<BlockType> unlockedCandidates = gameMode.getLevelSet().getUnlockedCandidates(lvlNum);
+            float candWidth = 200f;
+            for (BlockType cand : unlockedCandidates) {
+                Texture tex = gameMode.blockProvider.getBlockTexture(cand);
+                gameOverBox.add(new Image(tex)).width(candWidth).height(candWidth).row();
+                gameOverBox.add(new Label(String.format("%s unlocked!", cand.getFriendlyName()), infoStyle)).row();
+            }
+
+            Collection<String> lines = gameMode.getLevelSet().getUnlockMessages(lvlNum, isHardMode);
             for (String line : lines) {
                 unlockLabelLine = new Label(line, infoStyle);
                 gameOverBox.add(unlockLabelLine).center().colspan(nCols).row();

@@ -4,6 +4,7 @@ package com.gmail.enzocampanella98.candidatecrush.gamemode;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
+import com.gmail.enzocampanella98.candidatecrush.level.ILevelSet;
 
 public abstract class CCTimeBasedGameMode extends CCGameMode {
 
@@ -12,8 +13,8 @@ public abstract class CCTimeBasedGameMode extends CCGameMode {
     protected CCTimeBasedGameMode(
             CandidateCrush game,
             Stage stage,
-            GameModeConfig config) {
-        super(game, stage, config);
+            GameModeConfig config, ILevelSet levelSet) {
+        super(game, stage, config, levelSet);
         this.t = 0.0;
     }
 

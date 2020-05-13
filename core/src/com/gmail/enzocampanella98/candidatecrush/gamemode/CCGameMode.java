@@ -14,17 +14,20 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BadBoardInitializer;
+import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.board.Board;
 import com.gmail.enzocampanella98.candidatecrush.board.Crush;
 import com.gmail.enzocampanella98.candidatecrush.board.GoodBoardAnalyzer;
 import com.gmail.enzocampanella98.candidatecrush.board.IOnCrushListener;
 import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockColorMapFactory;
 import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBoardAnalyzer;
 import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.IBoardInitializer;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
+import com.gmail.enzocampanella98.candidatecrush.level.ILevelSet;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.ScoringSystem;
 import com.gmail.enzocampanella98.candidatecrush.screens.HUD;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
@@ -32,18 +35,32 @@ import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
 import com.gmail.enzocampanella98.candidatecrush.sound.IMusicHandler;
 import com.gmail.enzocampanella98.candidatecrush.tools.Methods;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
+import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.colorFromRGB;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getGameVal;
 
 
 public abstract class CCGameMode implements Disposable, IOnCrushListener {
     private static final String BG_PATH = "data/img/general/screen_bg_votetarget.png";
     private static final float DISPLAY_GAME_INFO_SEC = getGameVal(6f, 1f);
+
+    protected static List<Color> blockBgColors = new ArrayList<>(Arrays.asList(
+            colorFromRGB(245, 66, 66),  // red
+            colorFromRGB(188, 66, 245), // purple
+            colorFromRGB(66, 245, 239), // cyan
+            colorFromRGB(66, 245, 102), // green
+//            colorFromRGB(224, 245, 66), // yellow
+            colorFromRGB(245, 179, 66) // orange
+    ));
 
     protected final CCSoundBank soundBank;
 
@@ -67,10 +84,12 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
     protected IBoardAnalyzer boardAnalyzer;
     protected IBoardInitializer boardInitializer;
     protected GameModeConfig config;
+    protected ILevelSet levelSet;
 
     protected CCGameMode(CandidateCrush game,
                          Stage stage,
-                         GameModeConfig config) {
+                         GameModeConfig config,
+                         ILevelSet levelSet) {
         this.game = game;
         this.stage = stage;
         this.boardInitializer = new BadBoardInitializer();
@@ -79,8 +98,15 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
         this.latestCrushes = new LinkedList<>();
         this.fontCache = new FontCache(new FontGenerator(Color.WHITE));
         this.config = config;
+        this.levelSet = levelSet;
 
         this.soundBank = CCSoundBank.getInstance();
+    }
+
+    protected static Map<BlockType, Color> getBlockColorMap(boolean isHardMode, List<BlockType> blockTypes) {
+        return isHardMode
+                ? new HashMap<BlockType, Color>()
+                : BlockColorMapFactory.getRandomBlockColorProvider(blockTypes, blockBgColors);
     }
 
     // override to set custom background texture
@@ -135,9 +161,15 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
     }
 
     private void startBackgroundMusic() {
-        soundBank.bgMusic1.setLooping(true);
-        soundBank.bgMusic1.setVolume(0.2f);
-        musicHandler.setBackgroundMusic(soundBank.bgMusic1);
+        Music bgMusic;
+        if (config.levelSet.equals(ILevelSet.LS_OAK)) {
+            bgMusic = soundBank.bgMusic1;
+        } else {
+            bgMusic = soundBank.bgMusic1;
+        }
+        bgMusic.setLooping(true);
+        bgMusic.setVolume(0.2f);
+        musicHandler.setBackgroundMusic(bgMusic);
         musicHandler.playBackgroundMusic();
     }
 
@@ -149,9 +181,17 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
     public Music getGameEndedMusic() {
         Music music;
         if (wonGame()) {
-            music = soundBank.winMusic;
+            if (config.levelSet.equals(ILevelSet.LS_OAK)) {
+                music = soundBank.winMusic;
+            } else {
+                music = soundBank.winMusic;
+            }
         } else {
-            music = soundBank.loseMusic;
+            if (config.levelSet.equals(ILevelSet.LS_OAK)) {
+                music = soundBank.loseMusic;
+            } else {
+                music = soundBank.loseMusic;
+            }
         }
         music.setLooping(true);
         return music;
@@ -256,6 +296,10 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
 
     public CandidateCrush getGame() {
         return game;
+    }
+
+    public ILevelSet getLevelSet() {
+        return levelSet;
     }
 
     private Label getCrushVoteLabelWithAnimation(SimpleBlockGroup group, boolean wasUserInvoked) {

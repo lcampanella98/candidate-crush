@@ -6,13 +6,10 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.Disposable;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
-import com.gmail.enzocampanella98.candidatecrush.level.LevelFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CCSoundBank implements Disposable {
     // singleton class to keep track of all sounds
@@ -166,9 +163,6 @@ public class CCSoundBank implements Disposable {
 
     private static CCSoundBank instance = new CCSoundBank();
 
-    // custom DS
-    public final Map<Integer, List<SoundByte>> soundbyteTiers;
-
     // sound accessors
     public final List<SoundByte> allSoundBytes;
     public final Sound popSound;
@@ -182,22 +176,6 @@ public class CCSoundBank implements Disposable {
         for (String name : SOUNDBYTE_NAMES) {
             allSoundBytes.add(new SoundByte(SOUND_BYTE_DIR + name));
         }
-        soundbyteTiers = new HashMap<>();
-        for (BlockType candidate : BlockType.values()) {
-            List<SoundByte> cSounds = soundBytesOfCandidate(candidate);
-            int endTier = LevelFactory.NUM_TIERS - 1;
-            for (int tier = 1; tier <= endTier; ++tier) {
-                if (!soundbyteTiers.containsKey(tier)) {
-                    soundbyteTiers.put(tier, new ArrayList<SoundByte>());
-                }
-                for (int idx = (tier-1)*cSounds.size()/endTier;
-                        idx < (tier)*cSounds.size()/endTier;
-                        ++idx) {
-                    soundbyteTiers.get(tier).add(cSounds.get(idx));
-                }
-            }
-        }
-        soundbyteTiers.put(LevelFactory.NUM_TIERS, allSoundBytes); // last tier contains all bytes
 
         popSound = Gdx.audio.newSound(Gdx.files.internal(POP_SOUND_PATH));
         stampSound = Gdx.audio.newSound(Gdx.files.internal(STAMP_SOUND_PATH));
@@ -206,7 +184,7 @@ public class CCSoundBank implements Disposable {
         loseMusic = Gdx.audio.newMusic(Gdx.files.internal(LOSE_MUSIC_PATH));
     }
 
-    private List<SoundByte> soundBytesOfCandidate(BlockType candidate) {
+    public List<SoundByte> soundBytesOfCandidate(BlockType candidate) {
         List<SoundByte> result = new ArrayList<>();
         for (SoundByte b : allSoundBytes) {
             if (b.getLastname().equals(candidate.getLname())) {

@@ -6,16 +6,13 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Base64Coder;
 import com.badlogic.gdx.utils.Json;
-import com.gmail.enzocampanella98.candidatecrush.level.LevelFactory;
+import com.gmail.enzocampanella98.candidatecrush.level.ILevelSet;
+import com.gmail.enzocampanella98.candidatecrush.level.OakBaesLevelSet;
 import com.gmail.enzocampanella98.candidatecrush.screens.MenuScreen;
 import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
 import com.gmail.enzocampanella98.candidatecrush.tools.Hasher;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
 public class CandidateCrush extends Game {
 
@@ -41,12 +38,11 @@ public class CandidateCrush extends Game {
     public void create() {
         V_HEIGHT = Math.round((int)(V_WIDTH * (((double)Gdx.graphics.getHeight()) / Gdx.graphics.getWidth())));
 
-
         CCSoundBank.getInstance();
         initializeGameData();
         batch = new SpriteBatch();
         setScreen(new MenuScreen(this));
-        LevelFactory.printLevels();
+
     }
 
     public static float scaled(float n) {
@@ -115,8 +111,11 @@ public class CandidateCrush extends Game {
                 Base64Coder.decodeString(gameDataFileHandle.readString()));
     }
 
-    public boolean isHardModeUnlocked() {
-        return gameData.getMaxBeatenLevel() >= LevelFactory.NUM_LEVELS;
+    public boolean isHardModeUnlocked(ILevelSet levelSet) {
+        if (levelSet instanceof OakBaesLevelSet) {
+            return gameData.getMaxBeatenOakBaesLevel() >= levelSet.getNumLevels();
+        }
+        return gameData.getMaxBeatenLevel() >= levelSet.getNumLevels();
     }
 
     public boolean isOakBaesUnlocked() {
@@ -151,28 +150,10 @@ public class CandidateCrush extends Game {
                 (inHardMode ? gameData.getMaxBeatenLevelHardMode() : gameData.getMaxBeatenLevel());
     }
 
-    public Collection<String> getNewlyBeatenLevelUnlocks(int levelBeaten, boolean inHardMode) {
-        List<String> lines = new ArrayList<>();
-        if (levelBeaten == LevelFactory.NUM_LEVELS) {
-            if (inHardMode) {
-                lines.addAll(Arrays.asList(
-                        "Congratulations!",
-                        "You're a career politician!"
-                ));
-            } else {
-                lines.addAll(Arrays.asList(
-                        "Congratulations!",
-                        "You've beaten the game!",
-                        "Hard mode unlocked"
-                ));
-            }
-        } else {
-            lines.add("Level " + (levelBeaten+1) + " unlocked!");
-            if (LevelFactory.increaseTierLevels.contains(levelBeaten+1)) {
-                lines.add("New sound-bytes unlocked!");
-            }
+    public static void printLevels(ILevelSet ls) {
+        for (int i = 1; i <= ls.getNumLevels(); i++) {
+            System.out.println(ls.getLevel(i));
         }
-        return lines;
     }
 
     @Override

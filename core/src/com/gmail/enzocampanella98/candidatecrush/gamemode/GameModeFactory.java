@@ -1,36 +1,23 @@
 package com.gmail.enzocampanella98.candidatecrush.gamemode;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
-import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockColorMapFactory;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
-import com.gmail.enzocampanella98.candidatecrush.level.GameModeType;
+import com.gmail.enzocampanella98.candidatecrush.level.ILevelSet;
 import com.gmail.enzocampanella98.candidatecrush.level.LevelBuilder;
-import com.gmail.enzocampanella98.candidatecrush.level.LevelFactory;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.colorFromRGB;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.firstToUpper;
 import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getGameVal;
 
 public class GameModeFactory {
-    public static List<Color> blockBgColors = new ArrayList<>(Arrays.asList(
-            colorFromRGB(245, 66, 66),  // red
-            colorFromRGB(188, 66, 245), // purple
-            colorFromRGB(66, 245, 239), // cyan
-            colorFromRGB(66, 245, 102), // green
-//            colorFromRGB(224, 245, 66), // yellow
-            colorFromRGB(245, 179, 66) // orange
-    ));
 
     private final CandidateCrush game;
 
@@ -38,21 +25,21 @@ public class GameModeFactory {
         this.game = game;
     }
 
-    public CCGameMode getGameMode(Stage stage, GameModeConfig config) {
+    public CCGameMode getGameMode(Stage stage, GameModeConfig config, ILevelSet levelSet) {
         switch (config.gameModeType) {
             case SOUND_BYTE:
-                return getTimedSoundByteTargetGameMode(stage, config);
+                return getTimedSoundByteTargetGameMode(stage, config, levelSet);
             case MOVE_LIMIT:
-                return getMoveLimitVoteTargetGameMode(stage, config);
+                return getMoveLimitVoteTargetGameMode(stage, config, levelSet);
             case PRIMARY:
-                return getDemocratPrimary2020GameMode(stage, config);
+                return getDemocratPrimary2020GameMode(stage, config, levelSet);
             case ELECTION:
-                return getElection2020GameMode(stage, config);
+                return getElection2020GameMode(stage, config, levelSet);
         }
         return null;
     }
 
-    public RaceGameMode getDemocratPrimary2020GameMode(Stage stage, GameModeConfig config) {
+    public RaceGameMode getDemocratPrimary2020GameMode(Stage stage, GameModeConfig config, ILevelSet levelSet) {
         double playerBlockFreqAdvantage = 0.1;
         List<NamedCandidateGroup> groups = new ArrayList<>();
         NamedCandidateGroup playerGroup = null;
@@ -77,31 +64,32 @@ public class GameModeFactory {
 
         config.numMoves = getGameVal(config.numMoves, 5);
 
-        return new RaceGameMode(game, stage, groups, playerGroup, freqMap, config);
+        return new RaceGameMode(game, stage, groups, playerGroup, freqMap, config, levelSet);
     }
 
-    public TimedVoteTargetGameMode getTimedVoteTargetGameMode(Stage stage, GameModeConfig config) {
+    public TimedVoteTargetGameMode getTimedVoteTargetGameMode(Stage stage, GameModeConfig config, ILevelSet levelSet) {
         config.gameLength = getGameVal(config.gameLength, 30);
         config.targetScore = getGameVal(config.targetScore, 2000);
-        return new TimedVoteTargetGameMode(game, stage, config);
+        return new TimedVoteTargetGameMode(game, stage, config, levelSet);
     }
 
-    public TimedSoundByteTargetGameMode getTimedSoundByteTargetGameMode(Stage stage, GameModeConfig config) {
+    public TimedSoundByteTargetGameMode getTimedSoundByteTargetGameMode(Stage stage, GameModeConfig config, ILevelSet levelSet) {
         config.showCrushLabels = false;
         config.singleBlockDropTime = 0.15f;
         config.gameLength = getGameVal(config.gameLength, 30);
         config.targetNumSoundBytes = getGameVal(config.targetNumSoundBytes, 2);
-        return new TimedSoundByteTargetGameMode(game, stage, config);
+        return new TimedSoundByteTargetGameMode(game, stage, config, levelSet);
     }
 
-    public MoveLimitVoteTargetGameMode getMoveLimitVoteTargetGameMode(Stage stage, GameModeConfig config) {
+    public MoveLimitVoteTargetGameMode getMoveLimitVoteTargetGameMode(Stage stage, GameModeConfig config, ILevelSet levelSet) {
         config.numMoves = getGameVal(config.numMoves, 1);
         config.targetScore = getGameVal(config.targetScore, 100);
-        return new MoveLimitVoteTargetGameMode(game, stage, config);
+        return new MoveLimitVoteTargetGameMode(game, stage, config, levelSet);
     }
 
     public RaceGameMode getElection2020GameMode(Stage stage,
-                                                GameModeConfig config) {
+                                                GameModeConfig config,
+                                                ILevelSet levelSet) {
         double trumpBlockFreq = 0.4;
         List<NamedCandidateGroup> groups = new ArrayList<>();
         NamedCandidateGroup playerGroup;
@@ -127,12 +115,7 @@ public class GameModeFactory {
         playerGroup = config.playerParty == 'D' ? demGroup : repGroup;
 
         config.numMoves = getGameVal(config.numMoves, 3);
-        return new RaceGameMode(game, stage, groups, playerGroup, freqs, config);
+        return new RaceGameMode(game, stage, groups, playerGroup, freqs, config, levelSet);
     }
 
-    static Map<BlockType, Color> getBlockColorMap(boolean isHardMode, List<BlockType> blockTypes) {
-        return isHardMode
-                ? new HashMap<BlockType, Color>()
-                : BlockColorMapFactory.getRandomBlockColorProvider(blockTypes, blockBgColors);
-    }
 }

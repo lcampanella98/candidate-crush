@@ -31,19 +31,19 @@ import com.gmail.enzocampanella98.candidatecrush.fonts.FontCache;
 import com.gmail.enzocampanella98.candidatecrush.fonts.FontGenerator;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeFactory;
+import com.gmail.enzocampanella98.candidatecrush.level.ILevelSet;
 import com.gmail.enzocampanella98.candidatecrush.level.Level;
-import com.gmail.enzocampanella98.candidatecrush.level.LevelFactory;
+import com.gmail.enzocampanella98.candidatecrush.level.NormalLevelSet;
+import com.gmail.enzocampanella98.candidatecrush.level.OakBaesLevelSet;
 import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.LG;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.SM;
-import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.XL;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.fontSize;
 
 /**
@@ -58,7 +58,6 @@ public class MenuScreen implements Screen {
     private final CCButtonFactory buttonFactory;
     private final FontCache fontCache;
     private final GameModeFactory gameModeFactory;
-    private final LevelFactory levelFactory;
 
     private Viewport viewport;
     private OrthographicCamera cam;
@@ -78,14 +77,15 @@ public class MenuScreen implements Screen {
 
     private List<LevelButton> levelButtons;
 
-    private String levelSet;
+    private ILevelSet levelSet;
 
     public MenuScreen(final CandidateCrush game) {
         this.game = game;
         fontCache = new FontCache(new FontGenerator(2, Color.WHITE));
         buttonFactory = new CCButtonFactory(fontCache);
         gameModeFactory = new GameModeFactory(game);
-        levelFactory = new LevelFactory();
+        levelSet = new NormalLevelSet(); // initialize levelset to normal
+
 
         // init cam
         cam = new OrthographicCamera(V_WIDTH, CandidateCrush.V_HEIGHT);
@@ -123,16 +123,22 @@ public class MenuScreen implements Screen {
         Table optionButtonTable = new Table();
 
         initOakBaesButton();
-        optionButtonTable.add(btnOakBaes).left().width(400f).height(btnOakBaes.scaledHeight(400f)).pad(0, 0, 50, 30);
+        optionButtonTable.add(btnOakBaes)
+                .left()
+                .width(400f)
+                .height(btnOakBaes.scaledHeight(400f))
+                .pad(0, 0, 50, 30);
 
         initHardModeButton();
-        optionButtonTable.add(btnHardMode).right().width(400f).height(btnHardMode.scaledHeight(400f)).pad(0, 30, 50, 0);
+        optionButtonTable
+                .add(btnHardMode).right()
+                .width(400f)
+                .height(btnHardMode.scaledHeight(400f))
+                .pad(0, 30, 50, 0);
 
         table.add(optionButtonTable).right().width(V_WIDTH);
 
         table.row();
-
-        levelSet = LevelFactory.LS_NORMAL;
 
         // init level buttons
         initLevelButtons();
@@ -165,9 +171,16 @@ public class MenuScreen implements Screen {
     }
 
     private void scrollToNextLevel() {
-        int levelToScroll = isHardModeSelected()
-                ? Math.min(game.gameData.getMaxBeatenLevelHardMode() + 1, LevelFactory.NUM_LEVELS)
-                : Math.min(game.gameData.getMaxBeatenLevel() + 1, LevelFactory.NUM_LEVELS);
+        int levelToScroll;
+        if (levelSet instanceof OakBaesLevelSet) {
+            levelToScroll = isHardModeSelected()
+                    ? Math.min(game.gameData.getMaxBeatenOakBaesLevelHardMode() + 1, levelSet.getNumLevels())
+                    : Math.min(game.gameData.getMaxBeatenOakBaesLevel() + 1, levelSet.getNumLevels());
+        } else {
+            levelToScroll = isHardModeSelected()
+                    ? Math.min(game.gameData.getMaxBeatenLevelHardMode() + 1, levelSet.getNumLevels())
+                    : Math.min(game.gameData.getMaxBeatenLevel() + 1, levelSet.getNumLevels());
+        }
         levelScrollPane.setScrollX(getButtonXInScrollPane(levelToScroll));
     }
 
@@ -199,7 +212,10 @@ public class MenuScreen implements Screen {
                     level.config.isHardMode = isHardModeSelected();
 
                     dispose();
-                    CCGameMode gameMode = gameModeFactory.getGameMode(playScreen.playStage, level.config);
+                    CCGameMode gameMode = gameModeFactory.getGameMode(
+                            playScreen.playStage,
+                            level.config,
+                            levelSet);
                     playScreen.setGameMode(gameMode);
                     game.setScreen(playScreen);
                 }
@@ -235,7 +251,7 @@ public class MenuScreen implements Screen {
     }
 
     private boolean isLevelUnlockedInCurrentMode(int lvl) {
-        if (levelSet.equals(LevelFactory.LS_OAK)) {
+        if (levelSet instanceof OakBaesLevelSet) {
             return isHardModeSelected()
                     ? lvl <= game.gameData.getMaxBeatenOakBaesLevelHardMode() + 1
                     : lvl <= game.gameData.getMaxBeatenOakBaesLevel() + 1;
@@ -250,9 +266,8 @@ public class MenuScreen implements Screen {
         levelButtons = new ArrayList<>();
         levelTable.clearChildren();
 
-        for (int lvlNum = 1; lvlNum <= LevelFactory.getNumLevels(levelSet); ++lvlNum) {
-            Level level = levelFactory.getLevel(lvlNum,
-                    isOakBaesSelected() ? LevelFactory.LS_OAK : LevelFactory.LS_NORMAL);
+        for (int lvlNum = 1; lvlNum <= levelSet.getNumLevels(); ++lvlNum) {
+            Level level = levelSet.getLevel(lvlNum);
             LevelButton btn = buttonFactory.getLevelButton(
                     level, fontSize(MD),
                     isLevelUnlockedInCurrentMode(lvlNum)
@@ -278,7 +293,7 @@ public class MenuScreen implements Screen {
         float w = 400f;
         for (LevelButton btn : levelButtons) {
             float padLeft = btn.getLevel().getLevelNumber() == 1 ? getInitialLevelButtonPad() : 0f;
-            float padRight = btn.getLevel().getLevelNumber() == LevelFactory.getNumLevels(levelSet) ? getInitialLevelButtonPad() : levelButtonPadRight;
+            float padRight = btn.getLevel().getLevelNumber() == levelSet.getNumLevels() ? getInitialLevelButtonPad() : levelButtonPadRight;
             Table subTable = new Table();
             String msg;
             if (btn.getLevel().isElection() || btn.getLevel().isPrimary()) {
@@ -323,7 +338,7 @@ public class MenuScreen implements Screen {
                 }
             });
         }
-        //btnHardMode.setVisible(game.isHardModeUnlocked());
+        btnHardMode.setVisible(game.isHardModeUnlocked(levelSet));
     }
 
 
@@ -342,7 +357,7 @@ public class MenuScreen implements Screen {
                 }
             });
         }
-        //btnOakBaes.setVisible(game.isOakBaesUnlocked());
+        btnOakBaes.setVisible(game.isOakBaesUnlocked());
     }
 
     private boolean isOakBaesSelected() {
