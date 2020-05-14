@@ -23,9 +23,10 @@ public class GameModeConfig {
     public double nonUserInvokedCrushScale;
     public List<BlockType> candidates;
 
-    // used for elections
+    // used for elections in oak baes level set
     public NamedCandidateGroup electionGroup1;
     public NamedCandidateGroup electionGroup2;
+    public String electionPlayerGroupName;
 
     public int levelNum;
     public Collection<GameInstructionRow> instructionRows;

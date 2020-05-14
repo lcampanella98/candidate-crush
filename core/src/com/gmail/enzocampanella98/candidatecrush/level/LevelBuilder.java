@@ -58,6 +58,7 @@ public class LevelBuilder {
     private BlockType exampleSoundByteBlock;
     private NamedCandidateGroup electionGroup1;
     private NamedCandidateGroup electionGroup2;
+    private String electionPlayerGroupName;
 
     public LevelBuilder(String levelSetName, int levelNum,
                         int soundTier, BlockType exampleSoundByteBlock) {
@@ -82,9 +83,10 @@ public class LevelBuilder {
         return this;
     }
 
-    public LevelBuilder withElectionGroups(NamedCandidateGroup electionGroup1, NamedCandidateGroup electionGroup2) {
+    public LevelBuilder withElectionGroups(NamedCandidateGroup electionGroup1, NamedCandidateGroup electionGroup2, String electionPlayerGroupName) {
         this.electionGroup1 = electionGroup1;
         this.electionGroup2 = electionGroup2;
+        this.electionPlayerGroupName = electionPlayerGroupName;
         return this;
     }
 
@@ -135,6 +137,7 @@ public class LevelBuilder {
                 config.candidates.addAll(electionGroup2.getCandidates());
                 config.electionGroup1 = electionGroup1;
                 config.electionGroup2 = electionGroup2;
+                config.electionPlayerGroupName = electionPlayerGroupName;
             } else {
                 if (gameModeType == PRIMARY) {
                     config.candidates = getDemCandidates2020();

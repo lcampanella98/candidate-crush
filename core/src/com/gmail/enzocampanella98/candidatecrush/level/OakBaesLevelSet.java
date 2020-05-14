@@ -13,7 +13,7 @@ import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.*;
 
 public class OakBaesLevelSet implements ILevelSet {
 
-    private static final int NUM_LEVELS = 14;
+    private static final int NUM_LEVELS = 22;
 
     @Override
     public List<Integer> getTierIncreaseLevels() {
@@ -152,7 +152,8 @@ public class OakBaesLevelSet implements ILevelSet {
                         .difficulty(0)
                         .withElectionGroups(
                                 new NamedCandidateGroup(Arrays.asList(KOZAN, LOMUSCIO, MORGAN, GHATTAS), "Girls", "Girls"),
-                                new NamedCandidateGroup(Arrays.asList(CAMPANELLA, YOUNG, DAUDELIN, MEZA), "Boys", "Boys")
+                                new NamedCandidateGroup(Arrays.asList(CAMPANELLA, YOUNG, DAUDELIN, MEZA), "Boys", "Boys"),
+                                "Girls"
                         );
                 break;
             case 22:
@@ -223,7 +224,8 @@ public class OakBaesLevelSet implements ILevelSet {
                 String.format("You have %s,", SPIKEBALL.getFriendlyName()),
                 String.format("%s,", QUESADILLA.getFriendlyName()),
                 String.format("%s,", TURKEY),
-                String.format("and %s", PUMPKIN.getFriendlyName())
+                String.format("and %s", PUMPKIN.getFriendlyName()),
+                ""
         );
     }
 }
