@@ -350,6 +350,8 @@ public class MenuScreen implements Screen {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     Button btn = (Button) actor;
+                    levelSet = btn.isChecked() ? new OakBaesLevelSet() : new NormalLevelSet();
+                    initHardModeButton();
                     playStampIfChecked(btn.isChecked());
                     initLevelButtons();
                     scrollToNextLevel();
@@ -383,6 +385,8 @@ public class MenuScreen implements Screen {
         menuStage.draw();
     }
 
+    private boolean isGettingTextInput = false;
+
     private void handleInput(float delta) {
         if (Gdx.input.isTouched()) {
             Vector2 p = new Vector2(Gdx.input.getX(), Gdx.input.getY());
@@ -390,25 +394,35 @@ public class MenuScreen implements Screen {
                 int w = Gdx.graphics.getWidth(), h = Gdx.graphics.getHeight();
                 int targetWidth = Math.min(w / 8, h / 8);
                 if ((p.x >= w - targetWidth && p.x <= w)
-                        && (p.y >= 0 && p.y <= targetWidth)) {
-                    Gdx.input.getTextInput(new Input.TextInputListener() {
-                        @Override
-                        public void input(String text) {
-                            if (!game.isOakBaesUnlocked() && game.tryUnlockOakBaes(text)) {
-                                initOakBaesButton();
-                                // maybe play a fun sound?
-                            }
-                        }
-
-                        @Override
-                        public void canceled() {
-
-                        }
-                    }, "Enter Secret", "", "");
+                        && (p.y >= 0 && p.y <= targetWidth) && !isGettingTextInput) {
+                    showOakBaesPrompt("Enter Secret");
                 }
             }
 
         }
+    }
+
+    private void showOakBaesPrompt(String title) {
+        isGettingTextInput = true;
+        Gdx.input.getTextInput(new Input.TextInputListener() {
+            @Override
+            public void input(String text) {
+                if (!game.isOakBaesUnlocked()) {
+                    if (game.tryUnlockOakBaes(text)) {
+                        initOakBaesButton();
+                        // maybe play a fun sound?
+                    } else {
+                        showOakBaesPrompt("Incorrect Secret");
+                    }
+                }
+                isGettingTextInput = false;
+            }
+
+            @Override
+            public void canceled() {
+                isGettingTextInput = false;
+            }
+        }, title, "", "");
     }
 
     @Override

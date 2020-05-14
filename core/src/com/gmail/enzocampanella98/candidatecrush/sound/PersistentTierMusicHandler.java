@@ -29,6 +29,11 @@ public class PersistentTierMusicHandler extends MusicHandler {
     public SoundByte getNextSoundByte(BlockType type, CrushType crushType) {
         repopulateCandidateIfNecessary(type.getLname());
         List<SoundByte> sounds = soundsLeft.get(tier).get(type.getLname());
+
+        if (sounds.size() == 0) {
+            return null;
+        }
+
         int randIdx = rand.nextInt(sounds.size());
         SoundByte sound = sounds.get(randIdx);
         sounds.remove(randIdx);
@@ -51,12 +56,16 @@ public class PersistentTierMusicHandler extends MusicHandler {
         ObjectMap<Integer, ObjectMap<String, List<SoundByte>>> soundsLeft = new ObjectMap<>();
         for (int soundTier = 1; soundTier <= numTiers; ++soundTier) {
             ObjectMap<String, List<SoundByte>> soundsByCandidate = new ObjectMap<>();
+            for (BlockType candidate : BlockType.values()) {
+                soundsByCandidate.put(candidate.getLname(), new ArrayList<SoundByte>());
+            }
             for (SoundByte sound : soundbyteTiers.get(soundTier)) {
                 String name = sound.getLastname();
-                if (!soundsByCandidate.containsKey(name)) {
-                    soundsByCandidate.put(name, new ArrayList<SoundByte>());
+                if (soundsByCandidate.containsKey(name)) {
+                    soundsByCandidate.get(name).add(sound);
+                } else {
+                    System.out.println("bad juju up in heea");
                 }
-                soundsByCandidate.get(name).add(sound);
             }
             soundsLeft.put(soundTier, soundsByCandidate);
         }

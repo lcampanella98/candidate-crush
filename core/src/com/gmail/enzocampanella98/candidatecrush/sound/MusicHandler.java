@@ -68,6 +68,9 @@ public abstract class MusicHandler implements IMusicHandler, Music.OnCompletionL
     @Override
     public void queueSoundByte(BlockType type, CrushType crushType) {
         SoundByte next = getNextSoundByte(type, crushType);
+        if (next == null) {
+            return;
+        }
         Music music = next.getNewMusic();
         music.setOnCompletionListener(this);
         music.setLooping(false);
