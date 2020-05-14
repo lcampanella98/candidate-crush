@@ -5,6 +5,7 @@ import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockConfig;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInstructionRow;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushVals;
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,12 +54,17 @@ public class LevelBuilder {
     private BlockType primaryCandidate;
     private BlockType exceptCandidate;
     private List<BlockType> withCandidates;
+    private Collection<String> customInstructionRows;
+    private BlockType exampleSoundByteBlock;
+    private NamedCandidateGroup electionGroup1;
+    private NamedCandidateGroup electionGroup2;
 
     public LevelBuilder(String levelSetName, int levelNum,
-                        int soundTier) {
+                        int soundTier, BlockType exampleSoundByteBlock) {
         this.levelSetName = levelSetName;
         this.levelNum = levelNum;
         this.soundTier = soundTier;
+        this.exampleSoundByteBlock = exampleSoundByteBlock;
     }
 
     public LevelBuilder gameModeType(GameModeType gameModeType) {
@@ -73,6 +79,17 @@ public class LevelBuilder {
 
     public LevelBuilder withCandidates(List<BlockType> candidates) {
         this.withCandidates = candidates;
+        return this;
+    }
+
+    public LevelBuilder withElectionGroups(NamedCandidateGroup electionGroup1, NamedCandidateGroup electionGroup2) {
+        this.electionGroup1 = electionGroup1;
+        this.electionGroup2 = electionGroup2;
+        return this;
+    }
+
+    public LevelBuilder withCustomInstructions(Collection<String> customInstructionRows) {
+        this.customInstructionRows = customInstructionRows;
         return this;
     }
 
@@ -112,13 +129,21 @@ public class LevelBuilder {
         if (withCandidates != null) {
             config.candidates = withCandidates;
         } else {
-            if (gameModeType == PRIMARY) {
-                config.candidates = getDemCandidates2020();
+            if (gameModeType == ELECTION && electionGroup1 != null && electionGroup2 != null) {
+                config.candidates = new ArrayList<>();
+                config.candidates.addAll(electionGroup1.getCandidates());
+                config.candidates.addAll(electionGroup2.getCandidates());
+                config.electionGroup1 = electionGroup1;
+                config.electionGroup2 = electionGroup2;
             } else {
-                config.candidates = getCandidates2020();
-            }
-            if (exceptCandidate != null) {
-                config.candidates.remove(exceptCandidate);
+                if (gameModeType == PRIMARY) {
+                    config.candidates = getDemCandidates2020();
+                } else {
+                    config.candidates = getCandidates2020();
+                }
+                if (exceptCandidate != null) {
+                    config.candidates.remove(exceptCandidate);
+                }
             }
         }
 
@@ -126,7 +151,19 @@ public class LevelBuilder {
         config.primaryPlayer = primaryCandidate;
 
         setGameModeParams(config);
-        config.instructionRows = getGameInstructions(config);
+
+        // add game instructions
+        config.instructionRows = new ArrayList<>();
+        if (customInstructionRows != null) {
+            for (String line :
+                    customInstructionRows) {
+                config.instructionRows.add(new GameInstructionRow(line));
+            }
+        }
+        Collection<GameInstructionRow> gameInstructions = getGameInstructions(config);
+        if (gameInstructions != null) {
+            config.instructionRows.addAll(gameInstructions);
+        }
 
         return new Level(config, null, isElection, isPrimary, levelNum, levelSetName);
     }
@@ -198,10 +235,10 @@ public class LevelBuilder {
                 .build();
     }
 
-    public static Collection<GameInstructionRow> getGameInstructions(GameModeConfig config) {
+    private Collection<GameInstructionRow> getGameInstructions(GameModeConfig config) {
         switch (config.gameModeType) {
             case SOUND_BYTE:
-                return getTimedSoundByteInstructions(config);
+                return getTimedSoundByteInstructions(config, exampleSoundByteBlock);
             case MOVE_LIMIT:
                 return getMoveLimitInstructions(config);
             case PRIMARY:
@@ -211,63 +248,50 @@ public class LevelBuilder {
         }
         return null;
     }
-/*
 
-    public static Collection<String> getTimedVoteInstructions(GameModeConfig config) {
-        return getTimedVoteInstructions(config.targetScore);
+    private Collection<GameInstructionRow> getTimedSoundByteInstructions(GameModeConfig config, BlockType example) {
+        return getTimedSoundByteInstructions(config.targetNumSoundBytes, example);
     }
 
-    public static Collection<String> getTimedVoteInstructions(int targetScore) {
-        return Arrays.asList(
-                "Reach " + scoreText(targetScore) + " votes",
-                "before time runs out!"
-        );
-    }
-*/
-
-    public static Collection<GameInstructionRow> getTimedSoundByteInstructions(GameModeConfig config) {
-        return getTimedSoundByteInstructions(config.targetNumSoundBytes);
-    }
-
-    public static Collection<GameInstructionRow> getTimedSoundByteInstructions(int targetNumSoundBytes) {
+    private Collection<GameInstructionRow> getTimedSoundByteInstructions(int targetNumSoundBytes, BlockType example) {
         return Arrays.asList(
                 new GameInstructionRow("Crush " + targetNumSoundBytes + " speaking candidates"),
-                new GameInstructionRow(new BlockConfig.Builder().withIsSoundbyteBlock(true).withType(BlockType.TRUMP).build()),
+                new GameInstructionRow(new BlockConfig.Builder().withIsSoundbyteBlock(true).withType(example).build()),
                 new GameInstructionRow("before time runs out. Act Fast!")
         );
     }
 
-    public static Collection<GameInstructionRow> getMoveLimitInstructions(GameModeConfig config) {
+    private Collection<GameInstructionRow> getMoveLimitInstructions(GameModeConfig config) {
         return getMoveLimitInstructions(config.numMoves, config.targetScore);
     }
 
-    public static Collection<GameInstructionRow> getMoveLimitInstructions(int numMoves, int targetScore) {
+    private Collection<GameInstructionRow> getMoveLimitInstructions(int numMoves, int targetScore) {
         return Arrays.asList(
                 new GameInstructionRow("You have " + numMoves + " moves"),
                 new GameInstructionRow("to reach " + scoreText(targetScore) + " votes!")
         );
     }
 
-    public static Collection<GameInstructionRow> getDemocratPrimaryInstructions(GameModeConfig config) {
+    private Collection<GameInstructionRow> getDemocratPrimaryInstructions(GameModeConfig config) {
         return getRaceInstructions(config.primaryPlayer.getFriendlyName(), config.numMoves);
     }
 
-    public static Collection<GameInstructionRow> getElectionInstructions(GameModeConfig config) {
+    private Collection<GameInstructionRow> getElectionInstructions(GameModeConfig config) {
         return getRaceInstructions(config.playerParty == 'D' ? DEMOCRAT_LONG_NAME : REPUBLICAN_LONG_NAME, config.numMoves);
     }
 
-    public static Collection<GameInstructionRow> getRaceInstructions(String playerName, int numMoves) {
+    private Collection<GameInstructionRow> getRaceInstructions(String playerName, int numMoves) {
         return Arrays.asList(
                 new GameInstructionRow("Help " + playerName + " get most votes"),
                 new GameInstructionRow("after " + numMoves + " moves!")
         );
     }
 
-    public static List<BlockType> getCandidates2020() {
+    private List<BlockType> getCandidates2020() {
         return new ArrayList<>(CANDIDATES_2020);
     }
 
-    public static List<BlockType> getDemCandidates2020() {
+    private List<BlockType> getDemCandidates2020() {
         return new ArrayList<>(DEM_CANDIDATES_2020);
     }
 

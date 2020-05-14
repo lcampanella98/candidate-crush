@@ -10,6 +10,7 @@ import java.util.List;
 import static com.gmail.enzocampanella98.candidatecrush.board.BlockType.BIDEN;
 import static com.gmail.enzocampanella98.candidatecrush.board.BlockType.BUTTIGIEG;
 import static com.gmail.enzocampanella98.candidatecrush.board.BlockType.SANDERS;
+import static com.gmail.enzocampanella98.candidatecrush.board.BlockType.TRUMP;
 import static com.gmail.enzocampanella98.candidatecrush.board.BlockType.WARREN;
 import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.ELECTION;
 import static com.gmail.enzocampanella98.candidatecrush.level.GameModeType.MOVE_LIMIT;
@@ -30,7 +31,7 @@ public class NormalLevelSet implements ILevelSet {
     @Override
     public Level getLevel(int levelNum) {
         int soundTier = getSoundTierOfLevel(levelNum);
-        LevelBuilder builder = new LevelBuilder(LS_NORMAL, levelNum, soundTier);
+        LevelBuilder builder = new LevelBuilder(LS_NORMAL, levelNum, soundTier, TRUMP);
         switch (levelNum) {
             case 1:
                 builder.gameModeType(SOUND_BYTE)

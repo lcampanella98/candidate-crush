@@ -4,6 +4,7 @@ import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInstructionRow;
 import com.gmail.enzocampanella98.candidatecrush.level.GameModeType;
 import com.gmail.enzocampanella98.candidatecrush.scoringsystem.CrushVals;
+import com.gmail.enzocampanella98.candidatecrush.scoringsystem.NamedCandidateGroup;
 
 import java.util.Collection;
 import java.util.List;
@@ -21,6 +22,11 @@ public class GameModeConfig {
     public double gameLength;
     public double nonUserInvokedCrushScale;
     public List<BlockType> candidates;
+
+    // used for elections
+    public NamedCandidateGroup electionGroup1;
+    public NamedCandidateGroup electionGroup2;
+
     public int levelNum;
     public Collection<GameInstructionRow> instructionRows;
     public int soundTier;

@@ -21,7 +21,13 @@ public enum BlockType {
     GHATTAS("ghattas", "Yasmine Ghattas"),
     KOZAN("kozan", "Natalie Kozan"),
     LOMUSCIO("lomuscio", "Samantha Lomuscio"),
-    MORGAN("morgan", "Sarah Morgan");
+    MORGAN("morgan", "Sarah Morgan"),
+
+    // the oak baes items
+    SPIKEBALL("spikeball", "A Spikeball"),
+    QUESADILLA("quesadilla", "A Quesadilla"),
+    TURKEY("turkey", "A Turkey"),
+    PUMPKIN("pumpkin", "Disguised Pumpkin");
 
     //MEZA("meza", "Daniel Meza"),
 

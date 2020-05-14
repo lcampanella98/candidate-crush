@@ -33,8 +33,10 @@ import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeFactory;
 import com.gmail.enzocampanella98.candidatecrush.level.ILevelSet;
 import com.gmail.enzocampanella98.candidatecrush.level.Level;
-import com.gmail.enzocampanella98.candidatecrush.level.NormalLevelSet;
 import com.gmail.enzocampanella98.candidatecrush.level.OakBaesLevelSet;
+import com.gmail.enzocampanella98.candidatecrush.levelset.LevelSetFactory;
+import com.gmail.enzocampanella98.candidatecrush.levelset.Normal2020LevelSetFactory;
+import com.gmail.enzocampanella98.candidatecrush.levelset.OakBaesLevelSetFactory;
 import com.gmail.enzocampanella98.candidatecrush.sound.CCSoundBank;
 
 import java.util.ArrayList;
@@ -45,6 +47,8 @@ import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.LG;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.MD;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.SM;
 import static com.gmail.enzocampanella98.candidatecrush.fonts.FontManager.fontSize;
+import static com.gmail.enzocampanella98.candidatecrush.level.ILevelSet.LS_NORMAL;
+import static com.gmail.enzocampanella98.candidatecrush.level.ILevelSet.LS_OAK;
 
 /**
  * Created by lorenzo on 9/5/2016.
@@ -57,7 +61,6 @@ public class MenuScreen implements Screen {
     private final Stage menuStage;
     private final CCButtonFactory buttonFactory;
     private final FontCache fontCache;
-    private final GameModeFactory gameModeFactory;
 
     private Viewport viewport;
     private OrthographicCamera cam;
@@ -77,15 +80,16 @@ public class MenuScreen implements Screen {
 
     private List<LevelButton> levelButtons;
 
+    private LevelSetFactory lsFactory;
+    private GameModeFactory gameModeFactory;
     private ILevelSet levelSet;
 
     public MenuScreen(final CandidateCrush game) {
         this.game = game;
         fontCache = new FontCache(new FontGenerator(2, Color.WHITE));
         buttonFactory = new CCButtonFactory(fontCache);
-        gameModeFactory = new GameModeFactory(game);
-        levelSet = new NormalLevelSet(); // initialize levelset to normal
 
+        setLevelSetType(LS_NORMAL); // set level set to the normal one
 
         // init cam
         cam = new OrthographicCamera(V_WIDTH, CandidateCrush.V_HEIGHT);
@@ -223,6 +227,18 @@ public class MenuScreen implements Screen {
         });
     }
 
+    private void setLevelSetType(String lsName) {
+        if (lsName.equals(LS_NORMAL)) {
+            lsFactory = new Normal2020LevelSetFactory(game);
+            gameModeFactory = lsFactory.getGameModeFactory();
+            levelSet = lsFactory.getLevelSet();
+        } else {
+            lsFactory = new OakBaesLevelSetFactory(game);
+            gameModeFactory = lsFactory.getGameModeFactory();
+            levelSet = lsFactory.getLevelSet();
+        }
+    }
+
     private LevelButton getSelectedLevelButton() {
         for (LevelButton btn :
                 levelButtons) {
@@ -350,7 +366,7 @@ public class MenuScreen implements Screen {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     Button btn = (Button) actor;
-                    levelSet = btn.isChecked() ? new OakBaesLevelSet() : new NormalLevelSet();
+                    setLevelSetType(btn.isChecked() ? LS_OAK : LS_NORMAL);
                     initHardModeButton();
                     playStampIfChecked(btn.isChecked());
                     initLevelButtons();

@@ -29,7 +29,7 @@ public class TimedSoundByteTargetGameMode extends CCTimeBasedGameMode {
     private PersistentTierMusicHandler tierMusicHandler;
     private BlockProvider myBlockProvider;
 
-    protected TimedSoundByteTargetGameMode(CandidateCrush game,
+    public TimedSoundByteTargetGameMode(CandidateCrush game,
                                            Stage stage,
                                            GameModeConfig config,
                                            ILevelSet levelSet) {
