@@ -54,12 +54,14 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
     private static final float DISPLAY_GAME_INFO_SEC = getGameVal(6f, 1f);
 
     protected static List<Color> blockBgColors = new ArrayList<>(Arrays.asList(
-            colorFromRGB(245, 66, 66),  // red
-            colorFromRGB(188, 66, 245), // purple
-            colorFromRGB(66, 245, 239), // cyan
-            colorFromRGB(66, 245, 102), // green
-//            colorFromRGB(224, 245, 66), // yellow
-            colorFromRGB(245, 179, 66) // orange
+            colorFromRGB(252, 107, 3),
+            colorFromRGB(252, 190, 3),
+            colorFromRGB(144, 252, 3),
+            colorFromRGB(3, 252, 211),
+            colorFromRGB(3, 211, 252),
+            colorFromRGB(3, 144, 252),
+            colorFromRGB(161, 3, 252),
+            colorFromRGB(252, 3, 244)
     ));
 
     protected final CCSoundBank soundBank;
@@ -175,7 +177,7 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
 
     public void returnToMenu() {
         game.disposeCurrentScreen();
-        game.setScreen(new MenuScreen(game));
+        game.setScreen(new MenuScreen(game, levelSet));
     }
 
     public Music getGameEndedMusic() {
@@ -231,12 +233,12 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
         if (isGameOver()) {
             board.pauseInput();
             if (!displayedGameEndMessage) {
-                boolean hasBeatenLevel = game.hasBeatenLevel(config.levelNum, config.isHardMode);
+                boolean hasBeatenLevel = game.hasBeatenLevel(levelSet, config.levelNum, config.isHardMode);
                 hud.showGameEndMessage(wonGame(), hasBeatenLevel);
                 displayedGameEndMessage = true;
 
                 if (wonGame()) {
-                    game.beatLevel(config.levelNum, config.isHardMode);
+                    game.beatLevel(levelSet, config.levelNum, config.isHardMode);
                 }
 
                 // play win/loss music

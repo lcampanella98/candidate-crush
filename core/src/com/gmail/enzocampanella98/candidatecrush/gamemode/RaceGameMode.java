@@ -55,6 +55,13 @@ public class RaceGameMode extends CCGameMode {
         this.groups = groups;
         this.playerGroup = playerGroup;
         this.blockFrequencies = blockFrequencies;
+
+        if (config.candidates == null || config.candidates.isEmpty()) {
+            config.candidates = new ArrayList<>();
+            for (NamedCandidateGroup grp : groups) {
+                config.candidates.addAll(grp.getCandidates());
+            }
+        }
     }
 
     @Override

@@ -33,6 +33,7 @@ import com.gmail.enzocampanella98.candidatecrush.gamemode.CCGameMode;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.GameModeFactory;
 import com.gmail.enzocampanella98.candidatecrush.level.ILevelSet;
 import com.gmail.enzocampanella98.candidatecrush.level.Level;
+import com.gmail.enzocampanella98.candidatecrush.level.NormalLevelSet;
 import com.gmail.enzocampanella98.candidatecrush.level.OakBaesLevelSet;
 import com.gmail.enzocampanella98.candidatecrush.levelset.LevelSetFactory;
 import com.gmail.enzocampanella98.candidatecrush.levelset.Normal2020LevelSetFactory;
@@ -85,11 +86,19 @@ public class MenuScreen implements Screen {
     private ILevelSet levelSet;
 
     public MenuScreen(final CandidateCrush game) {
+        this(game, null);
+    }
+
+    public MenuScreen(final CandidateCrush game, ILevelSet fromLevelSet) {
         this.game = game;
         fontCache = new FontCache(new FontGenerator(2, Color.WHITE));
         buttonFactory = new CCButtonFactory(fontCache);
 
-        setLevelSetType(LS_NORMAL); // set level set to the normal one
+        if (fromLevelSet == null || fromLevelSet instanceof NormalLevelSet) {
+            setLevelSetType(LS_NORMAL); // set level set to the normal one
+        } else if (fromLevelSet instanceof OakBaesLevelSet) {
+            setLevelSetType(LS_OAK);
+        }
 
         // init cam
         cam = new OrthographicCamera(V_WIDTH, CandidateCrush.V_HEIGHT);
@@ -175,7 +184,7 @@ public class MenuScreen implements Screen {
     }
 
     private void scrollToNextLevel() {
-        int levelToScroll;
+        final int levelToScroll;
         if (levelSet instanceof OakBaesLevelSet) {
             levelToScroll = isHardModeSelected()
                     ? Math.min(game.gameData.getMaxBeatenOakBaesLevelHardMode() + 1, levelSet.getNumLevels())
@@ -185,7 +194,17 @@ public class MenuScreen implements Screen {
                     ? Math.min(game.gameData.getMaxBeatenLevelHardMode() + 1, levelSet.getNumLevels())
                     : Math.min(game.gameData.getMaxBeatenLevel() + 1, levelSet.getNumLevels());
         }
-        levelScrollPane.setScrollX(getButtonXInScrollPane(levelToScroll));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(10);
+                    levelScrollPane.setScrollX(getButtonXInScrollPane(levelToScroll));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private void initPlayButton() {

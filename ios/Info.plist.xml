@@ -47,6 +47,6 @@
     <key>UIRequiresFullScreen</key>
     <string>YES</string>
     <key>MinimumOSVersion</key>
-    <string>7.0</string>
+    <string>8.0</string>
 </dict>
 </plist>

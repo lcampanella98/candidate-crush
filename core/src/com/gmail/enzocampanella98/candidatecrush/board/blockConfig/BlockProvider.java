@@ -9,11 +9,14 @@ import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.board.Block;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class BlockProvider implements IBlockProvider, Disposable {
+
+    private static final int COLOR_WIDTH = 256;
 
     private final IBlockTypeProvider blockTypeProvider;
     private final IIsSoundbyteBlockProvider isSoundByteBlockProvider;
@@ -37,11 +40,10 @@ public class BlockProvider implements IBlockProvider, Disposable {
 
         initColorMap();
 
-        candidateTextures = getCandidateTextures(blockTypes, false);
-        candidateTexturesWithSound = getCandidateTextures(blockTypes, true);
+        candidateTextures = getCandidateTextures(Arrays.asList(BlockType.values()), false);
+        candidateTexturesWithSound = getCandidateTextures(Arrays.asList(BlockType.values()), true);
 
-        int size = candidateTextures.values().next().getWidth(); // size of bg is size of candidate
-        backgroundTextures = getBgColorTextures(colorMap.values(), size);
+        backgroundTextures = getBgColorTextures(colorMap.values(), COLOR_WIDTH);
     }
 
     private void initColorMap() {

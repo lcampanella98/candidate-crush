@@ -19,7 +19,7 @@ public class CandidateCrush extends Game {
     public static int V_WIDTH = 1080, V_HEIGHT = 1920;
     public static final String TITLE = "Candidate Crush";
 
-    public static final boolean IS_TESTING_LEVELS = false;
+    public static final boolean IS_TESTING_LEVELS = true;
     public static final Integer START_LEVEL_OVERRIDE = null;
     public static final Integer START_LEVEL_HARD_MODE_OVERRIDE = null;
     public static final Boolean IS_OAK_BAES_UNLOCKED_OVERRIDE = null;
@@ -124,7 +124,7 @@ public class CandidateCrush extends Game {
 
     public boolean tryUnlockOakBaes(String key) {
         try {
-            if (Hasher.hash(key).equals("d966c9c066d1631d75efd8c97d7e73ca553d88651bfcc30511bd3e71705dd9b6")) {
+            if (Hasher.hash(key).equals("ec195a03e099d8ad8fc461742faa9354d7332c7d10ca2512d8306bab8f542274")) {
                 gameData.setOakBaesUnlocked(true);
                 saveData();
                 return true;
@@ -134,18 +134,31 @@ public class CandidateCrush extends Game {
         return false;
     }
 
-    public void beatLevel(int level, boolean inHardMode) {
-        if (hasBeatenLevel(level, inHardMode)) return;
+    public void beatLevel(ILevelSet levelSet, int level, boolean inHardMode) {
+        if (hasBeatenLevel(levelSet, level, inHardMode)) return;
 
-        if (inHardMode) {
-            gameData.setMaxBeatenLevelHardMode(level);
+        if (levelSet instanceof OakBaesLevelSet) {
+            if (inHardMode) {
+                gameData.setMaxBeatenOakBaesLevelHardMode(level);
+            } else {
+                gameData.setMaxBeatenOakBaesLevel(level);
+            }
         } else {
-            gameData.setMaxBeatenLevel(level);
+            if (inHardMode) {
+                gameData.setMaxBeatenLevelHardMode(level);
+            } else {
+                gameData.setMaxBeatenLevel(level);
+            }
         }
+
         saveData();
     }
 
-    public boolean hasBeatenLevel(int level, boolean inHardMode) {
+    public boolean hasBeatenLevel(ILevelSet levelSet, int level, boolean inHardMode) {
+        if (levelSet instanceof OakBaesLevelSet) {
+            return level<= (inHardMode ? gameData.getMaxBeatenOakBaesLevelHardMode()
+                    : gameData.getMaxBeatenOakBaesLevel());
+        }
         return level <=
                 (inHardMode ? gameData.getMaxBeatenLevelHardMode() : gameData.getMaxBeatenLevel());
     }

@@ -208,13 +208,17 @@ public class OakBaesLevelSet implements ILevelSet {
 
     @Override
     public Collection<BlockType> getUnlockedCandidates(int levelNum) {
+        int unlockIdx = levelNum - 1;
         List<BlockType> unlocksByLevel = Arrays.asList(
                 null, YOUNG, null, KOZAN, null, DAUDELIN, null, GHATTAS,
                 null, CAMPANELLA, null, LOMUSCIO, null, MORGAN, null, MEZA
         );
         List<BlockType> unlocks = new ArrayList<>();
-        if (levelNum < unlocksByLevel.size()) {
-            unlocks.add(unlocksByLevel.get(levelNum));
+        if (unlockIdx < unlocksByLevel.size()) {
+            BlockType unlock = unlocksByLevel.get(unlockIdx);
+            if (unlock != null) {
+                unlocks.add(unlock);
+            }
         }
         return unlocks;
     }

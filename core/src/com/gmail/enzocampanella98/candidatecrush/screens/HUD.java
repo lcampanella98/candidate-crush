@@ -199,7 +199,6 @@ public abstract class HUD implements Disposable {
             Label.LabelStyle infoStyle = new Label.LabelStyle(defaultFontCache.get(fontSize(SM)), Color.BLACK);
             int lvlNum = gameMode.getConfig().levelNum;
             boolean isHardMode = gameMode.getConfig().isHardMode;
-            String levelSet =gameMode.getConfig().levelSet;
 
             Collection<BlockType> unlockedCandidates = gameMode.getLevelSet().getUnlockedCandidates(lvlNum);
             float candWidth = 200f;

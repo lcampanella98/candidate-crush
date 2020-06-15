@@ -6,9 +6,9 @@ package com.gmail.enzocampanella98.candidatecrush.board;
 public enum BlockType {
 
     TRUMP("trump", "Donald Trump"),
-    CLINTON("clinton", "Hillary Clinton"),
+//    CLINTON("clinton", "Hillary Clinton"),
     SANDERS("sanders", "Bernie Sanders"),
-    CRUZ("cruz", "Ted Cruz"),
+//    CRUZ("cruz", "Ted Cruz"),
     BIDEN("biden", "Joe Biden"),
     WARREN("warren", "Elizabeth Warren"),
     BUTTIGIEG("buttigieg", "Pete Buttigieg"),
