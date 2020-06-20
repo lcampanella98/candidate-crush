@@ -152,6 +152,24 @@ public class CCSoundBank implements Disposable {
             "warren_5_wealth_tax_not_about_punishing.mp3",
             "warren_t_stop_manmade_crisis_at_border.mp3",
             "warren_3_muller_report.mp3",
+            "campanella_3_technically_bot.mp3",
+            "daudelin_3_lets_go.mp3",
+            "daudelin_3_spikeball_bot.mp3",
+            "ghattas_3_heck.mp3",
+            "ghattas_3_heck_bot.mp3",
+            "ghattas_3_yeet.mp3",
+            "ghattas_3_yeet_bot.mp3",
+            "kozan_3_oh_gosh.mp3",
+            "kozan_3_oh_gosh_bot.mp3",
+            "lomuscio_3_deek_a_da_da_bot.mp3",
+            "lomuscio_3_lit.mp3",
+            "lomuscio_3_lit_bot.mp3",
+            "meza_3_baby.mp3",
+            "meza_3_baby_bot.mp3",
+            "morgan_3_oh_snap.mp3",
+            "morgan_3_oh_snap_bot.mp3",
+            "young_3_wow.mp3",
+
     };
     public static final String SOUND_BYTE_DIR = "data/sounds/block_sounds/";
     public static final String POP_SOUND_PATH = "data/sounds/effects/pop_sound.mp3";
