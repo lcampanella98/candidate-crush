@@ -170,6 +170,10 @@ public class CCSoundBank implements Disposable {
             "morgan_3_oh_snap_bot.mp3",
             "young_3_wow.mp3",
 
+            "pumpkin_3_halloween.mp3",
+            "quesadilla_3_ramsey.mp3",
+            "spikeball_3_trump_spikeball.mp3",
+            "turkey_3_gobble_gobble.mp3",
     };
     public static final String SOUND_BYTE_DIR = "data/sounds/block_sounds/";
     public static final String POP_SOUND_PATH = "data/sounds/effects/pop_sound.mp3";
