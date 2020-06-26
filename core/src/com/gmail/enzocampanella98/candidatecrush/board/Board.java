@@ -288,8 +288,10 @@ public class Board extends Group implements Disposable {
             }
 
         }
+
         for (int col = 0; col < numCols; col++) {
             int crushedBlocksInCol = totalCrushedBlocksInCols[col];
+            // iterate from top to bottom (top row is the "n-1 th" row)
             for (int row = numRows - crushedBlocksInCol; row < numRows; row++) {
                 Block fillBlock = getNewBlock(row, col);
                 fillBlock.setVisible(false);
@@ -301,7 +303,7 @@ public class Board extends Group implements Disposable {
 
     public Block getNewBlock(int row, int col) {
         return blockProvider
-                .provide(row, col, getBlockPosition(row, col), blockSpacing, blockSpacing);
+                .provide(this, row, col, getBlockPosition(row, col), blockSpacing, blockSpacing);
     }
 
     private boolean doChildrenHaveActions() {
@@ -476,5 +478,9 @@ public class Board extends Group implements Disposable {
 
     public Block[][] getBlocks() {
         return blocks;
+    }
+
+    public void setBlocks(Block[][] blocks) {
+        this.blocks = blocks;
     }
 }

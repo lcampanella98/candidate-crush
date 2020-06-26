@@ -9,6 +9,7 @@ import com.gmail.enzocampanella98.candidatecrush.board.SimpleBlockGroup;
 import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.AlwaysFalseSoundByteBlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.BlockProvider;
 import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.EquallyRandomBlockTypeProvider;
+import com.gmail.enzocampanella98.candidatecrush.board.blockConfig.MinimalChainReactionBlockTypeProvider;
 import com.gmail.enzocampanella98.candidatecrush.customui.GameInfoBox;
 import com.gmail.enzocampanella98.candidatecrush.gamemode.config.GameModeConfig;
 import com.gmail.enzocampanella98.candidatecrush.level.ILevelSet;
@@ -50,7 +51,9 @@ public class MoveLimitVoteTargetGameMode extends CCGameMode {
         blockProvider = myBlockProvider = new BlockProvider(
                 config.candidates,
                 CCGameMode.getBlockColorMap(config.isHardMode, config.candidates),
-                new EquallyRandomBlockTypeProvider(config.candidates),
+                new MinimalChainReactionBlockTypeProvider(
+                        EquallyRandomBlockTypeProvider.equalFreqs(config.candidates)
+                ),
                 new AlwaysFalseSoundByteBlockProvider()
         );
     }

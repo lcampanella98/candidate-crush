@@ -11,7 +11,7 @@ public class EquallyRandomBlockTypeProvider extends FrequencyRandomBlockTypeProv
         super(equalFreqs(blockTypes));
     }
 
-    private static Map<BlockType, Double> equalFreqs(Collection<BlockType> blockTypes) {
+    public static Map<BlockType, Double> equalFreqs(Collection<BlockType> blockTypes) {
         Map<BlockType, Double> freqs = new HashMap<>();
         for (BlockType bt : blockTypes) {
             freqs.put(bt, 1.0 / blockTypes.size());

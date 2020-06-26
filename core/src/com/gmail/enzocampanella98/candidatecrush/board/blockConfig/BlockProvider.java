@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.gmail.enzocampanella98.candidatecrush.board.Block;
 import com.gmail.enzocampanella98.candidatecrush.board.BlockType;
+import com.gmail.enzocampanella98.candidatecrush.board.Board;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,10 +57,10 @@ public class BlockProvider implements IBlockProvider, Disposable {
     }
 
     @Override
-    public Block provide(int row, int col, Vector2 pos, float width, float height) {
+    public Block provide(Board board, int row, int col, Vector2 pos, float width, float height) {
         BlockConfig config = new BlockConfig();
 
-        config.setType(blockTypeProvider.provide());
+        config.setType(blockTypeProvider.provide(board.getBlocks(), row, col));
         config.setBackgroundColor(colorMap.get(config.getType()));
         config.setSoundByteBlock(isSoundByteBlockProvider.provide(config));
 

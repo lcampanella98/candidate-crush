@@ -8,6 +8,7 @@ public class BadBoardInitializer implements IBoardInitializer {
     public Block[][] getInitializedBlocks(Board board) {
         int n = board.getNumBlocksAcross();
         Block[][] blocks = new Block[n][n];
+        board.setBlocks(blocks);
         IBoardAnalyzer boardAnalyzer = board.getBoardAnalyzer();
         do {
             populateBoardWithProvider(blocks, board);
