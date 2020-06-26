@@ -180,7 +180,7 @@ public class CCSoundBank implements Disposable {
     public static final String BG_MUSIC_1_PATH = "data/sounds/music/star_spangled_banner.mp3";
     public static final String WIN_MUSIC_PATH = "data/sounds/music/marine_hymn.mp3";
     public static final String LOSE_MUSIC_PATH = "data/sounds/music/taps.mp3";
-    public static final String STAMP_SOUND_PATH = "data//sounds/effects/stamp.mp3";
+    public static final String STAMP_SOUND_PATH = "data/sounds/effects/stamp.mp3";
 
 
     private static CCSoundBank instance = new CCSoundBank();
