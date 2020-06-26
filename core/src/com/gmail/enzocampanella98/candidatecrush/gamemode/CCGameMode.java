@@ -177,7 +177,7 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
 
     public void returnToMenu() {
         game.disposeCurrentScreen();
-        game.setScreen(new MenuScreen(game, levelSet));
+        game.setScreen(new MenuScreen(game, levelSet, config.isHardMode));
     }
 
     public Music getGameEndedMusic() {

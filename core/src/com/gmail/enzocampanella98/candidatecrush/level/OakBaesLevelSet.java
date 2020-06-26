@@ -28,7 +28,7 @@ public class OakBaesLevelSet implements ILevelSet {
         switch (levelNum) {
             case 1:
                 builder.gameModeType(MOVE_LIMIT)
-                        .difficulty(0)
+                        .difficulty(2)
                         .withCandidates(Arrays.asList(SPIKEBALL, QUESADILLA, TURKEY, PUMPKIN))
                         .initialGameParameter(20)
                         .withCustomInstructions(getLevel1ExtraInstructions());

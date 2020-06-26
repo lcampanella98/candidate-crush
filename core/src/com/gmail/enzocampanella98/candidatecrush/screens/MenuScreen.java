@@ -86,10 +86,10 @@ public class MenuScreen implements Screen {
     private ILevelSet levelSet;
 
     public MenuScreen(final CandidateCrush game) {
-        this(game, null);
+        this(game, null, false);
     }
 
-    public MenuScreen(final CandidateCrush game, ILevelSet fromLevelSet) {
+    public MenuScreen(final CandidateCrush game, ILevelSet fromLevelSet, boolean fromHardMode) {
         this.game = game;
         fontCache = new FontCache(new FontGenerator(2, Color.WHITE));
         buttonFactory = new CCButtonFactory(fontCache);
@@ -142,7 +142,7 @@ public class MenuScreen implements Screen {
                 .height(btnOakBaes.scaledHeight(400f))
                 .pad(0, 0, 50, 30);
 
-        initHardModeButton();
+        initHardModeButton(fromHardMode);
         optionButtonTable
                 .add(btnHardMode).right()
                 .width(400f)
@@ -358,10 +358,10 @@ public class MenuScreen implements Screen {
                 (level - 1) * (400f + 20f);
     }
 
-    private void initHardModeButton() {
+    private void initHardModeButton(boolean initiallyChecked) {
         if (btnHardMode == null) {
             btnHardMode = buttonFactory.getVoteButton("Hard Mode", fontSize(MD));
-            btnHardMode.setChecked(false);
+            btnHardMode.setChecked(initiallyChecked);
             btnHardMode.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
@@ -380,13 +380,13 @@ public class MenuScreen implements Screen {
     private void initOakBaesButton() {
         if (btnOakBaes == null) {
             btnOakBaes = buttonFactory.getVoteButton("Oak Baes!", fontSize(MD));
-            btnOakBaes.setChecked(false);
+            btnOakBaes.setChecked(levelSet instanceof OakBaesLevelSet);
             btnOakBaes.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
                     Button btn = (Button) actor;
                     setLevelSetType(btn.isChecked() ? LS_OAK : LS_NORMAL);
-                    initHardModeButton();
+                    initHardModeButton(false);
                     playStampIfChecked(btn.isChecked());
                     initLevelButtons();
                     scrollToNextLevel();
