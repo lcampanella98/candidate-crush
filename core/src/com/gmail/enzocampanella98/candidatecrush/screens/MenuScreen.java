@@ -446,6 +446,7 @@ public class MenuScreen implements Screen {
                     if (game.tryUnlockOakBaes(text)) {
                         initOakBaesButton();
                         // maybe play a fun sound?
+                        CCSoundBank.getInstance().unlockOakBaesSound.play();
                     } else {
                         showOakBaesPrompt("Incorrect Secret");
                     }

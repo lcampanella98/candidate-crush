@@ -42,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
 
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_HEIGHT;
 import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.V_WIDTH;
@@ -184,7 +185,10 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
         Music music;
         if (wonGame()) {
             if (config.levelSet.equals(ILevelSet.LS_OAK)) {
-                music = soundBank.winMusic;
+                music = soundBank.winMusicOakBaes;
+                float[] startTimes = soundBank.oakBaesWinMusicStartTimes;
+                float startTime = startTimes[new Random().nextInt(startTimes.length)];
+                music.setPosition(startTime); // choose a random part of the song
             } else {
                 music = soundBank.winMusic;
             }

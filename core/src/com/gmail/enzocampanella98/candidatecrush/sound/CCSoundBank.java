@@ -182,6 +182,20 @@ public class CCSoundBank implements Disposable {
     public static final String LOSE_MUSIC_PATH = "data/sounds/music/taps.mp3";
     public static final String STAMP_SOUND_PATH = "data/sounds/effects/stamp.mp3";
 
+    public static final String CALABRIA_PRIMER_PATH = "data/sounds/music/calabria_primer.mp3";
+    public static final String CALABRIA_PATH = "data/sounds/music/calabria.mp3";
+
+    public static final float[] CALABRIA_START_TIMES = new float[] {
+            0.0f,
+            15.48f,
+            30.7f,
+            45.9f,
+            61.1f,
+            84.0f,
+            95.5f,
+            138.3f,
+            213.6f
+    };
 
     private static CCSoundBank instance = new CCSoundBank();
 
@@ -189,9 +203,13 @@ public class CCSoundBank implements Disposable {
     public final List<SoundByte> allSoundBytes;
     public final Sound popSound;
     public final Sound stampSound;
+    public final Sound unlockOakBaesSound;
     public final Music bgMusic1;
     public final Music winMusic;
     public final Music loseMusic;
+    public final Music winMusicOakBaes;
+    public final float[] oakBaesWinMusicStartTimes;
+
 
     private CCSoundBank() {
         allSoundBytes = new ArrayList<>();
@@ -204,6 +222,10 @@ public class CCSoundBank implements Disposable {
         bgMusic1 = Gdx.audio.newMusic(Gdx.files.internal(BG_MUSIC_1_PATH));
         winMusic = Gdx.audio.newMusic(Gdx.files.internal(WIN_MUSIC_PATH));
         loseMusic = Gdx.audio.newMusic(Gdx.files.internal(LOSE_MUSIC_PATH));
+
+        unlockOakBaesSound = Gdx.audio.newSound(Gdx.files.internal(CALABRIA_PRIMER_PATH));
+        winMusicOakBaes = Gdx.audio.newMusic(Gdx.files.internal(CALABRIA_PATH));
+        oakBaesWinMusicStartTimes = CALABRIA_START_TIMES;
     }
 
     public List<SoundByte> soundBytesOfCandidate(BlockType candidate) {
