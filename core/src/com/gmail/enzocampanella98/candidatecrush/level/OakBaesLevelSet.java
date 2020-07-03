@@ -47,7 +47,7 @@ public class OakBaesLevelSet implements ILevelSet {
                 break;
             case 4:
                 builder.gameModeType(MOVE_LIMIT)
-                        .difficulty(1)
+                        .difficulty(5)
                         .withCandidates(Arrays.asList(YOUNG, QUESADILLA, TURKEY, PUMPKIN))
                         .initialGameParameter(20);
                 break;
@@ -59,7 +59,7 @@ public class OakBaesLevelSet implements ILevelSet {
                 break;
             case 6:
                 builder.gameModeType(SOUND_BYTE)
-                        .difficulty(2)
+                        .difficulty(6)
                         .withCandidates(Arrays.asList(YOUNG, KOZAN, TURKEY, PUMPKIN))
                         .initialGameParameter(60.0);
                 break;
@@ -71,7 +71,7 @@ public class OakBaesLevelSet implements ILevelSet {
                 break;
             case 8:
                 builder.gameModeType(MOVE_LIMIT)
-                        .difficulty(3)
+                        .difficulty(5)
                         .withCandidates(Arrays.asList(YOUNG, KOZAN, DAUDELIN, PUMPKIN))
                         .initialGameParameter(20);
                 break;
@@ -89,7 +89,7 @@ public class OakBaesLevelSet implements ILevelSet {
                 break;
             case 11:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(4)
+                        .difficulty(2)
                         .withCandidates(Arrays.asList(CAMPANELLA, KOZAN, DAUDELIN, GHATTAS))
                         .primaryCandidate(CAMPANELLA);
                 break;
@@ -101,31 +101,31 @@ public class OakBaesLevelSet implements ILevelSet {
                 break;
             case 13:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(5)
+                        .difficulty(4)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, DAUDELIN, GHATTAS))
                         .primaryCandidate(LOMUSCIO);
                 break;
             case 14:
                 builder.gameModeType(SOUND_BYTE)
-                        .difficulty(7)
+                        .difficulty(9)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, DAUDELIN, GHATTAS))
                         .initialGameParameter(60.0);
                 break;
             case 15:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(5)
+                        .difficulty(3)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, MORGAN, GHATTAS))
                         .primaryCandidate(MORGAN);
                 break;
             case 16:
                 builder.gameModeType(MOVE_LIMIT)
-                        .difficulty(7)
+                        .difficulty(8)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, MORGAN, GHATTAS))
                         .initialGameParameter(20);
                 break;
             case 17:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(6)
+                        .difficulty(4)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, MORGAN, MEZA))
                         .primaryCandidate(MEZA);
                 break;
@@ -149,6 +149,7 @@ public class OakBaesLevelSet implements ILevelSet {
                 break;
             case 21:
                 builder.gameModeType(ELECTION)
+                        .boardSize(10)
                         .difficulty(6)
                         .withElectionGroups(
                                 new NamedCandidateGroup(Arrays.asList(KOZAN, LOMUSCIO, MORGAN, GHATTAS), "Girls", "Girls"),
@@ -159,6 +160,7 @@ public class OakBaesLevelSet implements ILevelSet {
             case 22:
                 builder.gameModeType(SOUND_BYTE)
                         .difficulty(7)
+                        .boardSize(12)
                         .withCandidates(Arrays.asList(KOZAN, LOMUSCIO, MORGAN, GHATTAS, CAMPANELLA, YOUNG, DAUDELIN, MEZA))
                         .initialGameParameter(60.0);
                 break;

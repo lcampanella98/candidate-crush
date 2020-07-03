@@ -59,6 +59,7 @@ public class LevelBuilder {
     private NamedCandidateGroup electionGroup1;
     private NamedCandidateGroup electionGroup2;
     private String electionPlayerGroupName;
+    private Integer boardSize;
 
     public LevelBuilder(String levelSetName, int levelNum,
                         int soundTier, BlockType exampleSoundByteBlock) {
@@ -122,9 +123,19 @@ public class LevelBuilder {
         return this;
     }
 
+    public LevelBuilder boardSize(int boardSize) { // default 8
+        this.boardSize = boardSize;
+        return this;
+    }
+
     public Level build() {
         GameModeConfig config = defaultConfig(levelNum, soundTier, levelSetName);
         config.gameModeType = gameModeType;
+
+        if (this.boardSize != null) {
+            config.boardSize = this.boardSize;
+        }
+
         boolean isElection = gameModeType == ELECTION;
         boolean isPrimary = gameModeType == PRIMARY;
 
@@ -204,7 +215,7 @@ public class LevelBuilder {
     private static void setMoveLimitGameModeParams(GameModeConfig config, int numMoves, int difficulty) {
         config.numMoves = numMoves;
         double target = linearDiff(500, 5000, difficulty)
-                + numMoves * linearDiff(400, 900, difficulty);
+                + numMoves * linearDiff(400, 1100, difficulty);
         config.targetScore = roundToNearest(target, 5000);
     }
 
@@ -280,7 +291,11 @@ public class LevelBuilder {
     }
 
     private Collection<GameInstructionRow> getElectionInstructions(GameModeConfig config) {
-        return getRaceInstructions(config.playerParty == 'D' ? DEMOCRAT_LONG_NAME : REPUBLICAN_LONG_NAME, config.numMoves);
+        if (config.electionPlayerGroupName != null) {
+            return getRaceInstructions(config.electionPlayerGroupName, config.numMoves);
+        } else {
+            return getRaceInstructions(config.playerParty == 'D' ? DEMOCRAT_LONG_NAME : REPUBLICAN_LONG_NAME, config.numMoves);
+        }
     }
 
     private Collection<GameInstructionRow> getRaceInstructions(String playerName, int numMoves) {
