@@ -64,7 +64,7 @@ public class PersistentTierMusicHandler extends MusicHandler {
                 if (soundsByCandidate.containsKey(name)) {
                     soundsByCandidate.get(name).add(sound);
                 } else {
-                    System.out.println("bad juju up in heea");
+                    System.out.println("no key for " + name);
                 }
             }
             soundsLeft.put(soundTier, soundsByCandidate);

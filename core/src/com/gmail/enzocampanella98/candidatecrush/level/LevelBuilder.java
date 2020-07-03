@@ -198,24 +198,24 @@ public class LevelBuilder {
     private static void setSoundByteGameModeParams(GameModeConfig config, double timeLimit, int difficulty) {
         config.gameLength = timeLimit;
         config.soundByteFrequency = (float) linearDiff(0.10, 0.05, difficulty);
-        config.targetNumSoundBytes = Math.max(roundToNearest(timeLimit / (linearDiff(4, 6, difficulty)), 5), 5);
+        config.targetNumSoundBytes = Math.max(roundToNearest(timeLimit / (linearDiff(6, 9, difficulty)), 1), 5);
     }
 
     private static void setMoveLimitGameModeParams(GameModeConfig config, int numMoves, int difficulty) {
         config.numMoves = numMoves;
-        double target = linearDiff(5000, 12000, difficulty)
-                + numMoves * linearDiff(1000, 2200, difficulty);
+        double target = linearDiff(500, 5000, difficulty)
+                + numMoves * linearDiff(400, 900, difficulty);
         config.targetScore = roundToNearest(target, 5000);
     }
 
     private static void setDemocratPrimaryGameModeParams(GameModeConfig config, int difficulty) {
-        double nMoves = linearDiff(10, 25, difficulty);
-        config.numMoves = roundToNearest(nMoves, 5);
+        double nMoves = linearDiff(7, 25, difficulty);
+        config.numMoves = roundToNearest(nMoves, 2);
     }
 
     private static void setElectionGameModeParams(GameModeConfig config, int difficulty) {
-        double nMoves = linearDiff(10, 35, difficulty);
-        config.numMoves = roundToNearest(nMoves, 5);
+        double nMoves = linearDiff(7, 25, difficulty);
+        config.numMoves = roundToNearest(nMoves, 2);
     }
 
     private static double linearDiff(double f0, double f9, int d) {

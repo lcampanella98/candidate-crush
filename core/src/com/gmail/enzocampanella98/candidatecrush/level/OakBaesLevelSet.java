@@ -28,128 +28,128 @@ public class OakBaesLevelSet implements ILevelSet {
         switch (levelNum) {
             case 1:
                 builder.gameModeType(MOVE_LIMIT)
-                        .difficulty(2)
+                        .difficulty(0)
                         .withCandidates(Arrays.asList(SPIKEBALL, QUESADILLA, TURKEY, PUMPKIN))
                         .initialGameParameter(20)
                         .withCustomInstructions(getLevel1ExtraInstructions());
                 break;
             case 2:
                 builder.gameModeType(SOUND_BYTE)
-                        .difficulty(2)
+                        .difficulty(0)
                         .withCandidates(Arrays.asList(SPIKEBALL, QUESADILLA, TURKEY, PUMPKIN))
                         .initialGameParameter(60.0);
                 break;
             case 3:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(0)
+                        .difficulty(1)
                         .withCandidates(Arrays.asList(YOUNG, QUESADILLA, TURKEY, PUMPKIN))
                         .primaryCandidate(YOUNG);
                 break;
             case 4:
                 builder.gameModeType(MOVE_LIMIT)
-                        .difficulty(2)
+                        .difficulty(1)
                         .withCandidates(Arrays.asList(YOUNG, QUESADILLA, TURKEY, PUMPKIN))
                         .initialGameParameter(20);
                 break;
             case 5:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(0)
+                        .difficulty(2)
                         .withCandidates(Arrays.asList(YOUNG, KOZAN, TURKEY, PUMPKIN))
                         .primaryCandidate(KOZAN);
                 break;
             case 6:
                 builder.gameModeType(SOUND_BYTE)
-                        .difficulty(0)
+                        .difficulty(2)
                         .withCandidates(Arrays.asList(YOUNG, KOZAN, TURKEY, PUMPKIN))
                         .initialGameParameter(60.0);
                 break;
             case 7:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(0)
+                        .difficulty(2)
                         .withCandidates(Arrays.asList(YOUNG, KOZAN, DAUDELIN, PUMPKIN))
                         .primaryCandidate(DAUDELIN);
                 break;
             case 8:
                 builder.gameModeType(MOVE_LIMIT)
-                        .difficulty(2)
+                        .difficulty(3)
                         .withCandidates(Arrays.asList(YOUNG, KOZAN, DAUDELIN, PUMPKIN))
                         .initialGameParameter(20);
                 break;
             case 9:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(0)
+                        .difficulty(4)
                         .withCandidates(Arrays.asList(YOUNG, KOZAN, DAUDELIN, GHATTAS))
                         .primaryCandidate(GHATTAS);
                 break;
             case 10:
                 builder.gameModeType(SOUND_BYTE)
-                        .difficulty(0)
+                        .difficulty(6)
                         .withCandidates(Arrays.asList(YOUNG, KOZAN, DAUDELIN, GHATTAS))
                         .initialGameParameter(60.0);
                 break;
             case 11:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(0)
+                        .difficulty(4)
                         .withCandidates(Arrays.asList(CAMPANELLA, KOZAN, DAUDELIN, GHATTAS))
                         .primaryCandidate(CAMPANELLA);
                 break;
             case 12:
                 builder.gameModeType(MOVE_LIMIT)
-                        .difficulty(2)
+                        .difficulty(7)
                         .withCandidates(Arrays.asList(CAMPANELLA, KOZAN, DAUDELIN, GHATTAS))
                         .initialGameParameter(20);
                 break;
             case 13:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(0)
+                        .difficulty(5)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, DAUDELIN, GHATTAS))
                         .primaryCandidate(LOMUSCIO);
                 break;
             case 14:
                 builder.gameModeType(SOUND_BYTE)
-                        .difficulty(0)
+                        .difficulty(7)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, DAUDELIN, GHATTAS))
                         .initialGameParameter(60.0);
                 break;
             case 15:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(0)
+                        .difficulty(5)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, MORGAN, GHATTAS))
                         .primaryCandidate(MORGAN);
                 break;
             case 16:
                 builder.gameModeType(MOVE_LIMIT)
-                        .difficulty(2)
+                        .difficulty(7)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, MORGAN, GHATTAS))
                         .initialGameParameter(20);
                 break;
             case 17:
                 builder.gameModeType(PRIMARY)
-                        .difficulty(0)
+                        .difficulty(6)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, MORGAN, MEZA))
                         .primaryCandidate(MEZA);
                 break;
             case 18:
                 builder.gameModeType(SOUND_BYTE)
-                        .difficulty(0)
+                        .difficulty(6)
                         .withCandidates(Arrays.asList(CAMPANELLA, LOMUSCIO, MORGAN, MEZA))
                         .initialGameParameter(60.0);
                 break;
             case 19:
-                builder.gameModeType(SOUND_BYTE)
-                        .difficulty(0)
+                builder.gameModeType(MOVE_LIMIT)
+                        .difficulty(8)
                         .withCandidates(Arrays.asList(CAMPANELLA, YOUNG, DAUDELIN, MEZA))
-                        .initialGameParameter(60.0);
+                        .initialGameParameter(25);
                 break;
             case 20:
-                builder.gameModeType(SOUND_BYTE)
-                        .difficulty(0)
+                builder.gameModeType(MOVE_LIMIT)
+                        .difficulty(8)
                         .withCandidates(Arrays.asList(KOZAN, LOMUSCIO, MORGAN, GHATTAS))
-                        .initialGameParameter(60.0);
+                        .initialGameParameter(25);
                 break;
             case 21:
                 builder.gameModeType(ELECTION)
-                        .difficulty(0)
+                        .difficulty(6)
                         .withElectionGroups(
                                 new NamedCandidateGroup(Arrays.asList(KOZAN, LOMUSCIO, MORGAN, GHATTAS), "Girls", "Girls"),
                                 new NamedCandidateGroup(Arrays.asList(CAMPANELLA, YOUNG, DAUDELIN, MEZA), "Boys", "Boys"),
@@ -158,7 +158,7 @@ public class OakBaesLevelSet implements ILevelSet {
                 break;
             case 22:
                 builder.gameModeType(SOUND_BYTE)
-                        .difficulty(0)
+                        .difficulty(7)
                         .withCandidates(Arrays.asList(KOZAN, LOMUSCIO, MORGAN, GHATTAS, CAMPANELLA, YOUNG, DAUDELIN, MEZA))
                         .initialGameParameter(60.0);
                 break;
