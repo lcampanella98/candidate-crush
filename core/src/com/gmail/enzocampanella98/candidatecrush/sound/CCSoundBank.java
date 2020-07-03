@@ -69,8 +69,6 @@ public class CCSoundBank implements Disposable {
             "cruz_t_garden knomes.mp3",
             "cruz_t_i just love to twerk.mp3",
             "meza_3_crush.mp3",
-            "meza_4_crush.mp3",
-            "meza_5_crush.mp3",
             "meza_t_crush.mp3",
             "sanders_3_black lives matter.mp3",
             "sanders_4_free_college.mp3",
