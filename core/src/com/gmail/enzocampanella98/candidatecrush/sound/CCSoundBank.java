@@ -159,6 +159,7 @@ public class CCSoundBank implements Disposable {
             "ghattas_3_heck_bot.mp3",
             "ghattas_3_yeet.mp3",
             "ghattas_3_yeet_bot.mp3",
+            "ghattas_3_zip_zap_zoop.mp3",
             "kozan_3_oh_gosh.mp3",
             "kozan_3_oh_gosh_bot.mp3",
             "lomuscio_3_deek_a_da_da_bot.mp3",
