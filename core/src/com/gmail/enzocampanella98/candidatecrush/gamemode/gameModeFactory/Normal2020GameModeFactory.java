@@ -51,7 +51,7 @@ public class Normal2020GameModeFactory extends GameModeFactory {
         }
         assert playerGroup != null;
 
-        config.numMoves = getGameVal(config.numMoves, 5);
+        config.numMoves = getGameVal(config.numMoves, 5, 1);
 
         return new RaceGameMode(game, stage, groups, playerGroup, freqMap, config, levelSet);
     }
@@ -60,15 +60,15 @@ public class Normal2020GameModeFactory extends GameModeFactory {
     public TimedSoundByteTargetGameMode getTimedSoundByteTargetGameMode(Stage stage, GameModeConfig config, ILevelSet levelSet) {
         config.showCrushLabels = false;
         config.singleBlockDropTime = 0.15f;
-        config.gameLength = getGameVal(config.gameLength, 30);
-        config.targetNumSoundBytes = getGameVal(config.targetNumSoundBytes, 2);
+        config.gameLength = getGameVal(config.gameLength, 30, 1);
+        config.targetNumSoundBytes = getGameVal(config.targetNumSoundBytes, 2, 2);
         return new TimedSoundByteTargetGameMode(game, stage, config, levelSet);
     }
 
     @Override
     public MoveLimitVoteTargetGameMode getMoveLimitVoteTargetGameMode(Stage stage, GameModeConfig config, ILevelSet levelSet) {
-        config.numMoves = getGameVal(config.numMoves, 1);
-        config.targetScore = getGameVal(config.targetScore, 100);
+        config.numMoves = getGameVal(config.numMoves, 1, 1);
+        config.targetScore = getGameVal(config.targetScore, 100, 10000);
         return new MoveLimitVoteTargetGameMode(game, stage, config, levelSet);
     }
 
@@ -100,7 +100,7 @@ public class Normal2020GameModeFactory extends GameModeFactory {
         groups.add(repGroup);
         playerGroup = config.playerParty == 'D' ? demGroup : repGroup;
 
-        config.numMoves = getGameVal(config.numMoves, 3);
+        config.numMoves = getGameVal(config.numMoves, 3, 1);
         return new RaceGameMode(game, stage, groups, playerGroup, freqs, config, levelSet);
     }
 }

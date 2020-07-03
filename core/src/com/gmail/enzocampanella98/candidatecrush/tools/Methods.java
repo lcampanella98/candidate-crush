@@ -6,6 +6,9 @@ import com.gmail.enzocampanella98.candidatecrush.CandidateCrush;
 
 import java.util.Collection;
 
+import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.IS_TESTING_LEVELS;
+import static com.gmail.enzocampanella98.candidatecrush.CandidateCrush.IS_TESTING_WIN;
+
 /**
  * Created by enzoc on 5/22/2018.
  */
@@ -65,24 +68,34 @@ public final class Methods {
         return new Color(r/255f, g/255f, b/255f, 1f);
     }
 
-    public static int getGameVal(int prodVal, int testVal) {
-        return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
+    public static int getGameVal(int prodVal, int testWinVal, int testLoseVal) {
+        return IS_TESTING_LEVELS
+                ? (IS_TESTING_WIN ? testWinVal : testLoseVal)
+                : prodVal;
     }
 
-    public static double getGameVal(double prodVal, double testVal) {
-        return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
+    public static double getGameVal(double prodVal, double testWinVal, double testLoseVal) {
+        return IS_TESTING_LEVELS
+                ? (IS_TESTING_WIN ? testWinVal : testLoseVal)
+                : prodVal;
     }
 
-    public static float getGameVal(float prodVal, float testVal) {
-        return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
+    public static float getGameVal(float prodVal, float testWinVal, float testLoseVal) {
+        return IS_TESTING_LEVELS
+                ? (IS_TESTING_WIN ? testWinVal : testLoseVal)
+                : prodVal;
     }
 
-    public static boolean getGameVal(boolean prodVal, boolean testVal) {
-        return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
+    public static boolean getGameVal(boolean prodVal, boolean testWinVal, boolean testLoseVal) {
+        return IS_TESTING_LEVELS
+                ? (IS_TESTING_WIN ? testWinVal : testLoseVal)
+                : prodVal;
     }
 
-    public static Object getGameVal(Object prodVal, Object testVal) {
-        return CandidateCrush.IS_TESTING_LEVELS ? testVal : prodVal;
+    public static Object getGameVal(Object prodVal, Object testWinVal, Object testLoseVal) {
+        return IS_TESTING_LEVELS
+                ? (IS_TESTING_WIN ? testWinVal : testLoseVal)
+                : prodVal;
     }
 
     /*

@@ -185,6 +185,13 @@ public class CCSoundBank implements Disposable {
     public static final String CALABRIA_PRIMER_PATH = "data/sounds/music/calabria_primer.mp3";
     public static final String CALABRIA_PATH = "data/sounds/music/calabria.mp3";
 
+    public static final String HELLO_DARKNESS_PATH = "data/sounds/music/hello_darkness.mp3";
+    public static final String SAD_VIOLIN_PATH = "data/sounds/music/sad_violin.mp3";
+    public static final String TRY_YOUR_BEST_PATH = "data/sounds/music/try_your_best.mp3";
+    public static final String WATCHA_SAY_PATH = "data/sounds/music/watcha_say.mp3";
+    public static final String FIVE_STAR_PATH = "data/sounds/music/five_star.mp3";
+
+
     public static final float[] CALABRIA_START_TIMES = new float[] {
             0.0f,
             15.48f,
@@ -210,6 +217,7 @@ public class CCSoundBank implements Disposable {
     public final Music winMusicOakBaes;
     public final float[] oakBaesWinMusicStartTimes;
 
+    public final List<Music> lostMusicOakBaes;
 
     private CCSoundBank() {
         allSoundBytes = new ArrayList<>();
@@ -226,6 +234,17 @@ public class CCSoundBank implements Disposable {
         unlockOakBaesSound = Gdx.audio.newSound(Gdx.files.internal(CALABRIA_PRIMER_PATH));
         winMusicOakBaes = Gdx.audio.newMusic(Gdx.files.internal(CALABRIA_PATH));
         oakBaesWinMusicStartTimes = CALABRIA_START_TIMES;
+
+        lostMusicOakBaes = new ArrayList<>();
+        for (String musicPath : Arrays.asList(
+                HELLO_DARKNESS_PATH,
+                SAD_VIOLIN_PATH,
+                TRY_YOUR_BEST_PATH,
+                WATCHA_SAY_PATH,
+                FIVE_STAR_PATH
+        )) {
+            lostMusicOakBaes.add(Gdx.audio.newMusic(Gdx.files.internal(musicPath)));
+        }
     }
 
     public List<SoundByte> soundBytesOfCandidate(BlockType candidate) {

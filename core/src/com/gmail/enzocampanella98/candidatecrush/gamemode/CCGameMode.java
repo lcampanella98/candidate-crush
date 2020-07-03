@@ -52,7 +52,7 @@ import static com.gmail.enzocampanella98.candidatecrush.tools.Methods.getGameVal
 
 public abstract class CCGameMode implements Disposable, IOnCrushListener {
     private static final String BG_PATH = "data/img/general/screen_bg_votetarget.png";
-    private static final float DISPLAY_GAME_INFO_SEC = getGameVal(6f, 1f);
+    private static final float DISPLAY_GAME_INFO_SEC = getGameVal(6f, 1f, 1f);
 
     protected static List<Color> blockBgColors = new ArrayList<>(Arrays.asList(
             colorFromRGB(252, 107, 3),
@@ -194,7 +194,8 @@ public abstract class CCGameMode implements Disposable, IOnCrushListener {
             }
         } else {
             if (config.levelSet.equals(ILevelSet.LS_OAK)) {
-                music = soundBank.loseMusic;
+                List<Music> loseMusicList = soundBank.lostMusicOakBaes;
+                music = loseMusicList.get(new Random().nextInt(loseMusicList.size()));
             } else {
                 music = soundBank.loseMusic;
             }

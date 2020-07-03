@@ -19,7 +19,9 @@ public class CandidateCrush extends Game {
     public static int V_WIDTH = 1080, V_HEIGHT = 1920;
     public static final String TITLE = "Candidate Crush";
 
-    public static final boolean IS_TESTING_LEVELS = true;
+    public static final boolean IS_TESTING_LEVELS = false;
+    public static final boolean IS_TESTING_WIN = false;
+
     public static final Integer START_LEVEL_OVERRIDE = null;
     public static final Integer START_LEVEL_HARD_MODE_OVERRIDE = null;
     public static final Boolean IS_OAK_BAES_UNLOCKED_OVERRIDE = null;
