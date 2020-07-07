@@ -126,7 +126,7 @@ public class CandidateCrush extends Game {
 
     public boolean tryUnlockOakBaes(String key) {
         try {
-            if (Hasher.hash(key).equals("ec195a03e099d8ad8fc461742faa9354d7332c7d10ca2512d8306bab8f542274")) {
+            if (Hasher.hash(key).equals("eac9325763be41d2bd56ba3f4cdd18933da1b672b914b4037a3afc112a7a888d")) {
                 gameData.setOakBaesUnlocked(true);
                 saveData();
                 return true;
