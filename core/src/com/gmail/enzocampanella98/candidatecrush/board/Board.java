@@ -77,7 +77,7 @@ public class Board extends Group implements Disposable {
         this.numTotalCrushes = 0; // track number of user-invoked crushes
 
 
-        int boardWidth = (int)((9.0/16.0)*CandidateCrush.V_HEIGHT);
+        int boardWidth = (int)(CandidateCrush.V_WIDTH * 1.0);
 
         //noinspection SuspiciousNameCombination
         int boardHeight = boardWidth;

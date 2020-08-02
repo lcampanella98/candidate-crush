@@ -130,7 +130,7 @@ public abstract class HUD implements Disposable {
                 return true;
             }
         });
-        mainTable.add(btnExit).pad(3f).left();
+        mainTable.add(btnExit).pad(6f).left();
         mainTable.row();
     }
 
